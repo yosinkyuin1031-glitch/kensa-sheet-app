@@ -111,12 +111,41 @@ body {
   display: none;
 }
 
+/* inline要素のpractitioner/patient-only */
+h1 .practitioner-only,
+h1 .patient-only {
+  display: inline;
+}
+
 body[data-view="patient"] .practitioner-only {
-  display: none;
+  display: none !important;
 }
 
 body[data-view="patient"] .patient-only {
   display: block;
+}
+
+body[data-view="patient"] h1 .patient-only {
+  display: inline;
+}
+
+/* ===== 患者モード：タブナビゲーション ===== */
+body[data-view="patient"] .patient-tab-nav {
+  display: flex;
+}
+
+/* 患者モードでは検査タブを非表示にし、診断結果をデフォルト表示 */
+body[data-view="patient"] #exam-section {
+  display: none !important;
+}
+
+body[data-view="patient"] #history-section {
+  display: none !important;
+}
+
+/* 患者モード：アクションバー */
+body[data-view="patient"] .patient-action-bar {
+  display: flex;
 }
 
 /* 治療家モードでは詳細の右左表示を表示 */
@@ -130,6 +159,250 @@ body[data-view="patient"] .diagram-sides {
 
 body[data-view="patient"] .diagram-value {
   display: none;
+}
+
+/* ===== 患者モード：ヘッダーカラー変更 ===== */
+body[data-view="patient"] .header {
+  background: linear-gradient(135deg, #059669, #10b981, #34d399);
+}
+
+body[data-view="patient"] .header-subtitle {
+  opacity: 0.9;
+  font-size: 12px;
+}
+
+/* ===== 患者モード：全体的な優しいデザイン ===== */
+body[data-view="patient"] {
+  --primary: #059669;
+  --primary-dark: #047857;
+  --primary-light: #d1fae5;
+}
+
+body[data-view="patient"] .section-header h2 {
+  font-size: 22px;
+  text-align: center;
+  color: #059669;
+}
+
+body[data-view="patient"] .diagnosis-main {
+  border-width: 3px;
+  padding: 24px;
+  text-align: center;
+}
+
+body[data-view="patient"] .diagnosis-icon {
+  font-size: 48px;
+}
+
+body[data-view="patient"] .diagnosis-label {
+  font-size: 20px;
+}
+
+body[data-view="patient"] .diagnosis-summary {
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+body[data-view="patient"] .patient-result-card {
+  padding: 20px;
+  text-align: center;
+  border-radius: 16px;
+}
+
+body[data-view="patient"] .patient-result-card h3 {
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+
+body[data-view="patient"] .patient-result-card p {
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+body[data-view="patient"] .patient-issue-card {
+  padding: 16px;
+  border-radius: 12px;
+  font-size: 15px;
+}
+
+body[data-view="patient"] .patient-issue-card strong {
+  font-size: 16px;
+}
+
+/* 患者待機カード */
+.patient-waiting-card {
+  text-align: center;
+  padding: 40px 20px;
+  background: linear-gradient(135deg, #f0fdf4, #d1fae5);
+  border-radius: 20px;
+  margin: 20px 0;
+}
+
+.patient-waiting-card .waiting-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.patient-waiting-card h3 {
+  font-size: 20px;
+  color: #059669;
+  margin-bottom: 12px;
+}
+
+.patient-waiting-card p {
+  font-size: 15px;
+  color: var(--text-light);
+  line-height: 1.8;
+}
+
+/* 患者用大きなボタン */
+.btn-large {
+  padding: 16px 24px;
+  font-size: 16px;
+  border-radius: 14px;
+  width: 100%;
+  text-align: center;
+}
+
+.patient-action-bar {
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+/* ===== 患者モード：セルフケアを強調 ===== */
+body[data-view="patient"] .selfcare-section {
+  margin-top: 16px;
+}
+
+body[data-view="patient"] .selfcare-title {
+  font-size: 20px;
+  text-align: center;
+  color: #059669;
+}
+
+body[data-view="patient"] .selfcare-intro {
+  font-size: 15px;
+  text-align: center;
+  line-height: 1.7;
+}
+
+body[data-view="patient"] .selfcare-card {
+  border-radius: 16px;
+  border-width: 2px;
+}
+
+/* ===== 患者モード：全身統合ダイアグラムを大きく ===== */
+body[data-view="patient"] .unified-diagram-wrapper .body-diagram-container {
+  width: 360px;
+  border-color: #059669;
+  box-shadow: 0 4px 16px rgba(5,150,105,0.15);
+}
+
+body[data-view="patient"] .comprehensive-title {
+  text-align: center;
+  color: #059669;
+  font-size: 20px;
+}
+
+/* ===== 患者モード：お身体の状態カード ===== */
+.patient-status-title {
+  font-size: 18px;
+  text-align: center;
+  margin-bottom: 16px;
+  color: var(--text);
+}
+
+body[data-view="patient"] .patient-status-title {
+  font-size: 22px;
+  color: #059669;
+}
+
+.patient-status-card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+body[data-view="patient"] .patient-status-card {
+  padding: 24px;
+  border-radius: 20px;
+  border: 2px solid #d1fae5;
+  box-shadow: 0 4px 16px rgba(5,150,105,0.08);
+}
+
+.patient-status-card.good {
+  background: linear-gradient(135deg, #f0fdf4, #d1fae5);
+  text-align: center;
+  border-color: #86efac;
+}
+
+.patient-status-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.patient-status-text {
+  font-size: 16px;
+  line-height: 1.8;
+  color: var(--text);
+}
+
+.patient-finding-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.patient-finding-item:last-of-type {
+  border-bottom: none;
+}
+
+.finding-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+
+.patient-finding-item p {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--text);
+  margin: 0;
+}
+
+body[data-view="patient"] .patient-finding-item p {
+  font-size: 16px;
+}
+
+.patient-treatment-hint {
+  margin-top: 16px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.patient-treatment-hint p {
+  font-size: 14px;
+  color: #1e40af;
+  margin: 0;
+  font-weight: 600;
+}
+
+body[data-view="patient"] .patient-treatment-hint {
+  background: linear-gradient(135deg, #f0fdf4, #d1fae5);
+}
+
+body[data-view="patient"] .patient-treatment-hint p {
+  font-size: 16px;
+  color: #047857;
 }
 
 /* ===== Main Content ===== */

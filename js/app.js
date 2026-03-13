@@ -28,6 +28,7 @@
     setupLandmarkButtons();
     setupWeightBalanceButtons();
     setupDiagnosisActions();
+    setupPatientModeButtons();
     setupDetailedExamButtons();
     setupPatientSearch();
     setupProtocolButton();
@@ -384,6 +385,25 @@
         btn.classList.add('active');
         viewMode = btn.dataset.mode;
         document.body.setAttribute('data-view', viewMode);
+
+        // 患者モード切替時のタブ処理
+        if (viewMode === 'patient') {
+          // 患者モード: 診断結果タブに自動切替
+          switchToTab('diagnosis');
+          // 患者用アクションバーの同期
+          syncPatientActions();
+          // 待機カード表示制御
+          const waitCard = document.getElementById('patientWaiting');
+          if (waitCard) waitCard.style.display = diagnosisResult ? 'none' : 'block';
+        } else {
+          // 施術者モード: 待機カード非表示
+          const waitCard = document.getElementById('patientWaiting');
+          if (waitCard) waitCard.style.display = 'none';
+        }
+
+        // 患者タブのイベント設定
+        setupPatientTabs();
+
         // 既に表示済みの結果を再描画
         if (diagnosisResult) {
           renderDiagnosis(diagnosisResult);
@@ -394,6 +414,49 @@
         }
       });
     });
+  }
+
+  // 患者モード用タブ設定
+  function setupPatientTabs() {
+    const patientNav = document.querySelector('.patient-tab-nav');
+    if (!patientNav) return;
+    patientNav.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.onclick = () => {
+        patientNav.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        switchToTab(btn.dataset.tab);
+      };
+    });
+  }
+
+  // タブ切替の共通処理
+  function switchToTab(tabName) {
+    document.querySelectorAll('.tab-content').forEach(s => s.classList.remove('active'));
+    const target = document.getElementById(tabName + '-section');
+    if (target) target.classList.add('active');
+
+    // 施術者モードのタブボタン同期
+    document.querySelectorAll('.tab-nav .tab-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.tab === tabName);
+    });
+
+    if (tabName === 'report') renderReport();
+  }
+
+  // 患者モード用アクションバーの状態を同期
+  function syncPatientActions() {
+    const patientActions = document.getElementById('patientActions');
+    if (!patientActions) return;
+    patientActions.style.display = diagnosisResult ? 'flex' : 'none';
+
+    const selfcareBtn = document.getElementById('patientSelfcareBtn');
+    if (selfcareBtn && contractionResult) {
+      const allIssues = [
+        ...(contractionResult.upper ? [...contractionResult.upper.contractions, ...contractionResult.upper.tensions] : []),
+        ...(contractionResult.lower ? [...contractionResult.lower.contractions, ...contractionResult.lower.tensions] : [])
+      ];
+      selfcareBtn.style.display = allIssues.length > 0 ? '' : 'none';
+    }
   }
 
   function initDiagrams() {
@@ -492,9 +555,11 @@
 
   // ===== タブナビゲーション =====
   function setupTabNavigation() {
-    document.querySelectorAll('.tab-btn').forEach(btn => {
+    document.querySelectorAll('.tab-nav:not(.patient-tab-nav) .tab-btn').forEach(btn => {
       btn.addEventListener('click', () => switchTab(btn.dataset.tab));
     });
+    // 患者タブも初期設定
+    setupPatientTabs();
   }
 
   function switchTab(tabName) {
@@ -1012,12 +1077,17 @@
     html += '</div>';
 
     // 詳細検査への案内
-    html += `<div class="detail-exam-guide">
+    html += `<div class="detail-exam-guide practitioner-only">
       <p>続いて<strong>全身の詳細検査</strong>を行い、縮こまり・引っ張りの具体的な箇所を特定します。</p>
     </div>`;
 
     container.innerHTML = html;
     document.getElementById('diagnosisActions').style.display = 'flex';
+    // 患者モード用アクションバーも同期
+    syncPatientActions();
+    // 患者待機カードを非表示
+    const waitCard = document.getElementById('patientWaiting');
+    if (waitCard) waitCard.style.display = 'none';
   }
 
   // ===== 患者向けラベル =====
@@ -1046,31 +1116,49 @@
   function renderPatientView(result) {
     let html = '<div class="patient-explanation">';
 
-    // シンプルな身体の状態
+    // 大きなアイコンとタイトル
     html += '<div class="patient-body-status">';
-    html += '<h3>お身体の状態</h3>';
+    html += '<h3 class="patient-status-title">お身体の状態</h3>';
 
     if (result.primaryCause === 'none') {
-      html += '<p class="patient-good">特に気になる歪みは見られませんでした。</p>';
+      html += `<div class="patient-status-card good">
+        <div class="patient-status-icon">&#x2705;</div>
+        <p class="patient-status-text">特に気になる歪みは見られませんでした。<br>良い状態です！</p>
+      </div>`;
     } else {
-      html += '<div class="patient-finding">';
-      if (weightBalance) {
-        const wbLabel = weightBalance === 'right' ? '右側' : weightBalance === 'left' ? '左側' : '均等';
-        if (weightBalance !== 'even') {
-          html += `<p>体重が<strong>${wbLabel}</strong>にかかりやすい傾向があります。</p>`;
-        }
+      html += '<div class="patient-status-card">';
+
+      // 重心バランス
+      if (weightBalance && weightBalance !== 'even') {
+        const wbLabel = weightBalance === 'right' ? '右側' : '左側';
+        html += `<div class="patient-finding-item">
+          <span class="finding-dot" style="background:#f59e0b;"></span>
+          <p>体重が<strong>${wbLabel}</strong>にかかりやすい傾向があります</p>
+        </div>`;
       }
 
-      // 主な歪みの方向を簡潔に
+      // 歪みの方向
       if (result.pattern && result.pattern.pattern !== 'normal') {
         if (result.pattern.pattern === 'zenran') {
           const dir = result.pattern.direction === 'right' ? '右側' : '左側';
-          html += `<p>身体全体が<strong>${dir}</strong>に傾く傾向があります。</p>`;
+          html += `<div class="patient-finding-item">
+            <span class="finding-dot" style="background:#ef4444;"></span>
+            <p>身体全体が<strong>${dir}</strong>に傾く傾向があります</p>
+          </div>`;
         } else {
-          html += `<p>身体の上と下で<strong>左右交互にずれ</strong>が見られます。</p>`;
+          html += `<div class="patient-finding-item">
+            <span class="finding-dot" style="background:#8b5cf6;"></span>
+            <p>身体の上と下で<strong>左右交互にずれ</strong>が見られます</p>
+          </div>`;
         }
       }
-      html += '</div>';
+
+      // 今後の施術方針（わかりやすく）
+      html += `<div class="patient-treatment-hint">
+        <p>施術で改善していきますので、ご安心ください。</p>
+      </div>`;
+
+      html += '</div>'; // .patient-status-card
     }
 
     html += '</div>';
@@ -1154,6 +1242,9 @@
     // 比較ボタンも更新
     updateCompareButton();
     updateTrendButton();
+
+    // 患者モード用アクションバー同期
+    syncPatientActions();
 
     // レポート更新
     renderReport();
@@ -1524,6 +1615,64 @@
     });
   }
 
+  // ===== 患者モードボタン =====
+  function setupPatientModeButtons() {
+    // 患者用PDFボタン
+    const patientPdfBtn = document.getElementById('patientPdfBtn');
+    if (patientPdfBtn) {
+      patientPdfBtn.addEventListener('click', () => {
+        if (!diagnosisResult) return;
+        const patientName = document.getElementById('patientName').value;
+        const inspectionDate = document.getElementById('inspectionDate').value;
+        const selfcareItems = gatherSelfcareItems();
+        PdfExport.exportPatientPdf(patientName, inspectionDate, diagnosisResult, contractionResult, selfcareItems);
+      });
+    }
+
+    // 患者用セルフケアボタン
+    const patientSelfcareBtn = document.getElementById('patientSelfcareBtn');
+    if (patientSelfcareBtn) {
+      patientSelfcareBtn.addEventListener('click', () => {
+        const selfcareDiv = document.getElementById('selfcareSection');
+        if (selfcareDiv.style.display === 'block') {
+          selfcareDiv.style.display = 'none';
+          patientSelfcareBtn.textContent = 'セルフケアを見る';
+        } else if (contractionResult) {
+          renderSelfcare(contractionResult.upper, contractionResult.lower);
+          patientSelfcareBtn.textContent = 'セルフケアを閉じる';
+        }
+      });
+    }
+  }
+
+  // セルフケアデータ収集（共通）
+  function gatherSelfcareItems() {
+    const selfcareItems = [];
+    if (contractionResult) {
+      const allIssues = [
+        ...(contractionResult.upper ? [...contractionResult.upper.contractions, ...contractionResult.upper.tensions] : []),
+        ...(contractionResult.lower ? [...contractionResult.lower.contractions, ...contractionResult.lower.tensions] : [])
+      ];
+      const rendered = new Set();
+      for (const issue of allIssues) {
+        const cacheKey = `${issue.areaShort}_${issue.type}`;
+        if (rendered.has(cacheKey)) continue;
+        rendered.add(cacheKey);
+        if (typeof SelfcareDatabase !== 'undefined') {
+          const exercise = SelfcareDatabase.getSelfcareForArea(issue.areaShort, issue.type);
+          if (exercise) {
+            selfcareItems.push({
+              name: exercise.name,
+              description: exercise.description || '',
+              duration: exercise.frequency || exercise.duration || ''
+            });
+          }
+        }
+      }
+    }
+    return selfcareItems;
+  }
+
   // ===== 施術プロトコルボタン =====
   function setupProtocolButton() {
     const protocolBtn = document.getElementById('showProtocolBtn');
@@ -1851,9 +2000,15 @@
     const reportContent = document.getElementById('reportContent');
     if (reportContent) reportContent.innerHTML = '';
 
+    // Reset patient mode
+    const patientActions = document.getElementById('patientActions');
+    if (patientActions) patientActions.style.display = 'none';
+    const waitCard = document.getElementById('patientWaiting');
+    if (waitCard && viewMode === 'patient') waitCard.style.display = 'block';
+
     initDiagrams();
     goToStep(0);
-    switchTab('exam');
+    switchTab(viewMode === 'patient' ? 'diagnosis' : 'exam');
   }
 
   // ===== 履歴 =====

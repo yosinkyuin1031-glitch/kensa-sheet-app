@@ -19,28 +19,37 @@
     <div class="header-inner">
       <div class="header-top">
         <div>
-          <h1 class="app-title">検査アプリ</h1>
-          <p class="header-subtitle">段階的原因特定システム</p>
+          <h1 class="app-title">
+            <span class="practitioner-only">検査アプリ</span>
+            <span class="patient-only">からだの状態レポート</span>
+          </h1>
+          <p class="header-subtitle practitioner-only">段階的原因特定システム</p>
+          <p class="header-subtitle patient-only">あなたの身体バランスをわかりやすくお伝えします</p>
         </div>
         <div class="view-toggle" id="viewToggle">
-          <button class="toggle-btn active" data-mode="practitioner">治療家</button>
-          <button class="toggle-btn" data-mode="patient">患者説明</button>
+          <button class="toggle-btn active" data-mode="practitioner">施術者</button>
+          <button class="toggle-btn" data-mode="patient">患者さん</button>
         </div>
       </div>
     </div>
   </header>
 
   <main class="main-content">
-    <!-- ナビゲーションタブ -->
-    <nav class="tab-nav">
+    <!-- ナビゲーションタブ（施術者モード） -->
+    <nav class="tab-nav practitioner-only">
       <button class="tab-btn active" data-tab="exam">検査</button>
       <button class="tab-btn" data-tab="diagnosis">診断結果</button>
       <button class="tab-btn" data-tab="report">レポート</button>
       <button class="tab-btn" data-tab="history">履歴</button>
     </nav>
+    <!-- ナビゲーションタブ（患者モード） -->
+    <nav class="tab-nav patient-only patient-tab-nav">
+      <button class="tab-btn active" data-tab="diagnosis">検査結果</button>
+      <button class="tab-btn" data-tab="report">レポート</button>
+    </nav>
 
-    <!-- ===== 検査セクション ===== -->
-    <section id="exam-section" class="tab-content active">
+    <!-- ===== 検査セクション（施術者のみ） ===== -->
+    <section id="exam-section" class="tab-content active practitioner-only">
 
       <!-- ウィザード進行バー -->
       <div class="wizard-progress">
@@ -259,12 +268,19 @@
     <!-- ===== 診断結果セクション ===== -->
     <section id="diagnosis-section" class="tab-content">
       <div class="section-header">
-        <h2>診断結果</h2>
+        <h2 class="practitioner-only">診断結果</h2>
+        <h2 class="patient-only">検査結果</h2>
+      </div>
+      <!-- 患者モード：結果がない時のメッセージ -->
+      <div id="patientWaiting" class="patient-only patient-waiting-card" style="display:none;">
+        <div class="waiting-icon">🔄</div>
+        <h3>検査中です</h3>
+        <p>施術者が検査を行っています。<br>結果が出るまでしばらくお待ちください。</p>
       </div>
       <div id="diagnosisContent"></div>
 
-      <!-- ===== 詳細検査（上半身＋下半身 統合） ===== -->
-      <div id="detailedExamSection" style="display:none;">
+      <!-- ===== 詳細検査（上半身＋下半身 統合）（施術者のみ） ===== -->
+      <div id="detailedExamSection" class="practitioner-only" style="display:none;">
 
         <div class="step-instruction detail-instruction" style="margin-bottom:20px;">
           <div class="instruction-icon">🔍</div>
@@ -377,16 +393,21 @@
       <!-- 経過グラフ -->
       <div id="trendSection" style="display:none;"></div>
 
-      <!-- アクションボタン -->
-      <div class="form-actions action-bar" id="diagnosisActions" style="display:none;">
+      <!-- アクションボタン（施術者モード） -->
+      <div class="form-actions action-bar practitioner-only" id="diagnosisActions" style="display:none;">
         <button type="button" id="saveHistoryBtn" class="btn btn-secondary">履歴に保存</button>
         <button type="button" id="compareBtn" class="btn btn-secondary" style="display:none;">前回と比較</button>
         <button type="button" id="showTrendBtn" class="btn btn-secondary" style="display:none;">経過グラフ</button>
         <button type="button" id="savePdfPatientBtn" class="btn btn-secondary">患者用PDF</button>
         <button type="button" id="savePdfClinicalBtn" class="btn btn-secondary">施術者用PDF</button>
         <button type="button" id="showSelfcareBtn" class="btn btn-accent" style="display:none;">セルフケア提案</button>
-        <button type="button" id="showProtocolBtn" class="btn btn-accent practitioner-only" style="display:none;">施術プロトコル</button>
+        <button type="button" id="showProtocolBtn" class="btn btn-accent" style="display:none;">施術プロトコル</button>
         <button type="button" id="newExamBtn" class="btn btn-primary">新しい検査</button>
+      </div>
+      <!-- アクションボタン（患者モード） -->
+      <div class="form-actions action-bar patient-only patient-action-bar" id="patientActions" style="display:none;">
+        <button type="button" id="patientPdfBtn" class="btn btn-primary btn-large">検査結果をPDFで保存</button>
+        <button type="button" id="patientSelfcareBtn" class="btn btn-accent btn-large" style="display:none;">セルフケアを見る</button>
       </div>
     </section>
 
@@ -396,8 +417,8 @@
       <div id="reportContent" class="report-content"></div>
     </section>
 
-    <!-- ===== 履歴セクション ===== -->
-    <section id="history-section" class="tab-content">
+    <!-- ===== 履歴セクション（施術者のみ） ===== -->
+    <section id="history-section" class="tab-content practitioner-only">
       <div class="section-header">
         <h2>検査履歴</h2>
       </div>
