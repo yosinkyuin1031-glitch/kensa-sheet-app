@@ -1721,6 +1721,21 @@
     setTimeout(() => window.print(), 200);
   }
 
+  // 重心バランスSVG（背景色不要で確実に印刷）
+  function generateBalanceSVG(wb) {
+    const dotX = wb === 'left' ? 45 : wb === 'right' ? 255 : 150;
+    const dotColor = wb === 'left' ? '#3b82f6' : wb === 'right' ? '#f97316' : '#22c55e';
+    return `<svg viewBox="0 0 300 36" style="width:100%;height:36px;display:block;">
+      <text x="8" y="22" font-size="12" fill="#64748b" font-weight="700">左</text>
+      <text x="280" y="22" font-size="12" fill="#64748b" font-weight="700">右</text>
+      <rect x="30" y="12" width="240" height="12" rx="6" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+      <rect x="30" y="12" width="80" height="12" rx="6" fill="#dbeafe" opacity="0.5"/>
+      <rect x="190" y="12" width="80" height="12" rx="6" fill="#ffedd5" opacity="0.5"/>
+      <line x1="150" y1="10" x2="150" y2="26" stroke="#94a3b8" stroke-width="1" stroke-dasharray="2,2"/>
+      <circle cx="${dotX}" cy="18" r="8" fill="${dotColor}" stroke="white" stroke-width="2"/>
+    </svg>`;
+  }
+
   // ===== 表面：身体の状態シート =====
   function generatePrintPage1(patientName, inspectionDate) {
     const causeInfo = InspectionLogic.causeLabels[diagnosisResult.primaryCause] || {};
@@ -1765,11 +1780,12 @@
         for (const issue of allIssues) {
           const typeLabel = issue.type === 'contraction' ? '縮こまり' : '引っ張り';
           const sideLabel = issue.side === 'both' ? '両側' : issue.side === 'right' ? '右側' : '左側';
-          const icon = issue.type === 'contraction' ? '●' : '▲';
-          issuesList += `<div class="print-issue"><span class="print-issue-icon ${issue.type}">${icon}</span>${issue.area}（${sideLabel}）… ${typeLabel}</div>`;
+          const borderColor = issue.type === 'contraction' ? '#ef4444' : '#8b5cf6';
+          const dotSvg = `<svg width="10" height="10" viewBox="0 0 10 10" style="flex-shrink:0;margin-top:3px;"><circle cx="5" cy="5" r="5" fill="${borderColor}"/></svg>`;
+          issuesList += `<div class="print-issue" style="border-left:3px solid ${borderColor};">${dotSvg}<span>${issue.area}（${sideLabel}）… ${typeLabel}</span></div>`;
         }
       } else {
-        issuesList = '<div class="print-issue good">明確な問題箇所は検出されませんでした</div>';
+        issuesList = '<div class="print-issue" style="border-left:3px solid #22c55e;"><svg width="10" height="10" viewBox="0 0 10 10" style="flex-shrink:0;margin-top:3px;"><circle cx="5" cy="5" r="5" fill="#22c55e"/></svg><span>明確な問題箇所は検出されませんでした</span></div>';
       }
     }
 
@@ -1802,17 +1818,11 @@
             </div>
           </div>
 
-          <!-- 重心バランス -->
+          <!-- 重心バランス（SVG） -->
           <div class="print-section">
             <h2 class="print-section-title">重心バランス</h2>
             <div class="print-balance-box">
-              <div class="print-balance-bar">
-                <span class="print-balance-label-l">左</span>
-                <div class="print-balance-track">
-                  <div class="print-balance-dot ${weightBalance || 'even'}"></div>
-                </div>
-                <span class="print-balance-label-r">右</span>
-              </div>
+              ${generateBalanceSVG(weightBalance)}
               <div class="print-balance-text">${wbLabel}</div>
             </div>
           </div>
