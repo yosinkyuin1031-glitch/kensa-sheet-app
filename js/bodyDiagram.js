@@ -36,110 +36,176 @@ const BodyDiagram = {
           <stop offset="0%" stop-color="#fbbf24"/>
           <stop offset="100%" stop-color="#f59e0b"/>
         </radialGradient>
-        <radialGradient id="bodyGrad">
-          <stop offset="0%" stop-color="#f0f4f8"/>
-          <stop offset="70%" stop-color="#dce4ee"/>
-          <stop offset="100%" stop-color="#c8d5e3"/>
+        <linearGradient id="skinGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#fde8d0"/>
+          <stop offset="50%" stop-color="#f5d5b8"/>
+          <stop offset="100%" stop-color="#e8c4a0"/>
+        </linearGradient>
+        <linearGradient id="skinGradDark" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#f0c8a0"/>
+          <stop offset="100%" stop-color="#ddb08a"/>
+        </linearGradient>
+        <radialGradient id="headGrad" cx="50%" cy="40%">
+          <stop offset="0%" stop-color="#fde8d0"/>
+          <stop offset="80%" stop-color="#f0c8a0"/>
+          <stop offset="100%" stop-color="#ddb08a"/>
         </radialGradient>
+        <filter id="softShadow" x="-5%" y="-5%" width="110%" height="110%">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+          <feOffset dx="1" dy="2" result="shadow"/>
+          <feFlood flood-color="#00000020"/>
+          <feComposite in2="shadow" operator="in"/>
+          <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
         <clipPath id="bodyClip">
-          <ellipse cx="150" cy="30" rx="20" ry="24"/>
-          <rect x="140" y="52" width="20" height="14" rx="5"/>
-          <path d="M86,72 C86,68 115,66 150,66 C185,66 214,68 214,72 L216,150 L214,240 C212,254 194,260 150,260 C106,260 88,254 86,240 L84,150 Z"/>
-          <path d="M84,78 C68,86 58,110 54,140 L50,200 C48,230 46,260 44,285 L42,310 C41,318 50,320 51,312 L53,285 C55,258 57,230 59,200 L63,142 C66,115 74,94 86,84 Z"/>
-          <path d="M216,78 C232,86 242,110 246,140 L250,200 C252,230 254,260 256,285 L258,310 C259,318 250,320 249,312 L247,285 C245,258 243,230 241,200 L237,142 C234,115 226,94 214,84 Z"/>
-          <path d="M120,260 C118,300 116,340 114,380 L112,420 L110,465 L108,505 C107,515 138,515 136,505 L134,465 L133,420 L132,380 C131,340 132,300 134,262 Z"/>
-          <path d="M166,262 C168,300 169,340 168,380 L168,420 L167,465 L166,505 C165,515 196,515 194,505 L192,465 L190,420 L189,380 C188,340 186,300 184,260 Z"/>
+          <ellipse cx="150" cy="28" rx="22" ry="26"/>
+          <path d="M138,52 Q150,58 162,52 L162,66 L138,66 Z"/>
+          <path d="M82,74 C82,68 115,64 150,64 C185,64 218,68 218,74 L220,150 L218,242 C216,258 196,264 150,264 C104,264 84,258 82,242 L80,150 Z"/>
+          <path d="M82,78 C64,88 52,116 48,150 L44,210 C42,240 40,268 38,296 L36,328 C35,338 52,340 52,330 L54,296 C56,268 58,240 60,210 L64,150 C68,118 76,94 86,82 Z"/>
+          <path d="M218,78 C236,88 248,116 252,150 L256,210 C258,240 260,268 262,296 L264,328 C265,338 248,340 248,330 L246,296 C244,268 242,240 240,210 L236,150 C232,118 224,94 214,82 Z"/>
+          <path d="M118,264 C116,304 114,344 112,384 L110,424 L108,468 L106,510 C105,520 142,520 140,510 L138,468 L137,424 L136,384 C135,344 136,304 138,266 Z"/>
+          <path d="M162,266 C164,304 165,344 164,384 L164,424 L163,468 L162,510 C161,520 198,520 196,510 L194,468 L192,424 L191,384 C190,344 188,304 186,264 Z"/>
         </clipPath>
       </defs>
 
-      <g class="body-segments">
-        <!-- 頭部 -->
-        <ellipse class="body-part" data-part="head" cx="150" cy="30" rx="20" ry="24"
-          fill="url(#bodyGrad)" stroke="#9cafbe" stroke-width="1.5"/>
+      <g class="body-segments" filter="url(#softShadow)">
+        <!-- 頭部（髪の毛含む） -->
+        <ellipse cx="150" cy="26" rx="24" ry="28" fill="#5a3825" opacity="0.3"/>
+        <ellipse class="body-part" data-part="head" cx="150" cy="28" rx="22" ry="26"
+          fill="url(#headGrad)" stroke="#c4956e" stroke-width="1.2"/>
+        <!-- 髪の毛（背面） -->
+        <path d="M128,18 C128,6 172,6 172,18 L172,28 C172,22 128,22 128,28 Z" fill="#4a2c1a" opacity="0.5"/>
         <!-- 耳（画面左=患者左、画面右=患者右） -->
-        <ellipse class="body-part" data-part="ear-l" cx="130" cy="34" rx="5" ry="7"
-          fill="#e8ecf2" stroke="#9cafbe" stroke-width="1"/>
-        <ellipse class="body-part" data-part="ear-r" cx="170" cy="34" rx="5" ry="7"
-          fill="#e8ecf2" stroke="#9cafbe" stroke-width="1"/>
+        <ellipse class="body-part" data-part="ear-l" cx="128" cy="32" rx="5" ry="8"
+          fill="#f0c8a0" stroke="#c4956e" stroke-width="0.8"/>
+        <ellipse class="body-part" data-part="ear-r" cx="172" cy="32" rx="5" ry="8"
+          fill="#f0c8a0" stroke="#c4956e" stroke-width="0.8"/>
+
         <!-- 首 -->
-        <rect class="body-part" data-part="neck" x="140" y="52" width="20" height="14" rx="5"
-          fill="url(#bodyGrad)" stroke="#9cafbe" stroke-width="1.3"/>
+        <path class="body-part" data-part="neck"
+          d="M138,52 Q150,58 162,52 L162,66 Q150,68 138,66 Z"
+          fill="url(#skinGrad)" stroke="#c4956e" stroke-width="1"/>
         <circle class="joint" cx="150" cy="54" r="4.5" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
-        <!-- 胴体 -->
+
+        <!-- 胴体（背面の筋肉を表現） -->
         <path class="body-part" data-part="torso"
-          d="M86,72 C86,68 115,66 150,66 C185,66 214,68 214,72 L216,150 L214,240 C212,254 194,260 150,260 C106,260 88,254 86,240 L84,150 Z"
-          fill="url(#bodyGrad)" stroke="#9cafbe" stroke-width="1.5"/>
-        <!-- 背骨ライン -->
-        <line x1="150" y1="68" x2="150" y2="248" stroke="#a0b0c0" stroke-width="1.2" stroke-dasharray="4,3" opacity="0.5"/>
-        <!-- 肩甲骨ヒント -->
-        <path d="M110,112 L128,108 L130,162 L112,166 Z" fill="none" stroke="#a0b0c0" stroke-width="1" stroke-dasharray="3,2" opacity="0.35"/>
-        <path d="M190,112 L172,108 L170,162 L188,166 Z" fill="none" stroke="#a0b0c0" stroke-width="1" stroke-dasharray="3,2" opacity="0.35"/>
-        <circle cx="112" cy="166" r="2" fill="#a0b0c0" opacity="0.4"/>
-        <circle cx="188" cy="166" r="2" fill="#a0b0c0" opacity="0.4"/>
+          d="M82,74 C82,68 115,64 150,64 C185,64 218,68 218,74 L220,150 L218,242 C216,258 196,264 150,264 C104,264 84,258 82,242 L80,150 Z"
+          fill="url(#skinGrad)" stroke="#c4956e" stroke-width="1.2"/>
+
+        <!-- 背骨ライン（椎骨風） -->
+        <path d="M150,70 C150,70 148,85 150,100 C152,115 148,130 150,145 C152,160 148,175 150,190 C152,205 148,220 150,240"
+          stroke="#d4a882" stroke-width="1.5" fill="none" opacity="0.4"/>
+        <!-- 椎骨ドット -->
+        <circle cx="150" cy="80" r="1.5" fill="#d4a882" opacity="0.3"/>
+        <circle cx="150" cy="100" r="1.5" fill="#d4a882" opacity="0.3"/>
+        <circle cx="150" cy="120" r="1.5" fill="#d4a882" opacity="0.3"/>
+        <circle cx="150" cy="140" r="1.5" fill="#d4a882" opacity="0.3"/>
+        <circle cx="150" cy="160" r="1.5" fill="#d4a882" opacity="0.3"/>
+        <circle cx="150" cy="180" r="1.5" fill="#d4a882" opacity="0.3"/>
+        <circle cx="150" cy="200" r="1.5" fill="#d4a882" opacity="0.3"/>
+        <circle cx="150" cy="220" r="1.5" fill="#d4a882" opacity="0.3"/>
+
+        <!-- 肩甲骨（左） -->
+        <path d="M108,100 C114,96 130,94 134,100 L136,140 C136,150 132,162 128,168 L110,170 C106,164 104,148 104,138 Z"
+          fill="none" stroke="#d4a882" stroke-width="1.2" opacity="0.35"/>
+        <!-- 肩甲骨（右） -->
+        <path d="M192,100 C186,96 170,94 166,100 L164,140 C164,150 168,162 172,168 L190,170 C194,164 196,148 196,138 Z"
+          fill="none" stroke="#d4a882" stroke-width="1.2" opacity="0.35"/>
+        <!-- 肩甲骨下角マーカー -->
+        <circle cx="110" cy="170" r="2.5" fill="#d4a882" opacity="0.4"/>
+        <circle cx="190" cy="170" r="2.5" fill="#d4a882" opacity="0.4"/>
+
+        <!-- 僧帽筋ライン -->
+        <path d="M130,68 Q140,72 150,74 Q160,72 170,68" fill="none" stroke="#d4a882" stroke-width="0.8" opacity="0.25"/>
+        <path d="M120,74 Q135,82 150,86 Q165,82 180,74" fill="none" stroke="#d4a882" stroke-width="0.8" opacity="0.2"/>
+
         <!-- 腸骨稜ヒント -->
-        <path d="M100,228 C110,222 130,220 150,220 C170,220 190,222 200,228" fill="none" stroke="#a0b0c0" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.35"/>
+        <path d="M96,232 C108,224 130,220 150,220 C170,220 192,224 204,232"
+          fill="none" stroke="#d4a882" stroke-width="1" opacity="0.35"/>
+        <!-- 仙骨三角 -->
+        <path d="M140,234 L150,252 L160,234" fill="none" stroke="#d4a882" stroke-width="0.8" opacity="0.3"/>
 
-        <!-- ===== 画面左＝患者左 肩関節 ===== -->
-        <ellipse class="joint" cx="84" cy="76" rx="7" ry="5" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
+        <!-- ===== 画面左＝患者左 腕 ===== -->
+        <ellipse class="joint" cx="82" cy="76" rx="8" ry="6" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
         <path class="body-part" data-part="upperArm-l"
-          d="M80,82 C72,92 66,116 62,142 L55,142 C60,114 68,90 78,78 Z"
-          fill="url(#bodyGrad)" stroke="#9cafbe" stroke-width="1.3"/>
-        <ellipse class="joint" cx="57" cy="146" rx="6" ry="4.5" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
+          d="M78,82 C68,96 60,122 56,148 L48,148 C54,118 64,92 76,78 Z"
+          fill="url(#skinGrad)" stroke="#c4956e" stroke-width="1.1"/>
+        <!-- 上腕筋肉ライン -->
+        <path d="M72,88 C66,104 62,124 58,144" stroke="#d4a882" stroke-width="0.7" fill="none" opacity="0.3"/>
+        <ellipse class="joint" cx="52" cy="150" rx="7" ry="5" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
         <path class="body-part" data-part="forearm-l"
-          d="M55,152 L50,220 L44,220 L51,152 Z"
-          fill="url(#bodyGrad)" stroke="#9cafbe" stroke-width="1.3"/>
-        <ellipse class="joint" cx="47" cy="224" rx="5.5" ry="3.5" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
+          d="M50,156 L46,222 L38,222 L44,156 Z"
+          fill="url(#skinGrad)" stroke="#c4956e" stroke-width="1.1"/>
+        <ellipse class="joint" cx="42" cy="226" rx="6" ry="4" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
         <path class="body-part" data-part="hand-l"
-          d="M44,228 L42,268 L40,295 C39,303 50,305 51,297 L52,268 L52,228 Z"
-          fill="url(#bodyGrad)" stroke="#9cafbe" stroke-width="1.3"/>
+          d="M38,230 L36,260 C35,268 34,280 33,290 C32,296 30,304 32,308 C34,314 42,314 44,308 C46,302 46,290 46,280 L48,260 L48,230 Z"
+          fill="url(#skinGradDark)" stroke="#c4956e" stroke-width="1"/>
+        <!-- 指のヒント -->
+        <line x1="34" y1="296" x2="32" y2="308" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
+        <line x1="37" y1="296" x2="36" y2="310" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
+        <line x1="40" y1="296" x2="40" y2="312" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
+        <line x1="43" y1="296" x2="43" y2="310" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
 
-        <!-- ===== 画面右＝患者右 肩関節 ===== -->
-        <ellipse class="joint" cx="216" cy="76" rx="7" ry="5" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
+        <!-- ===== 画面右＝患者右 腕 ===== -->
+        <ellipse class="joint" cx="218" cy="76" rx="8" ry="6" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
         <path class="body-part" data-part="upperArm-r"
-          d="M220,82 C228,92 234,116 238,142 L245,142 C240,114 232,90 222,78 Z"
-          fill="url(#bodyGrad)" stroke="#9cafbe" stroke-width="1.3"/>
-        <ellipse class="joint" cx="243" cy="146" rx="6" ry="4.5" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
+          d="M222,82 C232,96 240,122 244,148 L252,148 C246,118 236,92 224,78 Z"
+          fill="url(#skinGrad)" stroke="#c4956e" stroke-width="1.1"/>
+        <path d="M228,88 C234,104 238,124 242,144" stroke="#d4a882" stroke-width="0.7" fill="none" opacity="0.3"/>
+        <ellipse class="joint" cx="248" cy="150" rx="7" ry="5" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
         <path class="body-part" data-part="forearm-r"
-          d="M245,152 L250,220 L256,220 L249,152 Z"
-          fill="url(#bodyGrad)" stroke="#9cafbe" stroke-width="1.3"/>
-        <ellipse class="joint" cx="253" cy="224" rx="5.5" ry="3.5" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
+          d="M250,156 L254,222 L262,222 L256,156 Z"
+          fill="url(#skinGrad)" stroke="#c4956e" stroke-width="1.1"/>
+        <ellipse class="joint" cx="258" cy="226" rx="6" ry="4" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
         <path class="body-part" data-part="hand-r"
-          d="M248,228 L248,268 L249,295 C250,303 261,305 260,297 L258,268 L256,228 Z"
-          fill="url(#bodyGrad)" stroke="#9cafbe" stroke-width="1.3"/>
+          d="M252,230 L252,260 C253,268 254,280 255,290 C256,296 258,304 256,308 C254,314 246,314 244,308 C242,302 242,290 242,280 L240,260 L240,230 Z"
+          fill="url(#skinGradDark)" stroke="#c4956e" stroke-width="1"/>
+        <line x1="254" y1="296" x2="256" y2="308" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
+        <line x1="251" y1="296" x2="252" y2="310" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
+        <line x1="248" y1="296" x2="248" y2="312" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
+        <line x1="245" y1="296" x2="245" y2="310" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
 
-        <!-- ===== 画面左＝患者左 股関節 ===== -->
-        <ellipse class="joint" cx="128" cy="256" rx="7" ry="5" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
+        <!-- ===== 画面左＝患者左 脚 ===== -->
+        <ellipse class="joint" cx="128" cy="260" rx="8" ry="6" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
         <path class="body-part" data-part="thigh-l"
-          d="M120,262 L118,320 L116,362 L136,362 L134,320 L136,262 Z"
-          fill="url(#bodyGrad)" stroke="#9cafbe" stroke-width="1.3"/>
-        <ellipse class="joint" cx="126" cy="366" rx="8" ry="5.5" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
+          d="M118,266 C116,290 114,320 113,350 L112,370 L140,370 L139,350 C138,320 138,290 140,266 Z"
+          fill="url(#skinGrad)" stroke="#c4956e" stroke-width="1.1"/>
+        <!-- 太もも筋肉ライン -->
+        <path d="M124,280 C122,310 120,340 118,365" stroke="#d4a882" stroke-width="0.7" fill="none" opacity="0.25"/>
+        <ellipse class="joint" cx="126" cy="374" rx="9" ry="6" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
         <path class="body-part" data-part="shin-l"
-          d="M118,372 L114,440 L112,488 L136,488 L134,440 L136,372 Z"
-          fill="url(#bodyGrad)" stroke="#9cafbe" stroke-width="1.3"/>
-        <ellipse class="joint" cx="124" cy="492" rx="7" ry="4.5" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
+          d="M116,380 C114,410 112,444 110,478 L110,494 L138,494 L138,478 C137,444 137,410 138,380 Z"
+          fill="url(#skinGrad)" stroke="#c4956e" stroke-width="1.1"/>
+        <!-- ふくらはぎの膨らみ -->
+        <path d="M114,395 C110,415 110,440 112,460" stroke="#d4a882" stroke-width="0.8" fill="none" opacity="0.25"/>
+        <ellipse class="joint" cx="124" cy="498" rx="8" ry="5" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
         <path class="body-part" data-part="foot-l"
-          d="M114,497 L112,518 C111,526 138,526 136,518 L134,497 Z"
-          fill="url(#bodyGrad)" stroke="#9cafbe" stroke-width="1.3"/>
+          d="M112,503 L110,520 C109,530 140,530 138,520 L136,503 Z"
+          fill="url(#skinGradDark)" stroke="#c4956e" stroke-width="1"/>
 
-        <!-- ===== 画面右＝患者右 股関節 ===== -->
-        <ellipse class="joint" cx="172" cy="256" rx="7" ry="5" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
+        <!-- ===== 画面右＝患者右 脚 ===== -->
+        <ellipse class="joint" cx="172" cy="260" rx="8" ry="6" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
         <path class="body-part" data-part="thigh-r"
-          d="M164,262 L162,320 L160,362 L180,362 L178,320 L180,262 Z"
-          fill="url(#bodyGrad)" stroke="#9cafbe" stroke-width="1.3"/>
-        <ellipse class="joint" cx="170" cy="366" rx="8" ry="5.5" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
+          d="M160,266 C162,290 162,320 161,350 L160,370 L188,370 L187,350 C186,320 184,290 182,266 Z"
+          fill="url(#skinGrad)" stroke="#c4956e" stroke-width="1.1"/>
+        <path d="M176,280 C178,310 180,340 182,365" stroke="#d4a882" stroke-width="0.7" fill="none" opacity="0.25"/>
+        <ellipse class="joint" cx="174" cy="374" rx="9" ry="6" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
         <path class="body-part" data-part="shin-r"
-          d="M162,372 L160,440 L158,488 L182,488 L180,440 L182,372 Z"
-          fill="url(#bodyGrad)" stroke="#9cafbe" stroke-width="1.3"/>
-        <ellipse class="joint" cx="170" cy="492" rx="7" ry="4.5" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
+          d="M162,380 C163,410 163,444 162,478 L162,494 L190,494 L190,478 C188,444 186,410 184,380 Z"
+          fill="url(#skinGrad)" stroke="#c4956e" stroke-width="1.1"/>
+        <path d="M186,395 C190,415 190,440 188,460" stroke="#d4a882" stroke-width="0.8" fill="none" opacity="0.25"/>
+        <ellipse class="joint" cx="176" cy="498" rx="8" ry="5" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
         <path class="body-part" data-part="foot-r"
-          d="M160,497 L158,518 C157,526 184,526 183,518 L182,497 Z"
-          fill="url(#bodyGrad)" stroke="#9cafbe" stroke-width="1.3"/>
+          d="M162,503 L160,520 C159,530 190,530 188,520 L186,503 Z"
+          fill="url(#skinGradDark)" stroke="#c4956e" stroke-width="1"/>
       </g>
 
       <!-- 左右ラベル（画面左＝患者の左、画面右＝患者の右） -->
-      <text x="22" y="18" font-size="11" fill="#94a3b8" font-weight="600">左</text>
-      <text x="272" y="18" font-size="11" fill="#94a3b8" font-weight="600">右</text>
-      <text x="150" y="574" text-anchor="middle" font-size="9" fill="#94a3b8">背面図（患者目線）</text>
+      <text x="16" y="18" font-size="13" fill="#64748b" font-weight="700"
+        stroke="white" stroke-width="3" paint-order="stroke">左</text>
+      <text x="272" y="18" font-size="13" fill="#64748b" font-weight="700"
+        stroke="white" stroke-width="3" paint-order="stroke">右</text>
+      <text x="150" y="570" text-anchor="middle" font-size="10" fill="#94a3b8" font-weight="500">背面図（患者目線）</text>
 
       <!-- 動的レイヤー -->
       <g class="zone-layer" clip-path="url(#bodyClip)"></g>

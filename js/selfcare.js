@@ -211,230 +211,409 @@ const SelfcareDatabase = {
     }
   },
 
-  // ===== SVGイラスト生成 =====
+  // ===== SVGイラスト生成（詳細版） =====
   getIllustration(key) {
+    // 共通の人物パーツ
+    const skinFill = '#fde8d0';
+    const skinStroke = '#c4956e';
+    const hairFill = '#4a2c1a';
+
     const illustrations = {
-      neckStretch: `<svg viewBox="0 0 200 180" class="selfcare-illust">
-        <!-- 椅子 -->
-        <rect x="60" y="110" width="80" height="8" rx="3" fill="#cbd5e1"/>
-        <rect x="65" y="118" width="4" height="40" fill="#cbd5e1"/>
-        <rect x="131" y="118" width="4" height="40" fill="#cbd5e1"/>
-        <!-- 人物 -->
-        <circle cx="100" cy="42" r="16" fill="#f0f4f8" stroke="#64748b" stroke-width="1.5"/>
-        <line x1="100" y1="58" x2="100" y2="108" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
-        <!-- 傾いた頭 -->
-        <circle cx="88" cy="38" r="16" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5" opacity="0.7"/>
-        <!-- 手で押す矢印 -->
-        <path d="M120,30 C115,28 108,30 105,34" stroke="#3b82f6" stroke-width="2" fill="none" marker-end="url(#arrowBlue)"/>
-        <line x1="120" y1="30" x2="130" y2="28" stroke="#64748b" stroke-width="2"/>
-        <!-- 矢印 -->
-        <defs><marker id="arrowBlue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6" fill="#3b82f6"/></marker></defs>
-        <!-- 伸び表示 -->
-        <path d="M80,48 Q72,60 76,75" stroke="#ef4444" stroke-width="2" fill="none" stroke-dasharray="3,2"/>
-        <text x="64" y="68" font-size="9" fill="#ef4444" font-weight="600">伸び</text>
-        <!-- 脚 -->
-        <line x1="92" y1="108" x2="80" y2="150" stroke="#64748b" stroke-width="2.5"/>
-        <line x1="108" y1="108" x2="120" y2="150" stroke="#64748b" stroke-width="2.5"/>
-      </svg>`,
-
-      shoulderShrug: `<svg viewBox="0 0 200 180" class="selfcare-illust">
-        <circle cx="100" cy="35" r="16" fill="#f0f4f8" stroke="#64748b" stroke-width="1.5"/>
-        <line x1="100" y1="51" x2="100" y2="110" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
-        <!-- 肩を上げた状態 -->
-        <line x1="100" y1="62" x2="68" y2="52" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>
-        <line x1="100" y1="62" x2="132" y2="58" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>
-        <!-- 上矢印 -->
-        <path d="M68,60 L68,42" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrowUp)"/>
-        <text x="52" y="48" font-size="9" fill="#3b82f6" font-weight="600">上げる</text>
-        <!-- 下矢印 -->
-        <path d="M60,75 L60,90" stroke="#ef4444" stroke-width="2" marker-end="url(#arrowDown)"/>
-        <text x="44" y="98" font-size="9" fill="#ef4444" font-weight="600">脱力</text>
+      neckStretch: `<svg viewBox="0 0 220 200" class="selfcare-illust">
         <defs>
-          <marker id="arrowUp" markerWidth="6" markerHeight="6" refX="3" refY="6" orient="auto"><path d="M0,6 L3,0 L6,6" fill="#3b82f6"/></marker>
-          <marker id="arrowDown" markerWidth="6" markerHeight="6" refX="3" refY="0" orient="auto"><path d="M0,0 L3,6 L6,0" fill="#ef4444"/></marker>
+          <marker id="sc-arrowBlue" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8" fill="#3b82f6"/></marker>
         </defs>
-        <line x1="92" y1="110" x2="80" y2="155" stroke="#64748b" stroke-width="2.5"/>
-        <line x1="108" y1="110" x2="120" y2="155" stroke="#64748b" stroke-width="2.5"/>
-      </svg>`,
-
-      armStretch: `<svg viewBox="0 0 200 180" class="selfcare-illust">
-        <!-- 壁 -->
-        <rect x="155" y="0" width="8" height="180" fill="#e2e8f0"/>
-        <circle cx="100" cy="38" r="16" fill="#f0f4f8" stroke="#64748b" stroke-width="1.5"/>
-        <line x1="100" y1="54" x2="100" y2="115" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
-        <!-- 壁に手をつく -->
-        <line x1="100" y1="66" x2="155" y2="40" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>
-        <circle cx="155" cy="40" r="3" fill="#fbbf24"/>
-        <!-- 体のひねり矢印 -->
-        <path d="M85,85 C75,80 70,90 75,100" stroke="#3b82f6" stroke-width="2" fill="none" marker-end="url(#arrowBlue2)"/>
-        <text x="50" y="92" font-size="9" fill="#3b82f6" font-weight="600">ひねる</text>
-        <!-- 伸び表示 -->
-        <path d="M110,58 L145,42" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="3,2"/>
-        <text x="118" y="38" font-size="9" fill="#ef4444" font-weight="600">伸び</text>
-        <defs><marker id="arrowBlue2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6" fill="#3b82f6"/></marker></defs>
-        <line x1="92" y1="115" x2="82" y2="160" stroke="#64748b" stroke-width="2.5"/>
-        <line x1="108" y1="115" x2="118" y2="160" stroke="#64748b" stroke-width="2.5"/>
-      </svg>`,
-
-      scapulaExercise: `<svg viewBox="0 0 200 180" class="selfcare-illust">
-        <!-- 四つん這い -->
-        <circle cx="140" cy="50" r="14" fill="#f0f4f8" stroke="#64748b" stroke-width="1.5"/>
-        <!-- 背中 -->
-        <line x1="130" y1="60" x2="70" y2="65" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
-        <!-- 腕 -->
-        <line x1="130" y1="60" x2="140" y2="110" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>
-        <!-- 脚 -->
-        <line x1="70" y1="65" x2="60" y2="110" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>
-        <!-- 肩甲骨の矢印 -->
-        <path d="M95,55 L105,55" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrR)"/>
-        <path d="M115,55 L105,55" stroke="#3b82f6" stroke-width="2"/>
-        <text x="92" y="48" font-size="8" fill="#3b82f6" font-weight="600">寄せる</text>
-        <!-- 丸める矢印 -->
-        <path d="M95,78 Q100,90 105,78" stroke="#ef4444" stroke-width="1.5" fill="none"/>
-        <text x="88" y="98" font-size="8" fill="#ef4444" font-weight="600">丸める</text>
-        <defs><marker id="arrR" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5" fill="#3b82f6"/></marker></defs>
-        <!-- 床 -->
-        <line x1="30" y1="115" x2="170" y2="115" stroke="#cbd5e1" stroke-width="1.5"/>
-      </svg>`,
-
-      wristStretch: `<svg viewBox="0 0 200 180" class="selfcare-illust">
-        <!-- 腕を前に伸ばす -->
-        <line x1="40" y1="90" x2="160" y2="90" stroke="#64748b" stroke-width="4" stroke-linecap="round"/>
-        <!-- 手 -->
-        <path d="M155,90 L165,75 L170,70" stroke="#64748b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-        <!-- 反対の手で引く -->
-        <path d="M140,70 L158,72" stroke="#3b82f6" stroke-width="2" fill="none" marker-end="url(#arrPull)"/>
-        <text x="130" y="62" font-size="9" fill="#3b82f6" font-weight="600">引く</text>
-        <!-- 伸び表示 -->
-        <path d="M80,90 Q100,100 120,90" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="3,2" fill="none"/>
-        <text x="88" y="110" font-size="9" fill="#ef4444" font-weight="600">前腕の伸び</text>
-        <defs><marker id="arrPull" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5" fill="#3b82f6"/></marker></defs>
-      </svg>`,
-
-      gripExercise: `<svg viewBox="0 0 200 180" class="selfcare-illust">
-        <!-- 手とタオル -->
-        <ellipse cx="100" cy="80" rx="30" ry="20" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/>
-        <text x="100" y="84" text-anchor="middle" font-size="10" fill="#64748b">タオル</text>
-        <!-- 握る矢印 -->
-        <path d="M65,70 Q60,80 65,90" stroke="#3b82f6" stroke-width="2" fill="none" marker-end="url(#arrGrip)"/>
-        <path d="M135,70 Q140,80 135,90" stroke="#3b82f6" stroke-width="2" fill="none"/>
-        <text x="100" y="120" text-anchor="middle" font-size="10" fill="#3b82f6" font-weight="600">ギュッと握る</text>
-        <text x="100" y="140" text-anchor="middle" font-size="9" fill="#64748b">5秒キープ → 離す</text>
-        <defs><marker id="arrGrip" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5" fill="#3b82f6"/></marker></defs>
-      </svg>`,
-
-      hipFlexorStretch: `<svg viewBox="0 0 200 180" class="selfcare-illust">
-        <!-- 片膝立ち -->
-        <circle cx="100" cy="30" r="14" fill="#f0f4f8" stroke="#64748b" stroke-width="1.5"/>
-        <line x1="100" y1="44" x2="100" y2="90" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
-        <!-- 前の脚 -->
-        <line x1="100" y1="90" x2="130" y2="130" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>
-        <line x1="130" y1="130" x2="130" y2="165" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>
-        <!-- 後ろの脚（膝をつく） -->
-        <line x1="100" y1="90" x2="65" y2="130" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>
-        <line x1="65" y1="130" x2="55" y2="165" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>
-        <circle cx="65" cy="130" r="3" fill="#fbbf24"/>
-        <!-- 前方への矢印 -->
-        <path d="M90,85 L110,80" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrFwd)"/>
-        <text x="105" y="72" font-size="9" fill="#3b82f6" font-weight="600">前へ</text>
-        <!-- 伸び表示 -->
-        <path d="M75,95 Q70,110 72,125" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="3,2" fill="none"/>
-        <text x="44" y="112" font-size="8" fill="#ef4444" font-weight="600">伸び</text>
-        <defs><marker id="arrFwd" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5" fill="#3b82f6"/></marker></defs>
-        <line x1="30" y1="168" x2="170" y2="168" stroke="#cbd5e1" stroke-width="1.5"/>
-      </svg>`,
-
-      pelvicStabilize: `<svg viewBox="0 0 200 180" class="selfcare-illust">
-        <!-- 仰向け -->
-        <line x1="40" y1="100" x2="160" y2="100" stroke="#cbd5e1" stroke-width="1.5"/>
-        <circle cx="50" cy="88" r="12" fill="#f0f4f8" stroke="#64748b" stroke-width="1.5"/>
-        <line x1="62" y1="88" x2="120" y2="90" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
-        <!-- 膝を立てる -->
-        <line x1="120" y1="90" x2="140" y2="65" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>
-        <line x1="140" y1="65" x2="140" y2="98" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>
-        <!-- クッション -->
-        <ellipse cx="140" cy="72" rx="8" ry="5" fill="#fbbf24" stroke="#d97706" stroke-width="1" opacity="0.8"/>
-        <!-- 挟む矢印 -->
-        <path d="M130,68 L136,70" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arrSq)"/>
-        <path d="M150,68 L144,70" stroke="#3b82f6" stroke-width="1.5"/>
-        <text x="140" y="52" text-anchor="middle" font-size="8" fill="#3b82f6" font-weight="600">挟む</text>
-        <defs><marker id="arrSq" markerWidth="4" markerHeight="4" refX="3" refY="2" orient="auto"><path d="M0,0 L4,2 L0,4" fill="#3b82f6"/></marker></defs>
-      </svg>`,
-
-      hamstringStretch: `<svg viewBox="0 0 200 180" class="selfcare-illust">
         <!-- 椅子 -->
-        <rect x="30" y="100" width="60" height="6" rx="2" fill="#cbd5e1"/>
-        <rect x="34" y="106" width="3" height="35" fill="#cbd5e1"/>
-        <rect x="83" y="106" width="3" height="35" fill="#cbd5e1"/>
-        <!-- 人物（椅子に座る） -->
-        <circle cx="60" cy="55" r="14" fill="#f0f4f8" stroke="#64748b" stroke-width="1.5"/>
-        <line x1="60" y1="69" x2="60" y2="98" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
-        <!-- 伸ばした脚 -->
-        <line x1="60" y1="98" x2="155" y2="105" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>
-        <circle cx="155" cy="105" r="3" fill="#64748b"/>
-        <!-- 前屈の矢印 -->
-        <path d="M65,72 Q80,70 85,80" stroke="#3b82f6" stroke-width="2" fill="none" marker-end="url(#arrBend)"/>
-        <text x="80" y="66" font-size="9" fill="#3b82f6" font-weight="600">前屈</text>
-        <!-- もも裏の伸び -->
-        <path d="M90,108 Q115,118 140,108" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="3,2" fill="none"/>
-        <text x="105" y="130" font-size="8" fill="#ef4444" font-weight="600">もも裏の伸び</text>
-        <defs><marker id="arrBend" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5" fill="#3b82f6"/></marker></defs>
+        <rect x="55" y="120" width="90" height="10" rx="4" fill="#94a3b8" opacity="0.3"/>
+        <rect x="125" y="56" width="8" height="74" rx="3" fill="#94a3b8" opacity="0.25"/>
+        <rect x="60" y="130" width="5" height="45" rx="2" fill="#94a3b8" opacity="0.3"/>
+        <rect x="130" y="130" width="5" height="45" rx="2" fill="#94a3b8" opacity="0.3"/>
+        <!-- 体 -->
+        <path d="M92,72 Q100,68 108,72 L106,118 L94,118 Z" fill="${skinFill}" stroke="${skinStroke}" stroke-width="1"/>
+        <!-- 首 -->
+        <rect x="94" y="56" width="12" height="16" rx="4" fill="${skinFill}" stroke="${skinStroke}" stroke-width="0.8"/>
+        <!-- 頭（正面位置・薄く） -->
+        <circle cx="100" cy="42" r="18" fill="${skinFill}" stroke="${skinStroke}" stroke-width="1" opacity="0.3"/>
+        <!-- 傾いた頭（実際のポーズ） -->
+        <ellipse cx="85" cy="40" rx="18" ry="17" fill="${skinFill}" stroke="#3b82f6" stroke-width="1.5"/>
+        <path d="M70,30 C72,22 95,20 100,28" fill="${hairFill}" opacity="0.4"/>
+        <!-- 左腕（椅子に） -->
+        <path d="M92,76 Q80,82 76,96 Q74,108 78,118" stroke="${skinStroke}" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <!-- 右手で頭を押す -->
+        <path d="M108,76 Q118,72 120,60 Q118,50 108,42 Q102,38 96,40" stroke="${skinStroke}" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <!-- 右手の丸 -->
+        <circle cx="96" cy="38" r="4" fill="${skinFill}" stroke="${skinStroke}" stroke-width="0.8"/>
+        <!-- 押す方向矢印 -->
+        <path d="M118,34 L100,40" stroke="#3b82f6" stroke-width="2.5" fill="none" marker-end="url(#sc-arrowBlue)"/>
+        <text x="124" y="30" font-size="11" fill="#3b82f6" font-weight="700">押す</text>
+        <!-- 伸びの表示エリア -->
+        <path d="M75,50 Q66,62 70,80" stroke="#ef4444" stroke-width="2.5" fill="none" stroke-dasharray="4,3"/>
+        <text x="48" y="68" font-size="11" fill="#ef4444" font-weight="700">伸び</text>
+        <!-- 脚 -->
+        <path d="M96,118 Q90,140 86,168" stroke="${skinStroke}" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M104,118 Q110,140 114,168" stroke="${skinStroke}" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <!-- 足 -->
+        <ellipse cx="84" cy="170" rx="8" ry="4" fill="${skinFill}" stroke="${skinStroke}" stroke-width="0.8"/>
+        <ellipse cx="116" cy="170" rx="8" ry="4" fill="${skinFill}" stroke="${skinStroke}" stroke-width="0.8"/>
+        <!-- 床 -->
+        <line x1="30" y1="176" x2="190" y2="176" stroke="#cbd5e1" stroke-width="1"/>
       </svg>`,
 
-      quadStretch: `<svg viewBox="0 0 200 180" class="selfcare-illust">
+      shoulderShrug: `<svg viewBox="0 0 220 200" class="selfcare-illust">
+        <defs>
+          <marker id="sc-arrowUp" markerWidth="8" markerHeight="8" refX="4" refY="8" orient="auto"><path d="M0,8 L4,0 L8,8" fill="#3b82f6"/></marker>
+          <marker id="sc-arrowDn" markerWidth="8" markerHeight="8" refX="4" refY="0" orient="auto"><path d="M0,0 L4,8 L8,0" fill="#ef4444"/></marker>
+        </defs>
+        <!-- 体 -->
+        <path d="M98,68 Q110,64 122,68 L120,130 L100,130 Z" fill="${skinFill}" stroke="${skinStroke}" stroke-width="1"/>
+        <!-- 首 -->
+        <rect x="104" y="52" width="12" height="16" rx="4" fill="${skinFill}" stroke="${skinStroke}" stroke-width="0.8"/>
+        <!-- 頭 -->
+        <circle cx="110" cy="36" r="18" fill="${skinFill}" stroke="${skinStroke}" stroke-width="1.2"/>
+        <path d="M94,26 C96,16 124,16 126,26" fill="${hairFill}" opacity="0.4"/>
+        <!-- 左肩（上がった状態） -->
+        <path d="M98,68 Q78,54 70,46" stroke="${skinStroke}" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M70,46 Q66,60 64,80 Q62,95 66,108" stroke="${skinStroke}" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <!-- 右肩（通常位置） -->
+        <path d="M122,68 Q140,66 148,70" stroke="${skinStroke}" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M148,70 Q150,85 148,100 Q146,112 142,120" stroke="${skinStroke}" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <!-- 上げる矢印 -->
+        <path d="M58,60 L58,36" stroke="#3b82f6" stroke-width="2.5" marker-end="url(#sc-arrowUp)"/>
+        <text x="36" y="42" font-size="11" fill="#3b82f6" font-weight="700">上げる</text>
+        <!-- 脱力矢印 -->
+        <path d="M52,78 L52,98" stroke="#ef4444" stroke-width="2.5" marker-end="url(#sc-arrowDn)"/>
+        <text x="30" y="110" font-size="11" fill="#ef4444" font-weight="700">脱力！</text>
+        <!-- 肩まわりハイライト -->
+        <ellipse cx="82" cy="56" rx="18" ry="12" fill="#dbeafe" opacity="0.3" stroke="#3b82f6" stroke-width="1" stroke-dasharray="3,2"/>
+        <!-- 脚 -->
+        <path d="M102,130 Q96,150 92,175" stroke="${skinStroke}" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M118,130 Q124,150 128,175" stroke="${skinStroke}" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <line x1="40" y1="182" x2="180" y2="182" stroke="#cbd5e1" stroke-width="1"/>
+      </svg>`,
+
+      armStretch: `<svg viewBox="0 0 220 200" class="selfcare-illust">
+        <defs>
+          <marker id="sc-arrowTwist" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8" fill="#3b82f6"/></marker>
+        </defs>
         <!-- 壁 -->
-        <rect x="20" y="0" width="6" height="180" fill="#e2e8f0"/>
-        <!-- 人物（片足立ち） -->
-        <circle cx="80" cy="30" r="14" fill="#f0f4f8" stroke="#64748b" stroke-width="1.5"/>
-        <line x1="80" y1="44" x2="80" y2="95" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
-        <!-- 壁に手 -->
-        <line x1="80" y1="60" x2="26" y2="60" stroke="#64748b" stroke-width="2" stroke-linecap="round"/>
-        <!-- 立脚 -->
-        <line x1="80" y1="95" x2="80" y2="160" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>
+        <rect x="170" y="0" width="12" height="200" fill="#e2e8f0" opacity="0.6"/>
+        <line x1="170" y1="0" x2="170" y2="200" stroke="#94a3b8" stroke-width="1"/>
+        <!-- 体 -->
+        <path d="M92,72 Q105,66 114,72 L112,130 L94,130 Z" fill="${skinFill}" stroke="${skinStroke}" stroke-width="1"/>
+        <!-- 首 -->
+        <rect x="97" y="56" width="12" height="14" rx="4" fill="${skinFill}" stroke="${skinStroke}" stroke-width="0.8"/>
+        <!-- 頭 -->
+        <circle cx="103" cy="40" r="18" fill="${skinFill}" stroke="${skinStroke}" stroke-width="1.2"/>
+        <path d="M87,30 C89,20 117,20 119,30" fill="${hairFill}" opacity="0.4"/>
+        <!-- 壁に伸ばした腕 -->
+        <path d="M112,72 Q130,60 150,46 Q160,40 170,36" stroke="${skinStroke}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <!-- 手のひらマーク -->
+        <circle cx="170" cy="36" r="5" fill="${skinFill}" stroke="#fbbf24" stroke-width="1.5"/>
+        <!-- 反対の腕 -->
+        <path d="M92,76 Q78,86 72,100 Q68,112 72,120" stroke="${skinStroke}" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <!-- 体のひねり -->
+        <path d="M84,95 C72,90 68,102 74,112" stroke="#3b82f6" stroke-width="2.5" fill="none" marker-end="url(#sc-arrowTwist)"/>
+        <text x="42" y="104" font-size="11" fill="#3b82f6" font-weight="700">ひねる</text>
+        <!-- 伸びエリア -->
+        <path d="M120,60 Q140,48 160,38" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="4,3" fill="none"/>
+        <rect x="115" y="46" width="50" height="16" rx="3" fill="white" opacity="0.7"/>
+        <text x="120" y="56" font-size="10" fill="#ef4444" font-weight="700">脇〜腕の伸び</text>
+        <!-- 脚 -->
+        <path d="M96,130 Q92,155 88,180" stroke="${skinStroke}" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M110,130 Q114,155 118,180" stroke="${skinStroke}" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <line x1="40" y1="186" x2="175" y2="186" stroke="#cbd5e1" stroke-width="1"/>
+      </svg>`,
+
+      scapulaExercise: `<svg viewBox="0 0 220 200" class="selfcare-illust">
+        <defs>
+          <marker id="sc-arrIn" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6" fill="#3b82f6"/></marker>
+        </defs>
+        <!-- 床 -->
+        <line x1="20" y1="148" x2="200" y2="148" stroke="#cbd5e1" stroke-width="1.5"/>
+        <!-- 四つん這いの人物 -->
+        <!-- 頭 -->
+        <ellipse cx="160" cy="60" rx="14" ry="16" fill="${skinFill}" stroke="${skinStroke}" stroke-width="1.2"/>
+        <path d="M148,52 C150,42 170,42 172,52" fill="${hairFill}" opacity="0.4"/>
+        <!-- 背中〜お尻 -->
+        <path d="M148,72 Q120,66 90,74 Q72,78 60,82" stroke="${skinStroke}" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <!-- 肉付き -->
+        <path d="M150,68 Q120,62 90,70 Q72,74 60,78" stroke="${skinFill}" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.5"/>
+        <!-- 前腕（右） -->
+        <path d="M148,75 Q156,100 160,145" stroke="${skinStroke}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <!-- 前腕（左） -->
+        <path d="M150,75 Q164,100 168,145" stroke="${skinStroke}" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <!-- 後ろ脚 -->
+        <path d="M62,82 Q56,110 52,145" stroke="${skinStroke}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <path d="M65,82 Q62,110 60,145" stroke="${skinStroke}" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <!-- 肩甲骨エリアハイライト -->
+        <ellipse cx="120" cy="68" rx="28" ry="12" fill="#dbeafe" opacity="0.3" stroke="#3b82f6" stroke-width="1" stroke-dasharray="3,2"/>
+        <!-- 寄せる矢印 -->
+        <path d="M100,58 L115,62" stroke="#3b82f6" stroke-width="2.5" marker-end="url(#sc-arrIn)"/>
+        <path d="M140,58 L125,62" stroke="#3b82f6" stroke-width="2.5" marker-end="url(#sc-arrIn)"/>
+        <text x="106" y="50" font-size="11" fill="#3b82f6" font-weight="700">寄せる</text>
+        <!-- 丸める表示 -->
+        <path d="M105,86 Q120,100 135,86" stroke="#ef4444" stroke-width="2" fill="none"/>
+        <text x="105" y="110" font-size="11" fill="#ef4444" font-weight="700">丸める</text>
+      </svg>`,
+
+      wristStretch: `<svg viewBox="0 0 220 200" class="selfcare-illust">
+        <defs>
+          <marker id="sc-arrPull" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7" fill="#3b82f6"/></marker>
+        </defs>
+        <!-- 腕全体 -->
+        <path d="M20,100 Q60,98 100,96 Q130,95 155,94" stroke="${skinStroke}" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <!-- 腕の肉付き -->
+        <path d="M20,100 Q60,98 100,96 Q130,95 155,94" stroke="${skinFill}" stroke-width="14" fill="none" stroke-linecap="round" opacity="0.5"/>
+        <!-- 手首の関節マーク -->
+        <circle cx="155" cy="94" r="4" fill="#fbbf24" stroke="#d97706" stroke-width="1"/>
+        <!-- 手（反り返り） -->
+        <path d="M155,94 Q164,82 172,70 Q176,64 178,58" stroke="${skinStroke}" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <!-- 指 -->
+        <line x1="178" y1="58" x2="180" y2="50" stroke="${skinStroke}" stroke-width="2" stroke-linecap="round"/>
+        <line x1="178" y1="58" x2="182" y2="52" stroke="${skinStroke}" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="178" y1="58" x2="184" y2="55" stroke="${skinStroke}" stroke-width="1.5" stroke-linecap="round"/>
+        <!-- 反対の手で引く -->
+        <path d="M140,68 Q150,66 162,66" stroke="#3b82f6" stroke-width="2.5" fill="none" marker-end="url(#sc-arrPull)"/>
+        <text x="125" y="56" font-size="12" fill="#3b82f6" font-weight="700">引く</text>
+        <!-- 反対の手 -->
+        <path d="M130,75 Q136,70 142,68" stroke="${skinStroke}" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <circle cx="144" cy="67" r="4" fill="${skinFill}" stroke="${skinStroke}" stroke-width="0.8"/>
+        <!-- 伸びの表示 -->
+        <path d="M60,96 Q100,110 140,96" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="4,3" fill="none"/>
+        <rect x="66" y="114" width="88" height="18" rx="4" fill="white" opacity="0.8"/>
+        <text x="110" y="128" text-anchor="middle" font-size="12" fill="#ef4444" font-weight="700">前腕の内側が伸びる</text>
+        <!-- 補助テキスト -->
+        <text x="110" y="165" text-anchor="middle" font-size="10" fill="#64748b">内側と外側 各15秒</text>
+      </svg>`,
+
+      gripExercise: `<svg viewBox="0 0 220 200" class="selfcare-illust">
+        <!-- 手首から前腕 -->
+        <path d="M40,110 Q80,108 110,106" stroke="${skinStroke}" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M40,110 Q80,108 110,106" stroke="${skinFill}" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.5"/>
+        <!-- タオル -->
+        <ellipse cx="140" cy="100" rx="32" ry="22" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5"/>
+        <path d="M118,92 Q140,82 162,92" fill="none" stroke="#94a3b8" stroke-width="0.8" opacity="0.5"/>
+        <path d="M118,108 Q140,118 162,108" fill="none" stroke="#94a3b8" stroke-width="0.8" opacity="0.5"/>
+        <text x="140" y="104" text-anchor="middle" font-size="11" fill="#64748b" font-weight="500">タオル</text>
+        <!-- 握る手 -->
+        <path d="M110,106 Q118,92 126,86 Q132,84 136,90 Q140,96 136,104" stroke="${skinStroke}" stroke-width="2.5" fill="${skinFill}" stroke-linecap="round"/>
+        <!-- 指 -->
+        <path d="M126,86 Q130,80 134,82" stroke="${skinStroke}" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <path d="M132,84 Q136,78 140,80" stroke="${skinStroke}" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <!-- 握る矢印 -->
+        <path d="M116,78 Q108,90 116,104" stroke="#3b82f6" stroke-width="2" fill="none"/>
+        <path d="M168,78 Q176,90 168,104" stroke="#3b82f6" stroke-width="2" fill="none"/>
+        <text x="140" y="140" text-anchor="middle" font-size="14" fill="#3b82f6" font-weight="700">ギュッと握る</text>
+        <text x="140" y="162" text-anchor="middle" font-size="11" fill="#64748b">5秒キープ → ゆっくり離す</text>
+        <!-- 力の波紋 -->
+        <ellipse cx="140" cy="100" rx="40" ry="28" fill="none" stroke="#3b82f6" stroke-width="1" stroke-dasharray="3,3" opacity="0.4"/>
+      </svg>`,
+
+      hipFlexorStretch: `<svg viewBox="0 0 220 200" class="selfcare-illust">
+        <defs>
+          <marker id="sc-arrFwd" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8" fill="#3b82f6"/></marker>
+        </defs>
+        <!-- 床 -->
+        <line x1="20" y1="182" x2="200" y2="182" stroke="#cbd5e1" stroke-width="1.5"/>
+        <!-- 体幹 -->
+        <path d="M100,52 Q110,48 116,52 L114,106 L102,106 Z" fill="${skinFill}" stroke="${skinStroke}" stroke-width="1"/>
+        <!-- 首 -->
+        <rect x="103" y="40" width="10" height="12" rx="3" fill="${skinFill}" stroke="${skinStroke}" stroke-width="0.8"/>
+        <!-- 頭 -->
+        <circle cx="108" cy="26" r="16" fill="${skinFill}" stroke="${skinStroke}" stroke-width="1.2"/>
+        <path d="M94,18 C96,10 120,10 122,18" fill="${hairFill}" opacity="0.4"/>
+        <!-- 腕 -->
+        <path d="M100,58 Q88,68 82,80 Q78,90 82,98" stroke="${skinStroke}" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M116,58 Q126,68 130,80 Q132,90 128,98" stroke="${skinStroke}" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <!-- 前の脚（膝90度） -->
+        <path d="M114,106 Q130,120 142,140" stroke="${skinStroke}" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <circle cx="142" cy="140" r="5" fill="#fbbf24" stroke="#d97706" stroke-width="1" opacity="0.6"/>
+        <path d="M142,140 L142,180" stroke="${skinStroke}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <!-- 後ろの脚（膝つき） -->
+        <path d="M102,106 Q82,126 68,148" stroke="${skinStroke}" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <circle cx="68" cy="148" r="5" fill="#fbbf24" stroke="#d97706" stroke-width="1"/>
+        <path d="M68,148 Q60,164 56,180" stroke="${skinStroke}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <!-- 前方矢印 -->
+        <path d="M92,100 L112,92" stroke="#3b82f6" stroke-width="2.5" marker-end="url(#sc-arrFwd)"/>
+        <text x="80" y="90" font-size="12" fill="#3b82f6" font-weight="700">前へ</text>
+        <!-- 股関節前面の伸び -->
+        <path d="M82,112 Q74,128 72,144" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="4,3" fill="none"/>
+        <text x="38" y="132" font-size="11" fill="#ef4444" font-weight="700">伸び</text>
+        <!-- 伸びエリアハイライト -->
+        <ellipse cx="80" cy="125" rx="16" ry="20" fill="#fee2e2" opacity="0.3"/>
+      </svg>`,
+
+      pelvicStabilize: `<svg viewBox="0 0 220 200" class="selfcare-illust">
+        <defs>
+          <marker id="sc-arrSq" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6" fill="#3b82f6"/></marker>
+        </defs>
+        <!-- 床/マット -->
+        <rect x="20" y="128" width="180" height="8" rx="3" fill="#e2e8f0" opacity="0.5"/>
+        <line x1="20" y1="136" x2="200" y2="136" stroke="#cbd5e1" stroke-width="1"/>
+        <!-- 仰向けの人物 -->
+        <!-- 頭 -->
+        <ellipse cx="42" cy="110" rx="16" ry="14" fill="${skinFill}" stroke="${skinStroke}" stroke-width="1.2"/>
+        <path d="M28,104 C28,96 56,96 56,104" fill="${hairFill}" opacity="0.3"/>
+        <!-- 体 -->
+        <path d="M56,112 Q90,110 130,114" stroke="${skinStroke}" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M56,112 Q90,110 130,114" stroke="${skinFill}" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.5"/>
+        <!-- 腕 -->
+        <path d="M70,112 Q72,120 74,126" stroke="${skinStroke}" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M90,112 Q92,120 94,126" stroke="${skinStroke}" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <!-- 膝を立てる（左） -->
+        <path d="M130,114 Q140,96 148,72" stroke="${skinStroke}" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M148,72 L148,128" stroke="${skinStroke}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <!-- 膝を立てる（右） -->
+        <path d="M134,116 Q146,98 156,76" stroke="${skinStroke}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <path d="M156,76 L156,128" stroke="${skinStroke}" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <!-- クッション -->
+        <ellipse cx="152" cy="74" rx="12" ry="7" fill="#fbbf24" stroke="#d97706" stroke-width="1.2"/>
+        <text x="152" y="78" text-anchor="middle" font-size="7" fill="#d97706" font-weight="600">クッション</text>
+        <!-- 挟む矢印 -->
+        <path d="M136,66 L146,70" stroke="#3b82f6" stroke-width="2.5" marker-end="url(#sc-arrSq)"/>
+        <path d="M168,66 L158,70" stroke="#3b82f6" stroke-width="2.5" marker-end="url(#sc-arrSq)"/>
+        <text x="152" y="52" text-anchor="middle" font-size="13" fill="#3b82f6" font-weight="700">挟む！</text>
+        <!-- 力の波紋 -->
+        <ellipse cx="152" cy="74" rx="20" ry="14" fill="none" stroke="#3b82f6" stroke-width="1" stroke-dasharray="3,3" opacity="0.4"/>
+        <text x="110" y="170" text-anchor="middle" font-size="10" fill="#64748b">5秒キープ → ゆっくり離す × 10回</text>
+      </svg>`,
+
+      hamstringStretch: `<svg viewBox="0 0 220 200" class="selfcare-illust">
+        <defs>
+          <marker id="sc-arrBend" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8" fill="#3b82f6"/></marker>
+        </defs>
+        <!-- 椅子 -->
+        <rect x="25" y="112" width="70" height="8" rx="3" fill="#94a3b8" opacity="0.3"/>
+        <rect x="85" y="52" width="6" height="68" rx="2" fill="#94a3b8" opacity="0.25"/>
+        <rect x="30" y="120" width="4" height="42" fill="#94a3b8" opacity="0.3"/>
+        <rect x="86" y="120" width="4" height="42" fill="#94a3b8" opacity="0.3"/>
+        <!-- 体 -->
+        <path d="M52,76 Q62,72 68,76 L66,110 L54,110 Z" fill="${skinFill}" stroke="${skinStroke}" stroke-width="1"/>
+        <!-- 首 -->
+        <rect x="55" y="62" width="10" height="14" rx="3" fill="${skinFill}" stroke="${skinStroke}" stroke-width="0.8"/>
+        <!-- 頭 -->
+        <circle cx="60" cy="48" r="16" fill="${skinFill}" stroke="${skinStroke}" stroke-width="1.2"/>
+        <path d="M46,40 C48,32 72,32 74,40" fill="${hairFill}" opacity="0.4"/>
+        <!-- 腕 -->
+        <path d="M52,80 Q44,90 40,105" stroke="${skinStroke}" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M68,80 Q76,90 80,105" stroke="${skinStroke}" stroke-width="2.5" fill="none" stroke-linecap="round"/>
         <!-- 曲げた脚 -->
-        <line x1="80" y1="95" x2="110" y2="120" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>
-        <line x1="110" y1="120" x2="100" y2="90" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>
-        <!-- 手で持つ -->
-        <line x1="95" y1="70" x2="100" y2="90" stroke="#64748b" stroke-width="2" stroke-linecap="round"/>
-        <!-- 伸び表示 -->
-        <path d="M88,95 Q100,105 108,115" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="3,2" fill="none"/>
-        <text x="115" y="108" font-size="8" fill="#ef4444" font-weight="600">太もも前面</text>
-        <line x1="50" y1="165" x2="130" y2="165" stroke="#cbd5e1" stroke-width="1.5"/>
+        <path d="M54,110 Q48,130 44,160" stroke="${skinStroke}" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <!-- 伸ばした脚 -->
+        <path d="M66,110 Q100,112 140,114 Q160,114 176,115" stroke="${skinStroke}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <!-- 足先 -->
+        <path d="M176,115 L182,108" stroke="${skinStroke}" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <text x="180" y="106" font-size="8" fill="#64748b">つま先↑</text>
+        <!-- 前屈の矢印 -->
+        <path d="M72,62 Q88,58 96,72" stroke="#3b82f6" stroke-width="2.5" fill="none" marker-end="url(#sc-arrBend)"/>
+        <text x="84" y="52" font-size="12" fill="#3b82f6" font-weight="700">前屈</text>
+        <!-- もも裏の伸び -->
+        <path d="M80,118 Q120,132 160,118" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="4,3" fill="none"/>
+        <rect x="86" y="134" width="68" height="16" rx="3" fill="white" opacity="0.7"/>
+        <text x="120" y="146" text-anchor="middle" font-size="11" fill="#ef4444" font-weight="700">もも裏の伸び</text>
+        <!-- 床 -->
+        <line x1="20" y1="168" x2="200" y2="168" stroke="#cbd5e1" stroke-width="1"/>
       </svg>`,
 
-      calfStretch: `<svg viewBox="0 0 200 180" class="selfcare-illust">
+      quadStretch: `<svg viewBox="0 0 220 200" class="selfcare-illust">
         <!-- 壁 -->
-        <rect x="150" y="0" width="8" height="180" fill="#e2e8f0"/>
-        <!-- 人物 -->
-        <circle cx="120" cy="30" r="14" fill="#f0f4f8" stroke="#64748b" stroke-width="1.5"/>
-        <line x1="120" y1="44" x2="115" y2="90" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
-        <!-- 壁に手 -->
-        <line x1="120" y1="58" x2="150" y2="50" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>
-        <!-- 前の脚（曲げ） -->
-        <line x1="115" y1="90" x2="130" y2="130" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>
-        <line x1="130" y1="130" x2="135" y2="160" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>
-        <!-- 後ろの脚（伸ばし） -->
-        <line x1="115" y1="90" x2="70" y2="130" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>
-        <line x1="70" y1="130" x2="60" y2="160" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>
-        <!-- ふくらはぎの伸び -->
-        <path d="M68,130 Q62,145 64,158" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="3,2" fill="none"/>
-        <text x="35" y="148" font-size="8" fill="#ef4444" font-weight="600">伸び</text>
-        <line x1="30" y1="165" x2="170" y2="165" stroke="#cbd5e1" stroke-width="1.5"/>
+        <rect x="16" y="0" width="10" height="200" fill="#e2e8f0" opacity="0.6"/>
+        <line x1="26" y1="0" x2="26" y2="200" stroke="#94a3b8" stroke-width="1"/>
+        <!-- 体 -->
+        <path d="M80,54 Q90,50 96,54 L94,110 L82,110 Z" fill="${skinFill}" stroke="${skinStroke}" stroke-width="1"/>
+        <!-- 首 -->
+        <rect x="83" y="42" width="10" height="12" rx="3" fill="${skinFill}" stroke="${skinStroke}" stroke-width="0.8"/>
+        <!-- 頭 -->
+        <circle cx="88" cy="28" r="16" fill="${skinFill}" stroke="${skinStroke}" stroke-width="1.2"/>
+        <path d="M74,20 C76,12 100,12 102,20" fill="${hairFill}" opacity="0.4"/>
+        <!-- 壁に手をつく -->
+        <path d="M80,60 Q60,58 30,58" stroke="${skinStroke}" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <circle cx="28" cy="58" r="4" fill="${skinFill}" stroke="${skinStroke}" stroke-width="0.8"/>
+        <!-- 立脚 -->
+        <path d="M84,110 Q82,140 80,172" stroke="${skinStroke}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <!-- 曲げた脚 -->
+        <path d="M94,110 Q112,126 122,144" stroke="${skinStroke}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <circle cx="122" cy="144" r="4" fill="#fbbf24" stroke="#d97706" stroke-width="1" opacity="0.6"/>
+        <path d="M122,144 Q116,128 108,108" stroke="${skinStroke}" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <!-- 手で足首を持つ -->
+        <path d="M96,60 Q108,72 114,90 Q116,100 112,108" stroke="${skinStroke}" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <circle cx="110" cy="108" r="3.5" fill="${skinFill}" stroke="${skinStroke}" stroke-width="0.8"/>
+        <!-- 太もも前面の伸びハイライト -->
+        <path d="M98,110 Q112,120 120,138" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="4,3" fill="none"/>
+        <ellipse cx="108" cy="125" rx="14" ry="18" fill="#fee2e2" opacity="0.3"/>
+        <text x="134" y="124" font-size="11" fill="#ef4444" font-weight="700">太もも</text>
+        <text x="134" y="138" font-size="11" fill="#ef4444" font-weight="700">前面の伸び</text>
+        <!-- 足 -->
+        <ellipse cx="78" cy="176" rx="10" ry="5" fill="${skinFill}" stroke="${skinStroke}" stroke-width="0.8"/>
+        <!-- 床 -->
+        <line x1="40" y1="182" x2="180" y2="182" stroke="#cbd5e1" stroke-width="1.5"/>
       </svg>`,
 
-      ankleExercise: `<svg viewBox="0 0 200 180" class="selfcare-illust">
-        <!-- 足のクローズアップ -->
-        <path d="M50,100 L50,130 C50,150 150,150 150,130 L150,100 Z" fill="#f0f4f8" stroke="#64748b" stroke-width="1.5"/>
-        <text x="100" y="120" text-anchor="middle" font-size="10" fill="#64748b">足裏</text>
-        <!-- アーチを持ち上げる矢印 -->
-        <path d="M100,128 L100,108" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrArchUp)"/>
-        <text x="100" y="90" text-anchor="middle" font-size="9" fill="#3b82f6" font-weight="600">アーチを上げる</text>
+      calfStretch: `<svg viewBox="0 0 220 200" class="selfcare-illust">
+        <!-- 壁 -->
+        <rect x="168" y="0" width="12" height="200" fill="#e2e8f0" opacity="0.6"/>
+        <line x1="168" y1="0" x2="168" y2="200" stroke="#94a3b8" stroke-width="1"/>
+        <!-- 体 -->
+        <path d="M118,52 Q128,48 134,52 L132,100 L120,100 Z" fill="${skinFill}" stroke="${skinStroke}" stroke-width="1"/>
+        <!-- 首 -->
+        <rect x="121" y="40" width="10" height="12" rx="3" fill="${skinFill}" stroke="${skinStroke}" stroke-width="0.8"/>
+        <!-- 頭 -->
+        <circle cx="126" cy="26" r="16" fill="${skinFill}" stroke="${skinStroke}" stroke-width="1.2"/>
+        <path d="M112,18 C114,10 138,10 140,18" fill="${hairFill}" opacity="0.4"/>
+        <!-- 壁に手 -->
+        <path d="M134,56 Q148,50 166,44" stroke="${skinStroke}" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M132,60 Q150,56 166,50" stroke="${skinStroke}" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <circle cx="166" cy="44" r="3.5" fill="${skinFill}" stroke="${skinStroke}" stroke-width="0.8"/>
+        <circle cx="166" cy="50" r="3.5" fill="${skinFill}" stroke="${skinStroke}" stroke-width="0.8"/>
+        <!-- 前脚（膝を曲げる） -->
+        <path d="M132,100 Q142,120 148,142" stroke="${skinStroke}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <path d="M148,142 L152,174" stroke="${skinStroke}" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <!-- 後ろ脚（伸ばす） -->
+        <path d="M120,100 Q96,124 78,148" stroke="${skinStroke}" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M78,148 L68,174" stroke="${skinStroke}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <!-- かかと接地マーク -->
+        <circle cx="66" cy="176" r="4" fill="#fbbf24" stroke="#d97706" stroke-width="1"/>
+        <text x="38" y="180" font-size="8" fill="#d97706" font-weight="600">かかと↓</text>
+        <!-- ふくらはぎの伸びハイライト -->
+        <path d="M76,148 Q68,158 66,172" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="4,3" fill="none"/>
+        <ellipse cx="74" cy="158" rx="12" ry="16" fill="#fee2e2" opacity="0.3"/>
+        <text x="30" y="155" font-size="11" fill="#ef4444" font-weight="700">ふくらはぎ</text>
+        <text x="38" y="168" font-size="11" fill="#ef4444" font-weight="700">の伸び</text>
+        <!-- 足 -->
+        <ellipse cx="154" cy="178" rx="8" ry="4" fill="${skinFill}" stroke="${skinStroke}" stroke-width="0.8"/>
+        <!-- 床 -->
+        <line x1="30" y1="182" x2="190" y2="182" stroke="#cbd5e1" stroke-width="1.5"/>
+      </svg>`,
+
+      ankleExercise: `<svg viewBox="0 0 220 200" class="selfcare-illust">
+        <defs>
+          <marker id="sc-arrArch" markerWidth="8" markerHeight="8" refX="4" refY="8" orient="auto"><path d="M0,8 L4,0 L8,8" fill="#3b82f6"/></marker>
+        </defs>
+        <!-- 椅子のヒント -->
+        <rect x="40" y="30" width="140" height="6" rx="2" fill="#94a3b8" opacity="0.2"/>
+        <!-- すね -->
+        <path d="M90,32 L86,80" stroke="${skinStroke}" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M130,32 L134,80" stroke="${skinStroke}" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <!-- 足首関節 -->
+        <circle cx="86" cy="82" r="5" fill="#fbbf24" stroke="#d97706" stroke-width="1" opacity="0.6"/>
+        <circle cx="134" cy="82" r="5" fill="#fbbf24" stroke="#d97706" stroke-width="1" opacity="0.6"/>
+        <!-- 足（側面的に大きく描画） -->
+        <path d="M72,82 Q68,90 64,100 Q60,112 62,120 Q68,134 110,136 Q130,136 140,130 Q148,124 148,116 Q148,100 142,90 Q138,84 134,82"
+          fill="${skinFill}" stroke="${skinStroke}" stroke-width="1.5"/>
+        <!-- 足裏アーチ -->
+        <path d="M72,128 Q90,140 120,132" stroke="${skinStroke}" stroke-width="1" fill="none" opacity="0.4"/>
         <!-- つま先固定 -->
-        <circle cx="145" cy="135" r="3" fill="#fbbf24"/>
-        <text x="155" y="142" font-size="8" fill="#d97706">固定</text>
-        <circle cx="55" cy="135" r="3" fill="#fbbf24"/>
-        <text x="30" y="142" font-size="8" fill="#d97706">固定</text>
-        <defs><marker id="arrArchUp" markerWidth="6" markerHeight="6" refX="3" refY="6" orient="auto"><path d="M0,6 L3,0 L6,6" fill="#3b82f6"/></marker></defs>
+        <circle cx="138" cy="126" r="4" fill="#fbbf24" stroke="#d97706" stroke-width="1"/>
+        <circle cx="66" cy="122" r="4" fill="#fbbf24" stroke="#d97706" stroke-width="1"/>
+        <text x="145" y="130" font-size="9" fill="#d97706" font-weight="600">固定</text>
+        <text x="38" y="126" font-size="9" fill="#d97706" font-weight="600">固定</text>
+        <!-- アーチを上げる矢印 -->
+        <path d="M100,126 L100,100" stroke="#3b82f6" stroke-width="3" marker-end="url(#sc-arrArch)"/>
+        <text x="110" y="86" font-size="13" fill="#3b82f6" font-weight="700">アーチ↑</text>
+        <!-- タオルギャザー -->
+        <rect x="50" y="152" width="120" height="36" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="110" y="168" text-anchor="middle" font-size="11" fill="#64748b" font-weight="600">+ タオルギャザー</text>
+        <text x="110" y="182" text-anchor="middle" font-size="9" fill="#94a3b8">足指でタオルをたぐり寄せる×10回</text>
       </svg>`
     };
 
