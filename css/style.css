@@ -2368,6 +2368,261 @@ body[data-view="patient"] .diagram-value {
   background: linear-gradient(135deg, var(--primary), var(--primary-dark));
 }
 
+/* ===== Backup Section ===== */
+.backup-section {
+  margin-top: 32px;
+  padding: 24px;
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+
+.backup-section h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: var(--text);
+}
+
+.backup-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.backup-note {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  line-height: 1.6;
+}
+
+/* ===== Tutorial Overlay ===== */
+.tutorial-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.tutorial-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 32px 28px 24px;
+  max-width: 440px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: tutorialSlideIn 0.3s ease;
+}
+
+@keyframes tutorialSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.tutorial-step {
+  min-height: 200px;
+}
+
+.tutorial-icon {
+  font-size: 2.5rem;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.tutorial-step h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--text);
+  text-align: center;
+}
+
+.tutorial-step > p {
+  font-size: 0.95rem;
+  color: var(--text);
+  line-height: 1.7;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.tutorial-list {
+  padding-left: 24px;
+  margin-bottom: 8px;
+}
+
+.tutorial-list li {
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.tutorial-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.tutorial-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.tutorial-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: all 0.2s;
+}
+
+.tutorial-dot.active {
+  background: var(--primary);
+  transform: scale(1.2);
+}
+
+.tutorial-skip-btn {
+  min-width: 80px;
+}
+
+.tutorial-next-btn {
+  min-width: 80px;
+}
+
+/* ===== Trend Chart ===== */
+.trend-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-lg);
+  border: 2px solid var(--primary);
+}
+
+.trend-header {
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--border);
+}
+
+.trend-header h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 4px;
+}
+
+.trend-header p {
+  font-size: 0.85rem;
+  color: var(--text-light);
+}
+
+.trend-chart-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  margin-bottom: 16px;
+}
+
+.trend-chart-wrapper svg {
+  width: 100%;
+  height: auto;
+  min-width: 300px;
+}
+
+.trend-legend {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  color: var(--text-light);
+}
+
+.trend-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.trend-legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.trend-exam-labels {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.trend-exam-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+}
+
+.trend-exam-date {
+  font-weight: 600;
+  color: var(--text);
+  min-width: 90px;
+}
+
+.trend-exam-cause {
+  color: var(--text-light);
+  font-size: 0.82rem;
+}
+
+.trend-exam-score {
+  margin-left: auto;
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 2px 10px;
+  border-radius: 20px;
+}
+
+.trend-score-good {
+  background: var(--normal-light);
+  color: #15803d;
+}
+
+.trend-score-moderate {
+  background: var(--moderate-light);
+  color: #92400e;
+}
+
+.trend-score-bad {
+  background: var(--severe-light);
+  color: #dc2626;
+}
+
 /* ===== Print / PDF ===== */
 @media print {
   .header { position: static; background: var(--primary); }

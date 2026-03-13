@@ -31,9 +31,347 @@
     setupDetailedExamButtons();
     setupPatientSearch();
     setupProtocolButton();
+    setupBackupButtons();
+    setupTrendButton();
     setDefaultDate();
     refreshHistory();
     initDiagrams();
+    registerServiceWorker();
+    showTutorialIfNeeded();
+  }
+
+  // ===== Service Worker登録 =====
+  function registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+  }
+
+  // ===== チュートリアル =====
+  function showTutorialIfNeeded() {
+    if (localStorage.getItem('tutorial_completed') === 'true') return;
+
+    const overlay = document.getElementById('tutorialOverlay');
+    if (!overlay) return;
+
+    let currentTutorialStep = 0;
+    const totalSteps = 4;
+
+    // ドットを生成
+    const dotsContainer = document.getElementById('tutorialDots');
+    dotsContainer.innerHTML = '';
+    for (let i = 0; i < totalSteps; i++) {
+      const dot = document.createElement('span');
+      dot.className = 'tutorial-dot' + (i === 0 ? ' active' : '');
+      dot.dataset.step = i;
+      dotsContainer.appendChild(dot);
+    }
+
+    overlay.style.display = 'flex';
+
+    function showTutorialStep(step) {
+      overlay.querySelectorAll('.tutorial-step').forEach(el => {
+        el.style.display = parseInt(el.dataset.tutorialStep) === step ? 'block' : 'none';
+      });
+      dotsContainer.querySelectorAll('.tutorial-dot').forEach(dot => {
+        dot.classList.toggle('active', parseInt(dot.dataset.step) === step);
+      });
+      const nextBtn = document.getElementById('tutorialNext');
+      nextBtn.textContent = step === totalSteps - 1 ? 'はじめる' : '次へ';
+    }
+
+    function closeTutorial() {
+      localStorage.setItem('tutorial_completed', 'true');
+      overlay.style.display = 'none';
+    }
+
+    document.getElementById('tutorialNext').addEventListener('click', () => {
+      if (currentTutorialStep >= totalSteps - 1) {
+        closeTutorial();
+      } else {
+        currentTutorialStep++;
+        showTutorialStep(currentTutorialStep);
+      }
+    });
+
+    document.getElementById('tutorialSkip').addEventListener('click', closeTutorial);
+  }
+
+  // ===== データバックアップ（Export/Import） =====
+  function setupBackupButtons() {
+    const exportBtn = document.getElementById('exportDataBtn');
+    const importBtn = document.getElementById('importDataBtn');
+    const importInput = document.getElementById('importFileInput');
+    if (!exportBtn || !importBtn || !importInput) return;
+
+    exportBtn.addEventListener('click', () => {
+      try {
+        const history = Storage.getAll();
+        const exportData = {
+          appName: 'BodyCheckPro',
+          version: '2.0',
+          exportDate: new Date().toISOString(),
+          data: history
+        };
+        const json = JSON.stringify(exportData, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const now = new Date();
+        const dateStr = now.getFullYear().toString() +
+          String(now.getMonth() + 1).padStart(2, '0') +
+          String(now.getDate()).padStart(2, '0');
+        a.href = url;
+        a.download = `bodycheck_backup_${dateStr}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        alert('データをエクスポートしました');
+      } catch (e) {
+        console.error('Export failed:', e);
+        alert('エクスポートに失敗しました');
+      }
+    });
+
+    importBtn.addEventListener('click', () => {
+      importInput.click();
+    });
+
+    importInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const imported = JSON.parse(event.target.result);
+
+          // バリデーション
+          if (!imported || !imported.appName || imported.appName !== 'BodyCheckPro' || !Array.isArray(imported.data)) {
+            alert('このファイルは検査アプリのバックアップデータではありません');
+            return;
+          }
+
+          // データの基本構造チェック
+          for (const entry of imported.data) {
+            if (!entry.id || !entry.date || !entry.examData) {
+              alert('データの形式が正しくありません。破損している可能性があります。');
+              return;
+            }
+          }
+
+          const existingData = Storage.getAll();
+          const existingIds = new Set(existingData.map(e => e.id));
+          let newCount = 0;
+
+          // 既存データとマージ（重複IDはスキップ）
+          for (const entry of imported.data) {
+            if (!existingIds.has(entry.id)) {
+              existingData.push(entry);
+              newCount++;
+            }
+          }
+
+          // 日付順にソート（新しい順）
+          existingData.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+          // 100件制限
+          if (existingData.length > 100) {
+            existingData.length = 100;
+          }
+
+          localStorage.setItem(Storage.STORAGE_KEY, JSON.stringify(existingData));
+          refreshHistory();
+
+          if (newCount > 0) {
+            alert(`${newCount}件の新しいデータをインポートしました`);
+          } else {
+            alert('全てのデータは既に存在しています（重複なし）');
+          }
+        } catch (err) {
+          console.error('Import failed:', err);
+          alert('ファイルの読み込みに失敗しました。正しいJSONファイルか確認してください。');
+        }
+      };
+      reader.readAsText(file);
+      // リセットして同じファイルを再選択できるようにする
+      importInput.value = '';
+    });
+  }
+
+  // ===== 経過グラフ =====
+  function setupTrendButton() {
+    const trendBtn = document.getElementById('showTrendBtn');
+    if (!trendBtn) return;
+
+    trendBtn.addEventListener('click', () => {
+      const trendSection = document.getElementById('trendSection');
+      if (trendSection.style.display === 'block') {
+        trendSection.style.display = 'none';
+        trendBtn.textContent = '経過グラフ';
+      } else {
+        renderPatientTrend();
+        trendBtn.textContent = '経過グラフを閉じる';
+      }
+    });
+  }
+
+  function updateTrendButton() {
+    const trendBtn = document.getElementById('showTrendBtn');
+    if (!trendBtn) return;
+
+    const patientName = document.getElementById('patientName').value;
+    const pid = selectedPatientId || Storage.findPatientIdByName(patientName);
+    if (!pid) {
+      trendBtn.style.display = 'none';
+      return;
+    }
+    const history = Storage.getHistoryByPatient(pid);
+    trendBtn.style.display = history.length >= 2 ? '' : 'none';
+  }
+
+  function renderPatientTrend() {
+    const trendSection = document.getElementById('trendSection');
+    if (!trendSection) return;
+
+    const patientName = document.getElementById('patientName').value;
+    const pid = selectedPatientId || Storage.findPatientIdByName(patientName);
+    if (!pid) return;
+
+    const history = Storage.getHistoryByPatient(pid);
+    if (history.length < 2) return;
+
+    // 古い順にソート
+    const sorted = [...history].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    // 各検査のバランススコアを計算（絶対値の合計、低いほど良い）
+    const exams = sorted.map(entry => {
+      let score = 0;
+      if (entry.examData) {
+        for (const pos of ['standing', 'seated', 'upperBody']) {
+          if (entry.examData[pos]) {
+            for (const lm of Object.keys(entry.examData[pos])) {
+              score += Math.abs(entry.examData[pos][lm] || 0);
+            }
+          }
+        }
+      }
+      const date = new Date(entry.date);
+      const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
+      const causeInfo = entry.diagnosisResult
+        ? (InspectionLogic.causeLabels[entry.diagnosisResult.primaryCause] || {})
+        : {};
+
+      return {
+        date: dateStr,
+        fullDate: `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`,
+        score,
+        cause: causeInfo.label || '',
+        causeIcon: causeInfo.icon || ''
+      };
+    });
+
+    const maxScore = Math.max(...exams.map(e => e.score), 1);
+    const chartWidth = 600;
+    const chartHeight = 250;
+    const padLeft = 50;
+    const padRight = 30;
+    const padTop = 30;
+    const padBottom = 50;
+    const plotW = chartWidth - padLeft - padRight;
+    const plotH = chartHeight - padTop - padBottom;
+
+    // 座標計算
+    const points = exams.map((exam, i) => ({
+      x: padLeft + (exams.length === 1 ? plotW / 2 : (i / (exams.length - 1)) * plotW),
+      y: padTop + plotH - (exam.score / maxScore) * plotH,
+      ...exam
+    }));
+
+    // SVG生成
+    let svg = `<svg viewBox="0 0 ${chartWidth} ${chartHeight}" xmlns="http://www.w3.org/2000/svg" style="font-family: -apple-system, BlinkMacSystemFont, sans-serif;">`;
+
+    // グリッド線
+    const gridLines = 5;
+    for (let i = 0; i <= gridLines; i++) {
+      const y = padTop + (i / gridLines) * plotH;
+      const val = Math.round(maxScore - (i / gridLines) * maxScore);
+      svg += `<line x1="${padLeft}" y1="${y}" x2="${chartWidth - padRight}" y2="${y}" stroke="#e2e8f0" stroke-width="1"/>`;
+      svg += `<text x="${padLeft - 8}" y="${y + 4}" text-anchor="end" font-size="10" fill="#94a3b8">${val}</text>`;
+    }
+
+    // エリア塗りつぶし（グラデーション）
+    if (points.length >= 2) {
+      // 改善方向（緑）/ 悪化方向（赤）のグラデーション
+      const areaPath = `M ${points[0].x},${padTop + plotH} ` +
+        points.map(p => `L ${p.x},${p.y}`).join(' ') +
+        ` L ${points[points.length - 1].x},${padTop + plotH} Z`;
+
+      // 最初と最後のスコア比較で色を決定
+      const improving = points[points.length - 1].score <= points[0].score;
+      const areaColor = improving ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.1)';
+      svg += `<path d="${areaPath}" fill="${areaColor}"/>`;
+
+      // ライン
+      const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x},${p.y}`).join(' ');
+      svg += `<path d="${linePath}" stroke="#2563eb" stroke-width="2.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/>`;
+    }
+
+    // データポイント + 日付ラベル
+    points.forEach((p, i) => {
+      // ドット
+      const scoreClass = p.score <= 2 ? '#22c55e' : p.score <= 5 ? '#f59e0b' : '#ef4444';
+      svg += `<circle cx="${p.x}" cy="${p.y}" r="6" fill="${scoreClass}" stroke="white" stroke-width="2"/>`;
+      svg += `<text x="${p.x}" y="${p.y - 12}" text-anchor="middle" font-size="10" font-weight="700" fill="${scoreClass}">${p.score}</text>`;
+
+      // X軸ラベル（日付）
+      svg += `<text x="${p.x}" y="${padTop + plotH + 18}" text-anchor="middle" font-size="9" fill="#64748b">${p.date}</text>`;
+
+      // 診断ラベル（アイコン）
+      if (p.causeIcon) {
+        svg += `<text x="${p.x}" y="${padTop + plotH + 34}" text-anchor="middle" font-size="12">${p.causeIcon}</text>`;
+      }
+    });
+
+    // Y軸ラベル
+    svg += `<text x="14" y="${padTop + plotH / 2}" text-anchor="middle" font-size="10" fill="#64748b" transform="rotate(-90, 14, ${padTop + plotH / 2})">バランススコア</text>`;
+
+    // 矢印（改善方向を示す）
+    svg += `<text x="${padLeft - 8}" y="${padTop - 8}" text-anchor="end" font-size="9" fill="#94a3b8">悪い</text>`;
+    svg += `<text x="${padLeft - 8}" y="${padTop + plotH + 14}" text-anchor="end" font-size="9" fill="#22c55e">良い</text>`;
+
+    svg += '</svg>';
+
+    // HTML生成
+    let html = '<div class="trend-card">';
+    html += '<div class="trend-header">';
+    html += '<h3>経過グラフ</h3>';
+    html += `<p>${patientName || '患者'}さんの検査${exams.length}回分の推移</p>`;
+    html += '</div>';
+
+    html += `<div class="trend-chart-wrapper">${svg}</div>`;
+
+    html += '<div class="trend-legend">';
+    html += '<span class="trend-legend-item"><span class="trend-legend-dot" style="background:#22c55e;"></span> 良好 (0-2)</span>';
+    html += '<span class="trend-legend-item"><span class="trend-legend-dot" style="background:#f59e0b;"></span> 注意 (3-5)</span>';
+    html += '<span class="trend-legend-item"><span class="trend-legend-dot" style="background:#ef4444;"></span> 要改善 (6+)</span>';
+    html += '</div>';
+
+    html += '<div class="trend-exam-labels">';
+    exams.forEach(exam => {
+      const scoreClass = exam.score <= 2 ? 'trend-score-good' : exam.score <= 5 ? 'trend-score-moderate' : 'trend-score-bad';
+      html += `<div class="trend-exam-label">
+        <span class="trend-exam-date">${exam.fullDate}</span>
+        <span class="trend-exam-cause">${exam.causeIcon} ${exam.cause}</span>
+        <span class="trend-exam-score ${scoreClass}">スコア: ${exam.score}</span>
+      </div>`;
+    });
+    html += '</div>';
+    html += '</div>';
+
+    trendSection.innerHTML = html;
+    trendSection.style.display = 'block';
   }
 
   // ===== 表示モード切替 =====
@@ -335,6 +673,7 @@
     renderDiagnosis(diagnosisResult);
     showDetailedExam();
     updateCompareButton();
+    updateTrendButton();
     // Show protocol button
     const protocolBtn = document.getElementById('showProtocolBtn');
     if (protocolBtn) protocolBtn.style.display = '';
@@ -814,6 +1153,7 @@
 
     // 比較ボタンも更新
     updateCompareButton();
+    updateTrendButton();
 
     // レポート更新
     renderReport();
@@ -1056,6 +1396,7 @@
       if (success) {
         alert('検査結果を保存しました');
         updateCompareButton();
+        updateTrendButton();
       } else {
         alert('保存に失敗しました');
       }
@@ -1583,6 +1924,7 @@
 
     // 比較ボタンを更新
     updateCompareButton();
+    updateTrendButton();
 
     // レポート更新
     renderReport();

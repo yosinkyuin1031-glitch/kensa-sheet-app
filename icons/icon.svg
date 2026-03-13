@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="80" fill="#2563eb"/>
+  <text x="256" y="200" text-anchor="middle" font-size="120" fill="white" font-family="sans-serif" font-weight="700">検査</text>
+  <text x="256" y="340" text-anchor="middle" font-size="80" fill="rgba(255,255,255,0.8)" font-family="sans-serif" font-weight="600">アプリ</text>
+  <path d="M256,380 L256,440 M230,410 L256,440 L282,410" stroke="white" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
+</svg>

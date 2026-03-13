@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>検査アプリ - 段階的原因特定システム</title>
   <link rel="stylesheet" href="css/style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="検査アプリ">
+  <link rel="apple-touch-icon" href="icons/icon.svg">
+  <meta name="theme-color" content="#2563eb">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
 </head>
 <body data-view="practitioner">
@@ -368,10 +374,14 @@
       <!-- ビフォーアフター比較 -->
       <div id="comparisonSection" style="display:none;"></div>
 
+      <!-- 経過グラフ -->
+      <div id="trendSection" style="display:none;"></div>
+
       <!-- アクションボタン -->
       <div class="form-actions action-bar" id="diagnosisActions" style="display:none;">
         <button type="button" id="saveHistoryBtn" class="btn btn-secondary">履歴に保存</button>
         <button type="button" id="compareBtn" class="btn btn-secondary" style="display:none;">前回と比較</button>
+        <button type="button" id="showTrendBtn" class="btn btn-secondary" style="display:none;">経過グラフ</button>
         <button type="button" id="savePdfPatientBtn" class="btn btn-secondary">患者用PDF</button>
         <button type="button" id="savePdfClinicalBtn" class="btn btn-secondary">施術者用PDF</button>
         <button type="button" id="showSelfcareBtn" class="btn btn-accent" style="display:none;">セルフケア提案</button>
@@ -392,10 +402,70 @@
         <h2>検査履歴</h2>
       </div>
       <div id="historyList" class="history-list"></div>
+      <div class="backup-section">
+        <h3>データ管理</h3>
+        <div class="backup-actions">
+          <button type="button" id="exportDataBtn" class="btn btn-secondary">データをエクスポート</button>
+          <button type="button" id="importDataBtn" class="btn btn-secondary">データをインポート</button>
+          <input type="file" id="importFileInput" accept=".json" style="display:none;">
+        </div>
+        <p class="backup-note">端末の買い替え時やデータのバックアップにご利用ください</p>
+      </div>
     </section>
   </main>
 
   <footer class="app-footer"><p>Body Check Pro v2.0</p></footer>
+
+  <!-- チュートリアルオーバーレイ -->
+  <div id="tutorialOverlay" class="tutorial-overlay" style="display:none;">
+    <div class="tutorial-card">
+      <div class="tutorial-step" data-tutorial-step="0">
+        <div class="tutorial-icon">👋</div>
+        <h2>検査アプリへようこそ</h2>
+        <p>このアプリは<strong>3ステップの検査</strong>で身体の歪みの原因を特定します。</p>
+        <ul class="tutorial-list">
+          <li>立位・座位・上半身の3段階で比較</li>
+          <li>全身6ランドマークで詳細分析</li>
+          <li>セルフケア・施術プロトコルを自動提案</li>
+        </ul>
+      </div>
+      <div class="tutorial-step" data-tutorial-step="1" style="display:none;">
+        <div class="tutorial-icon">🧍</div>
+        <h2>検査の流れ</h2>
+        <ol class="tutorial-list">
+          <li><strong>患者情報</strong>を入力</li>
+          <li><strong>立位</strong>で3ランドマーク確認</li>
+          <li><strong>座位</strong>で同じ3ランドマーク確認（足の影響を判定）</li>
+          <li><strong>上半身検査</strong>で原因を特定</li>
+        </ol>
+      </div>
+      <div class="tutorial-step" data-tutorial-step="2" style="display:none;">
+        <div class="tutorial-icon">📊</div>
+        <h2>結果の活用</h2>
+        <ul class="tutorial-list">
+          <li><strong>詳細検査</strong>で縮こまり箇所を特定</li>
+          <li><strong>施術プロトコル</strong>で治療手順を確認</li>
+          <li><strong>PDF出力</strong>で患者に説明</li>
+          <li><strong>履歴保存</strong>でビフォーアフター比較</li>
+        </ul>
+      </div>
+      <div class="tutorial-step" data-tutorial-step="3" style="display:none;">
+        <div class="tutorial-icon">💡</div>
+        <h2>便利な機能</h2>
+        <ul class="tutorial-list">
+          <li>右上の<strong>「治療家/患者説明」切替</strong>で表示を変更</li>
+          <li><strong>患者検索</strong>で過去データをすぐ呼び出し</li>
+          <li><strong>データエクスポート</strong>でバックアップ</li>
+          <li>ホーム画面に追加でアプリとして使用可能</li>
+        </ul>
+      </div>
+      <div class="tutorial-nav">
+        <button type="button" id="tutorialSkip" class="btn btn-secondary tutorial-skip-btn">スキップ</button>
+        <div class="tutorial-dots" id="tutorialDots"></div>
+        <button type="button" id="tutorialNext" class="btn btn-primary tutorial-next-btn">次へ</button>
+      </div>
+    </div>
+  </div>
 
   <script src="js/inspection.js"></script>
   <script src="js/bodyDiagram.js"></script>
