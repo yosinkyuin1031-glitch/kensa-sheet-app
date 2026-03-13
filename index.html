@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>検査アプリ - 段階的原因特定システム</title>
   <link rel="stylesheet" href="css/style.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
 </head>
 <body data-view="practitioner">
@@ -30,6 +29,7 @@
     <nav class="tab-nav">
       <button class="tab-btn active" data-tab="exam">検査</button>
       <button class="tab-btn" data-tab="diagnosis">診断結果</button>
+      <button class="tab-btn" data-tab="report">レポート</button>
       <button class="tab-btn" data-tab="history">履歴</button>
     </nav>
 
@@ -359,6 +359,9 @@
       <!-- 統合分析結果 -->
       <div id="contractionAnalysis" style="display:none;"></div>
 
+      <!-- 施術プロトコル提案 -->
+      <div id="treatmentProtocolSection" style="display:none;"></div>
+
       <!-- セルフケア提案（非表示、ボタンで表示） -->
       <div id="selfcareSection" style="display:none;"></div>
 
@@ -369,10 +372,18 @@
       <div class="form-actions action-bar" id="diagnosisActions" style="display:none;">
         <button type="button" id="saveHistoryBtn" class="btn btn-secondary">履歴に保存</button>
         <button type="button" id="compareBtn" class="btn btn-secondary" style="display:none;">前回と比較</button>
-        <button type="button" id="savePdfBtn" class="btn btn-secondary">PDF保存</button>
+        <button type="button" id="savePdfPatientBtn" class="btn btn-secondary">患者用PDF</button>
+        <button type="button" id="savePdfClinicalBtn" class="btn btn-secondary">施術者用PDF</button>
         <button type="button" id="showSelfcareBtn" class="btn btn-accent" style="display:none;">セルフケア提案</button>
+        <button type="button" id="showProtocolBtn" class="btn btn-accent practitioner-only" style="display:none;">施術プロトコル</button>
         <button type="button" id="newExamBtn" class="btn btn-primary">新しい検査</button>
       </div>
+    </section>
+
+    <!-- ===== レポートセクション ===== -->
+    <section id="report-section" class="tab-content">
+      <div class="section-header"><h2>検査レポート</h2></div>
+      <div id="reportContent" class="report-content"></div>
     </section>
 
     <!-- ===== 履歴セクション ===== -->
@@ -383,6 +394,8 @@
       <div id="historyList" class="history-list"></div>
     </section>
   </main>
+
+  <footer class="app-footer"><p>Body Check Pro v2.0</p></footer>
 
   <script src="js/inspection.js"></script>
   <script src="js/bodyDiagram.js"></script>

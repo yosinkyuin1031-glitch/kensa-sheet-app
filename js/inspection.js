@@ -228,6 +228,18 @@ const InspectionLogic = {
     { key: 'lateralMalleolus', name: '外果', area: '膝〜足首', areaShort: 'すね〜足首' }
   ],
 
+  // ===== 詳細検査用ラベル（患者向け） =====
+  getPatientFriendlyCauseLabel(cause) {
+    const labels = {
+      foot: '足元のバランスが原因です',
+      upperBody: '上半身のバランスが原因です',
+      cranialPelvic: '身体全体のバランスの乱れ',
+      spine: '背骨まわりのバランスの乱れ',
+      none: '大きな歪みは見られません'
+    };
+    return labels[cause] || '';
+  },
+
   // ===== 縮こまり＋引っ張り分析（拡張版） =====
   //
   // 縮こまり（Contraction）:
@@ -353,5 +365,147 @@ const InspectionLogic = {
     }
 
     return results;
+  }
+};
+
+// ===== 施術プロトコル提案 =====
+const TreatmentProtocol = {
+  protocols: {
+    foot: {
+      title: '足部アプローチ',
+      techniques: [
+        { name: '距骨調整', target: '距骨', description: '距骨の内外反を確認し、正常位に戻す', duration: '3-5分' },
+        { name: '足根骨モビライゼーション', target: '足根骨', description: '楔状骨・舟状骨の可動性を改善', duration: '5分' },
+        { name: '下腿筋膜リリース', target: '腓腹筋・ヒラメ筋', description: '下腿三頭筋の筋膜を緩める', duration: '5-8分' }
+      ],
+      checkpoints: ['足部アーチの回復', '片脚立位の安定性', '立位ランドマーク再検査']
+    },
+    upperBody: {
+      title: '上半身アプローチ',
+      techniques: [
+        { name: '肩甲骨リリース', target: '肩甲骨周囲筋', description: '前鋸筋・菱形筋の緊張を緩める', duration: '5-8分' },
+        { name: '頸椎モビライゼーション', target: 'C1-C7', description: '頸椎の可動域を改善', duration: '3-5分' },
+        { name: '胸椎伸展', target: '胸椎', description: '胸椎の伸展可動域を改善', duration: '5分' }
+      ],
+      checkpoints: ['肩甲骨の可動性', '頸部回旋の左右差', '座位ランドマーク再検査']
+    },
+    cranialPelvic: {
+      title: '頭蓋骨・骨盤アプローチ',
+      techniques: [
+        { name: '骨盤調整', target: '仙腸関節', description: '仙腸関節の可動性を確認し調整', duration: '5-8分' },
+        { name: '頭蓋骨リリース', target: '側頭骨・後頭骨', description: '頭蓋縫合の可動性を改善', duration: '5-8分' },
+        { name: '硬膜リリース', target: '脊髄硬膜', description: '硬膜の緊張を緩和', duration: '3-5分' }
+      ],
+      checkpoints: ['骨盤の対称性', '頭蓋骨の可動性', '全体のランドマーク再検査']
+    },
+    spine: {
+      title: '脊柱アプローチ',
+      techniques: [
+        { name: '脊柱セグメント検査', target: '全脊柱', description: '各椎骨の可動性を個別に確認', duration: '5-8分' },
+        { name: 'アジャストメント', target: '問題椎骨', description: '固定された椎骨を特定しアジャスト', duration: '3-5分' },
+        { name: '傍脊柱筋リリース', target: '多裂筋・回旋筋', description: '脊柱周囲の深層筋を緩める', duration: '5-8分' }
+      ],
+      checkpoints: ['脊柱の可動性', '回旋テスト', '互い違いパターンの変化']
+    },
+    contraction: {
+      '首〜肩': {
+        title: '首〜肩の縮こまり施術',
+        techniques: [
+          { name: '僧帽筋上部リリース', target: '僧帽筋上部', description: 'トリガーポイントを見つけ圧迫リリース', duration: '3-5分' },
+          { name: '肩甲挙筋ストレッチ', target: '肩甲挙筋', description: '受動的ストレッチで伸張', duration: '2-3分' }
+        ]
+      },
+      '肩〜腕': {
+        title: '肩〜腕の縮こまり施術',
+        techniques: [
+          { name: '三角筋リリース', target: '三角筋', description: '三角筋前部・中部の緊張を緩める', duration: '3-5分' },
+          { name: '上腕二頭筋リリース', target: '上腕二頭筋', description: '長頭腱の滑走を改善', duration: '3分' }
+        ]
+      },
+      '前腕〜手首': {
+        title: '前腕〜手首の縮こまり施術',
+        techniques: [
+          { name: '前腕屈筋群リリース', target: '前腕屈筋群', description: '屈筋群のトリガーポイント解放', duration: '3-5分' },
+          { name: '手根骨モビライゼーション', target: '手根骨', description: '手根骨の配列を整える', duration: '3分' }
+        ]
+      },
+      '股関節〜太もも': {
+        title: '股関節〜太もも施術',
+        techniques: [
+          { name: '腸腰筋リリース', target: '腸腰筋', description: '腸腰筋の短縮を改善', duration: '5-8分' },
+          { name: '中殿筋強化', target: '中殿筋', description: '中殿筋のアクティベーション', duration: '3-5分' }
+        ]
+      },
+      '太もも〜膝': {
+        title: '太もも〜膝の施術',
+        techniques: [
+          { name: 'ハムストリングスリリース', target: 'ハムストリングス', description: 'もも裏の筋緊張を緩める', duration: '5分' },
+          { name: '膝蓋骨モビライゼーション', target: '膝蓋骨', description: '膝蓋骨の可動性を改善', duration: '3分' }
+        ]
+      },
+      'すね〜足首': {
+        title: 'すね〜足首の施術',
+        techniques: [
+          { name: '腓腹筋リリース', target: '腓腹筋', description: 'ふくらはぎの筋緊張を緩める', duration: '5分' },
+          { name: '足関節モビライゼーション', target: '距腿関節', description: '足関節の背屈可動域を改善', duration: '3-5分' }
+        ]
+      }
+    }
+  },
+
+  getProtocol(primaryCause) {
+    return this.protocols[primaryCause] || null;
+  },
+
+  getContractionProtocol(areaShort) {
+    return this.protocols.contraction?.[areaShort] || null;
+  },
+
+  generatePlan(diagnosisResult, contractionResult) {
+    const plan = {
+      mainProtocol: null,
+      areaProtocols: [],
+      estimatedTime: 0,
+      allCheckpoints: []
+    };
+
+    if (diagnosisResult.primaryCause !== 'none') {
+      plan.mainProtocol = this.getProtocol(diagnosisResult.primaryCause);
+      if (plan.mainProtocol) {
+        plan.estimatedTime += plan.mainProtocol.techniques.reduce((sum, t) => {
+          const mins = parseInt(t.duration) || 5;
+          return sum + mins;
+        }, 0);
+        plan.allCheckpoints.push(...(plan.mainProtocol.checkpoints || []));
+      }
+    }
+
+    if (contractionResult) {
+      const issues = [];
+      if (contractionResult.upper) {
+        issues.push(...contractionResult.upper.contractions, ...contractionResult.upper.tensions);
+      }
+      if (contractionResult.lower) {
+        issues.push(...contractionResult.lower.contractions, ...contractionResult.lower.tensions);
+      }
+
+      const added = new Set();
+      for (const issue of issues) {
+        const key = issue.areaShort;
+        if (added.has(key)) continue;
+        added.add(key);
+
+        const protocol = this.getContractionProtocol(key);
+        if (protocol) {
+          plan.areaProtocols.push({ ...protocol, issueType: issue.type, side: issue.side });
+          plan.estimatedTime += protocol.techniques.reduce((sum, t) => {
+            const mins = parseInt(t.duration) || 3;
+            return sum + mins;
+          }, 0);
+        }
+      }
+    }
+
+    return plan;
   }
 };

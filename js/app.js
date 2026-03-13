@@ -30,6 +30,7 @@
     setupDiagnosisActions();
     setupDetailedExamButtons();
     setupPatientSearch();
+    setupProtocolButton();
     setDefaultDate();
     refreshHistory();
     initDiagrams();
@@ -51,6 +52,7 @@
           if (contractionResult) {
             renderUnifiedAnalysis(contractionResult.upper, contractionResult.lower);
           }
+          renderReport();
         }
       });
     });
@@ -165,6 +167,7 @@
       section.classList.toggle('active', section.id === `${tabName}-section`);
     });
     if (tabName === 'history') refreshHistory();
+    if (tabName === 'report') renderReport();
   }
 
   // ===== ウィザードナビゲーション =====
@@ -332,6 +335,11 @@
     renderDiagnosis(diagnosisResult);
     showDetailedExam();
     updateCompareButton();
+    // Show protocol button
+    const protocolBtn = document.getElementById('showProtocolBtn');
+    if (protocolBtn) protocolBtn.style.display = '';
+    // Auto-generate report
+    renderReport();
     switchTab('diagnosis');
   }
 
@@ -800,8 +808,15 @@
       selfcareBtn.style.display = allIssues.length > 0 ? '' : 'none';
     }
 
+    // プロトコルボタン表示
+    const protocolBtn = document.getElementById('showProtocolBtn');
+    if (protocolBtn) protocolBtn.style.display = '';
+
     // 比較ボタンも更新
     updateCompareButton();
+
+    // レポート更新
+    renderReport();
   }
 
   // ===== 統合分析結果の描画 =====
@@ -1040,18 +1055,50 @@
       const success = Storage.save(examData, diagnosisResult, patientName, memo, detailData, contractionResult, weightBalance, selectedPatientId);
       if (success) {
         alert('検査結果を保存しました');
-        // 保存後に比較ボタンを更新
         updateCompareButton();
       } else {
         alert('保存に失敗しました');
       }
     });
 
-    document.getElementById('savePdfBtn').addEventListener('click', () => {
+    // 患者用PDF
+    document.getElementById('savePdfPatientBtn').addEventListener('click', () => {
       if (!diagnosisResult) return;
       const patientName = document.getElementById('patientName').value;
       const inspectionDate = document.getElementById('inspectionDate').value;
-      PdfExport.exportDiagnosis(patientName, inspectionDate, diagnosisResult);
+      // Gather selfcare data for PDF
+      const selfcareItems = [];
+      if (contractionResult) {
+        const allIssues = [
+          ...(contractionResult.upper ? [...contractionResult.upper.contractions, ...contractionResult.upper.tensions] : []),
+          ...(contractionResult.lower ? [...contractionResult.lower.contractions, ...contractionResult.lower.tensions] : [])
+        ];
+        const rendered = new Set();
+        for (const issue of allIssues) {
+          const cacheKey = `${issue.areaShort}_${issue.type}`;
+          if (rendered.has(cacheKey)) continue;
+          rendered.add(cacheKey);
+          if (typeof SelfcareDatabase !== 'undefined') {
+            const exercise = SelfcareDatabase.getSelfcareForArea(issue.areaShort, issue.type);
+            if (exercise) {
+              selfcareItems.push({
+                name: exercise.name,
+                description: exercise.description || '',
+                duration: exercise.frequency || exercise.duration || ''
+              });
+            }
+          }
+        }
+      }
+      PdfExport.exportPatientPdf(patientName, inspectionDate, diagnosisResult, contractionResult, selfcareItems);
+    });
+
+    // 施術者用PDF
+    document.getElementById('savePdfClinicalBtn').addEventListener('click', () => {
+      if (!diagnosisResult) return;
+      const patientName = document.getElementById('patientName').value;
+      const inspectionDate = document.getElementById('inspectionDate').value;
+      PdfExport.exportClinicalPdf(patientName, inspectionDate, diagnosisResult, contractionResult, detailData, weightBalance);
     });
 
     // 比較ボタン
@@ -1087,6 +1134,271 @@
     document.getElementById('newExamBtn').addEventListener('click', () => {
       resetExam();
     });
+  }
+
+  // ===== 施術プロトコルボタン =====
+  function setupProtocolButton() {
+    const protocolBtn = document.getElementById('showProtocolBtn');
+    if (!protocolBtn) return;
+    protocolBtn.addEventListener('click', () => {
+      const section = document.getElementById('treatmentProtocolSection');
+      if (section.style.display === 'block') {
+        section.style.display = 'none';
+        protocolBtn.textContent = '施術プロトコル';
+      } else {
+        renderTreatmentProtocol();
+        protocolBtn.textContent = 'プロトコルを閉じる';
+      }
+    });
+  }
+
+  // ===== 施術プロトコル描画 =====
+  function renderTreatmentProtocol() {
+    const section = document.getElementById('treatmentProtocolSection');
+    if (!section || !diagnosisResult) return;
+
+    const plan = TreatmentProtocol.generatePlan(diagnosisResult, contractionResult);
+    let html = '<div class="treatment-protocol practitioner-only">';
+    html += '<h2 class="protocol-title">施術プロトコル提案</h2>';
+
+    if (plan.mainProtocol) {
+      html += '<div class="protocol-card protocol-main">';
+      html += `<div class="protocol-card-header"><h3>${plan.mainProtocol.title}</h3><span class="protocol-badge">メインプロトコル</span></div>`;
+      html += '<div class="protocol-techniques">';
+      for (const tech of plan.mainProtocol.techniques) {
+        html += `<div class="protocol-technique">
+          <div class="technique-header">
+            <span class="technique-name">${tech.name}</span>
+            <span class="technique-duration">${tech.duration}</span>
+          </div>
+          <div class="technique-target">対象: ${tech.target}</div>
+          <div class="technique-desc">${tech.description}</div>
+        </div>`;
+      }
+      html += '</div>';
+      if (plan.mainProtocol.checkpoints && plan.mainProtocol.checkpoints.length > 0) {
+        html += '<div class="protocol-checkpoints"><h4>チェックポイント</h4><ul>';
+        for (const cp of plan.mainProtocol.checkpoints) {
+          html += `<li>${cp}</li>`;
+        }
+        html += '</ul></div>';
+      }
+      html += '</div>';
+    }
+
+    if (plan.areaProtocols.length > 0) {
+      html += '<h3 class="protocol-sub-title">部位別プロトコル</h3>';
+      for (const ap of plan.areaProtocols) {
+        const typeLabel = ap.issueType === 'contraction' ? '縮こまり' : '引っ張り';
+        const sideLabel = ap.side === 'both' ? '両側' : ap.side === 'right' ? '右側' : '左側';
+        html += `<div class="protocol-card protocol-area">`;
+        html += `<div class="protocol-card-header"><h3>${ap.title}</h3><span class="protocol-badge-small">${sideLabel} / ${typeLabel}</span></div>`;
+        html += '<div class="protocol-techniques">';
+        for (const tech of ap.techniques) {
+          html += `<div class="protocol-technique">
+            <div class="technique-header">
+              <span class="technique-name">${tech.name}</span>
+              <span class="technique-duration">${tech.duration}</span>
+            </div>
+            <div class="technique-target">対象: ${tech.target}</div>
+            <div class="technique-desc">${tech.description}</div>
+          </div>`;
+        }
+        html += '</div></div>';
+      }
+    }
+
+    if (plan.estimatedTime > 0) {
+      html += `<div class="protocol-total-time">推定施術時間: <strong>約${plan.estimatedTime}分</strong></div>`;
+    }
+
+    if (!plan.mainProtocol && plan.areaProtocols.length === 0) {
+      html += '<div class="protocol-empty"><p>現在の診断結果に基づく施術プロトコルはありません。</p></div>';
+    }
+
+    html += '</div>';
+    section.innerHTML = html;
+    section.style.display = 'block';
+    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // ===== レポート描画 =====
+  function renderReport() {
+    const container = document.getElementById('reportContent');
+    if (!container || !diagnosisResult) {
+      if (container) {
+        container.innerHTML = '<div class="report-empty"><p>診断を完了すると、レポートが自動生成されます。</p></div>';
+      }
+      return;
+    }
+
+    const causeInfo = InspectionLogic.causeLabels[diagnosisResult.primaryCause];
+    const patientName = document.getElementById('patientName').value || '名前未入力';
+    const inspectionDate = document.getElementById('inspectionDate').value || new Date().toISOString().split('T')[0];
+
+    let html = '';
+
+    // Header
+    html += `<div class="report-header-card">
+      <div class="report-patient-info">
+        <h3>${patientName}</h3>
+        <span class="report-date">${inspectionDate}</span>
+      </div>
+    </div>`;
+
+    // Main diagnosis
+    html += `<div class="report-diagnosis-card" style="--cause-color: ${causeInfo.color}">
+      <div class="report-cause-icon">${causeInfo.icon}</div>
+      <h3 class="report-cause-label" style="color: ${causeInfo.color}">${causeInfo.label}</h3>
+      <p class="report-cause-summary">${diagnosisResult.summary}</p>
+      ${diagnosisResult.treatmentArea && diagnosisResult.treatmentArea !== 'なし'
+        ? `<div class="report-treatment-badge">治療対象: ${diagnosisResult.treatmentArea}</div>` : ''}
+    </div>`;
+
+    // Body map summary (text-based)
+    html += '<div class="report-body-map">';
+    html += '<h3>身体バランスマップ</h3>';
+    html += '<div class="report-map-grid">';
+
+    // Standing landmarks
+    const posLabels = { standing: '立位', seated: '座位', upperBody: '上半身' };
+    for (const pos of ['standing', 'seated', 'upperBody']) {
+      const data = examData[pos];
+      if (!data) continue;
+      html += `<div class="report-map-position">`;
+      html += `<h4>${posLabels[pos]}</h4>`;
+      for (const [lmKey, lmConfig] of Object.entries(InspectionLogic.landmarks)) {
+        const val = data[lmKey] || 0;
+        const label = InspectionLogic.valueLabels[val.toString()];
+        const indicator = val === 0 ? 'balanced' : (val < 0 ? 'left-high' : 'right-high');
+        html += `<div class="report-map-item ${indicator}">
+          <span class="report-map-name">${lmConfig.name}</span>
+          <span class="report-map-value">${label}</span>
+        </div>`;
+      }
+      html += '</div>';
+    }
+    html += '</div></div>';
+
+    // Contraction summary
+    if (contractionResult) {
+      const allIssues = [];
+      if (contractionResult.upper) {
+        allIssues.push(...contractionResult.upper.contractions.map(c => ({ ...c, bodyPart: '上半身' })));
+        allIssues.push(...contractionResult.upper.tensions.map(t => ({ ...t, bodyPart: '上半身' })));
+      }
+      if (contractionResult.lower) {
+        allIssues.push(...contractionResult.lower.contractions.map(c => ({ ...c, bodyPart: '下半身' })));
+        allIssues.push(...contractionResult.lower.tensions.map(t => ({ ...t, bodyPart: '下半身' })));
+      }
+
+      if (allIssues.length > 0) {
+        html += '<div class="report-issues">';
+        html += '<h3>検出された問題箇所</h3>';
+        html += '<div class="report-issues-grid">';
+        for (const issue of allIssues) {
+          const typeLabel = issue.type === 'contraction' ? '縮こまり' : '引っ張り';
+          const sideLabel = issue.side === 'both' ? '両側' : issue.side === 'right' ? '右側' : '左側';
+          const typeClass = issue.type === 'contraction' ? 'contraction' : 'tension';
+          html += `<div class="report-issue-item ${typeClass}">
+            <div class="report-issue-type">${typeLabel}</div>
+            <div class="report-issue-area">${issue.area}</div>
+            <div class="report-issue-side">${sideLabel} / ${issue.bodyPart}</div>
+          </div>`;
+        }
+        html += '</div></div>';
+      }
+    }
+
+    // Before/after comparison (if previous data exists)
+    const pid = selectedPatientId || Storage.findPatientIdByName(patientName);
+    if (pid) {
+      const history = Storage.getHistoryByPatient(pid);
+      if (history.length > 0) {
+        const prevEntry = history[0];
+        const prevDate = new Date(prevEntry.date);
+        const prevDateStr = `${prevDate.getFullYear()}/${String(prevDate.getMonth() + 1).padStart(2, '0')}/${String(prevDate.getDate()).padStart(2, '0')}`;
+        const prevCause = InspectionLogic.causeLabels[prevEntry.diagnosisResult?.primaryCause];
+
+        html += '<div class="report-comparison">';
+        html += '<h3>前回との比較</h3>';
+        html += `<div class="report-comparison-summary">
+          <div class="report-comp-prev">
+            <span class="report-comp-label">前回 (${prevDateStr})</span>
+            <span class="report-comp-value">${prevCause ? prevCause.icon + ' ' + prevCause.label : '-'}</span>
+          </div>
+          <div class="report-comp-arrow">→</div>
+          <div class="report-comp-curr">
+            <span class="report-comp-label">今回</span>
+            <span class="report-comp-value">${causeInfo.icon} ${causeInfo.label}</span>
+          </div>
+        </div>`;
+
+        // Landmark changes
+        let changeCount = 0;
+        let improvedCount = 0;
+        for (const pos of ['standing', 'seated', 'upperBody']) {
+          const prevData = prevEntry.examData?.[pos];
+          const currData = examData[pos];
+          if (!prevData || !currData) continue;
+          for (const lmKey of Object.keys(InspectionLogic.landmarks)) {
+            const pv = prevData[lmKey] || 0;
+            const cv = currData[lmKey] || 0;
+            if (pv !== cv) {
+              changeCount++;
+              if (cv === 0 || Math.abs(cv) < Math.abs(pv)) improvedCount++;
+            }
+          }
+        }
+        if (changeCount > 0) {
+          html += `<div class="report-comp-stats">
+            <div class="report-stat"><span class="report-stat-num">${changeCount}</span><span class="report-stat-label">箇所変化</span></div>
+            <div class="report-stat improved"><span class="report-stat-num">${improvedCount}</span><span class="report-stat-label">箇所改善</span></div>
+          </div>`;
+        } else {
+          html += '<p class="report-comp-no-change">前回と同じ状態です。</p>';
+        }
+        html += '</div>';
+      }
+    }
+
+    // Selfcare summary
+    if (contractionResult) {
+      const allIssues = [];
+      if (contractionResult.upper) {
+        allIssues.push(...contractionResult.upper.contractions, ...contractionResult.upper.tensions);
+      }
+      if (contractionResult.lower) {
+        allIssues.push(...contractionResult.lower.contractions, ...contractionResult.lower.tensions);
+      }
+
+      if (allIssues.length > 0 && typeof SelfcareDatabase !== 'undefined') {
+        const rendered = new Set();
+        const exercises = [];
+        for (const issue of allIssues) {
+          const cacheKey = `${issue.areaShort}_${issue.type}`;
+          if (rendered.has(cacheKey)) continue;
+          rendered.add(cacheKey);
+          const exercise = SelfcareDatabase.getSelfcareForArea(issue.areaShort, issue.type);
+          if (exercise) exercises.push(exercise);
+        }
+
+        if (exercises.length > 0) {
+          html += '<div class="report-selfcare">';
+          html += '<h3>セルフケアのおすすめ</h3>';
+          html += '<div class="report-selfcare-list">';
+          for (const ex of exercises) {
+            html += `<div class="report-selfcare-item">
+              <span class="report-sc-name">${ex.name}</span>
+              <span class="report-sc-freq">${ex.frequency || ex.duration || ''}</span>
+            </div>`;
+          }
+          html += '</div></div>';
+        }
+      }
+    }
+
+    container.innerHTML = html;
   }
 
   // ===== リセット =====
@@ -1137,6 +1449,19 @@
       selfcareBtn.style.display = 'none';
       selfcareBtn.textContent = 'セルフケア提案';
     }
+
+    // Reset protocol
+    const protocolSection = document.getElementById('treatmentProtocolSection');
+    if (protocolSection) protocolSection.style.display = 'none';
+    const protocolBtn = document.getElementById('showProtocolBtn');
+    if (protocolBtn) {
+      protocolBtn.style.display = 'none';
+      protocolBtn.textContent = '施術プロトコル';
+    }
+
+    // Reset report
+    const reportContent = document.getElementById('reportContent');
+    if (reportContent) reportContent.innerHTML = '';
 
     initDiagrams();
     goToStep(0);
@@ -1252,8 +1577,15 @@
       }
     }
 
+    // プロトコルボタン表示
+    const protocolBtn = document.getElementById('showProtocolBtn');
+    if (protocolBtn) protocolBtn.style.display = '';
+
     // 比較ボタンを更新
     updateCompareButton();
+
+    // レポート更新
+    renderReport();
 
     switchTab('diagnosis');
   }
