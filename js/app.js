@@ -468,20 +468,24 @@
     BodyDiagram.init('diagram-standing');
     BodyDiagram.init('diagram-seated');
     BodyDiagram.init('diagram-upperBody');
-    BodyDiagram.init('diagram-upperDetail');
-    BodyDiagram.init('diagram-lowerDetail');
+    BodyDiagram.init('diagram-detailUnified');
   }
 
   function updateDiagram(position) {
     const diagramMap = {
       standing:    { id: 'diagram-standing',    type: 'firstStage', data: examData.standing },
       seated:      { id: 'diagram-seated',      type: 'firstStage', data: examData.seated },
-      upperBody:   { id: 'diagram-upperBody',   type: 'firstStage', data: examData.upperBody },
-      upperDetail: { id: 'diagram-upperDetail', type: 'upperDetail', data: detailData.upperDetail },
-      lowerDetail: { id: 'diagram-lowerDetail', type: 'lowerDetail', data: detailData.lowerDetail }
+      upperBody:   { id: 'diagram-upperBody',   type: 'firstStage', data: examData.upperBody }
     };
     const cfg = diagramMap[position];
-    if (cfg) BodyDiagram.update(cfg.id, cfg.type, cfg.data);
+    if (cfg) {
+      BodyDiagram.update(cfg.id, cfg.type, cfg.data);
+    }
+
+    // 詳細検査入力時は全身統合ダイアグラムをリアルタイム更新
+    if (position === 'upperDetail' || position === 'lowerDetail') {
+      BodyDiagram.updateUnified('diagram-detailUnified', detailData.upperDetail, detailData.lowerDetail);
+    }
   }
 
   function setDefaultDate() {
@@ -1006,6 +1010,11 @@
 
     let html = '';
 
+    // 全身統合人体図（診断結果画面上部に表示）
+    html += `<div class="body-diagram-wrapper unified-diagram-wrapper">
+      <div class="body-diagram-container" id="diagram-diagnosis-body"></div>
+    </div>`;
+
     // メイン診断（両モード共通）
     html += `
     <div class="diagnosis-main" style="border-color: ${causeInfo.color}">
@@ -1087,6 +1096,19 @@
     </div>`;
 
     container.innerHTML = html;
+
+    // 診断結果画面の全身人体図を描画
+    const diagBodyEl = document.getElementById('diagram-diagnosis-body');
+    if (diagBodyEl) {
+      BodyDiagram.init('diagram-diagnosis-body');
+      // 詳細検査データがあれば全6ランドマーク表示、なければ基本3ランドマーク
+      if (detailData.upperDetail.acromion !== null) {
+        BodyDiagram.updateUnified('diagram-diagnosis-body', detailData.upperDetail, detailData.lowerDetail);
+      } else {
+        BodyDiagram.update('diagram-diagnosis-body', 'firstStage', examData.standing);
+      }
+    }
+
     document.getElementById('diagnosisActions').style.display = 'flex';
     // 印刷ボタン表示
     const printBtn = document.getElementById('printSheetBtn');
@@ -1225,11 +1247,8 @@
 
     contractionResult = { upper: upperResult, lower: lowerResult };
 
-    // ダイアグラム更新
-    BodyDiagram.update('diagram-upperDetail', 'upperDetail', detailData.upperDetail);
-    BodyDiagram.showZones('diagram-upperDetail', 'upperDetail', detailData.upperDetail);
-    BodyDiagram.update('diagram-lowerDetail', 'lowerDetail', detailData.lowerDetail);
-    BodyDiagram.showZones('diagram-lowerDetail', 'lowerDetail', detailData.lowerDetail);
+    // 全身統合ダイアグラム更新
+    BodyDiagram.updateUnified('diagram-detailUnified', detailData.upperDetail, detailData.lowerDetail);
 
     renderUnifiedAnalysis(upperResult, lowerResult);
 
