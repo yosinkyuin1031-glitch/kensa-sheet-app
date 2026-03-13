@@ -63,6 +63,12 @@
       <div class="wizard-panel active" data-panel="0">
         <div class="form-card">
           <h3 class="card-title">患者情報</h3>
+          <div class="patient-search-wrapper" id="patientSearchWrapper">
+            <label for="patientSearch">患者検索</label>
+            <input type="text" id="patientSearch" placeholder="名前で検索..." autocomplete="off">
+            <div class="patient-suggestions" id="patientSuggestions"></div>
+            <div class="patient-exam-count" id="patientExamCount" style="display:none;"></div>
+          </div>
           <div class="form-row">
             <div class="form-group">
               <label for="patientName">氏名</label>
@@ -356,9 +362,13 @@
       <!-- セルフケア提案（非表示、ボタンで表示） -->
       <div id="selfcareSection" style="display:none;"></div>
 
+      <!-- ビフォーアフター比較 -->
+      <div id="comparisonSection" style="display:none;"></div>
+
       <!-- アクションボタン -->
       <div class="form-actions action-bar" id="diagnosisActions" style="display:none;">
         <button type="button" id="saveHistoryBtn" class="btn btn-secondary">履歴に保存</button>
+        <button type="button" id="compareBtn" class="btn btn-secondary" style="display:none;">前回と比較</button>
         <button type="button" id="savePdfBtn" class="btn btn-secondary">PDF保存</button>
         <button type="button" id="showSelfcareBtn" class="btn btn-accent" style="display:none;">セルフケア提案</button>
         <button type="button" id="newExamBtn" class="btn btn-primary">新しい検査</button>

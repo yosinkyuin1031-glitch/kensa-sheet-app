@@ -18,6 +18,7 @@
   let weightBalance = null;  // 'right', 'even', 'left'
   let diagnosisResult = null;
   let contractionResult = null;  // { upper: ..., lower: ... }
+  let selectedPatientId = null;  // 選択中の患者ID
 
   // ===== 初期化 =====
   function init() {
@@ -28,6 +29,7 @@
     setupWeightBalanceButtons();
     setupDiagnosisActions();
     setupDetailedExamButtons();
+    setupPatientSearch();
     setDefaultDate();
     refreshHistory();
     initDiagrams();
@@ -77,6 +79,75 @@
   function setDefaultDate() {
     const dateInput = document.getElementById('inspectionDate');
     if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+  }
+
+  // ===== 患者検索機能 =====
+  function setupPatientSearch() {
+    const searchInput = document.getElementById('patientSearch');
+    const suggestionsDiv = document.getElementById('patientSuggestions');
+    const examCountDiv = document.getElementById('patientExamCount');
+    if (!searchInput || !suggestionsDiv) return;
+
+    let debounceTimer = null;
+
+    searchInput.addEventListener('input', () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        const query = searchInput.value.trim();
+        if (query.length === 0) {
+          suggestionsDiv.innerHTML = '';
+          suggestionsDiv.style.display = 'none';
+          return;
+        }
+
+        const results = Storage.searchPatients(query);
+        if (results.length === 0) {
+          suggestionsDiv.innerHTML = '<div class="patient-suggestion-empty">該当する患者が見つかりません</div>';
+          suggestionsDiv.style.display = 'block';
+          return;
+        }
+
+        suggestionsDiv.innerHTML = results.map(p => {
+          const lastDate = new Date(p.lastDate);
+          const dateStr = `${lastDate.getFullYear()}/${String(lastDate.getMonth() + 1).padStart(2, '0')}/${String(lastDate.getDate()).padStart(2, '0')}`;
+          return `<div class="patient-suggestion-item" data-patient-id="${p.patientId}" data-patient-name="${p.patientName}">
+            <span class="suggestion-name">${p.patientName}</span>
+            <span class="suggestion-meta">検査${p.examCount}回 / 最終: ${dateStr}</span>
+          </div>`;
+        }).join('');
+        suggestionsDiv.style.display = 'block';
+
+        // クリックイベント
+        suggestionsDiv.querySelectorAll('.patient-suggestion-item').forEach(item => {
+          item.addEventListener('click', () => {
+            const pid = item.dataset.patientId;
+            const pname = item.dataset.patientName;
+            selectPatient(pid, pname);
+            suggestionsDiv.style.display = 'none';
+            searchInput.value = '';
+          });
+        });
+      }, 200);
+    });
+
+    // 検索欄外クリックで候補を閉じる
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#patientSearchWrapper')) {
+        suggestionsDiv.style.display = 'none';
+      }
+    });
+  }
+
+  function selectPatient(patientId, patientName) {
+    selectedPatientId = patientId;
+    document.getElementById('patientName').value = patientName;
+
+    const history = Storage.getHistoryByPatient(patientId);
+    const examCountDiv = document.getElementById('patientExamCount');
+    if (examCountDiv && history.length > 0) {
+      examCountDiv.textContent = `過去${history.length}回の検査記録があります`;
+      examCountDiv.style.display = 'block';
+    }
   }
 
   // ===== タブナビゲーション =====
@@ -260,7 +331,254 @@
     diagnosisResult = InspectionLogic.diagnose(examData);
     renderDiagnosis(diagnosisResult);
     showDetailedExam();
+    updateCompareButton();
     switchTab('diagnosis');
+  }
+
+  // ===== 比較ボタンの表示制御 =====
+  function updateCompareButton() {
+    const compareBtn = document.getElementById('compareBtn');
+    if (!compareBtn) return;
+
+    // 現在の患者IDを特定
+    const patientName = document.getElementById('patientName').value;
+    const pid = selectedPatientId || Storage.findPatientIdByName(patientName);
+
+    if (!pid) {
+      compareBtn.style.display = 'none';
+      return;
+    }
+
+    const history = Storage.getHistoryByPatient(pid);
+    if (history.length > 0) {
+      compareBtn.style.display = '';
+    } else {
+      compareBtn.style.display = 'none';
+    }
+  }
+
+  // ===== ビフォーアフター比較 =====
+  function renderComparison() {
+    const compSection = document.getElementById('comparisonSection');
+    if (!compSection) return;
+
+    const patientName = document.getElementById('patientName').value;
+    const pid = selectedPatientId || Storage.findPatientIdByName(patientName);
+    if (!pid) return;
+
+    const history = Storage.getHistoryByPatient(pid);
+    if (history.length === 0) return;
+
+    // 最新（＝前回）の検査を取得
+    const prevEntry = history[0];
+    const prevResult = prevEntry.diagnosisResult;
+    const prevDetail = prevEntry.contractionResult;
+    const prevDate = new Date(prevEntry.date);
+    const prevDateStr = `${prevDate.getFullYear()}/${String(prevDate.getMonth() + 1).padStart(2, '0')}/${String(prevDate.getDate()).padStart(2, '0')}`;
+
+    let html = '<div class="comparison-card">';
+    html += '<div class="comparison-header">';
+    html += '<h3>前回との比較（ビフォーアフター）</h3>';
+    html += `<p class="comparison-date-info">前回検査日: ${prevDateStr}</p>`;
+    html += '</div>';
+
+    // 基本3ランドマーク比較（立位・座位・上半身）
+    const positionNames = { standing: '立位', seated: '座位', upperBody: '上半身' };
+    const positions = ['standing', 'seated', 'upperBody'];
+
+    for (const pos of positions) {
+      const prevData = prevEntry.examData[pos];
+      const currData = examData[pos];
+      if (!prevData || !currData) continue;
+
+      html += `<div class="comparison-position-block">`;
+      html += `<h4 class="comparison-position-title">${positionNames[pos]}</h4>`;
+
+      for (const [lmKey, lmConfig] of Object.entries(InspectionLogic.landmarks)) {
+        const prevVal = prevData[lmKey] || 0;
+        const currVal = currData[lmKey] || 0;
+        const prevLabel = InspectionLogic.valueLabels[prevVal.toString()];
+        const currLabel = InspectionLogic.valueLabels[currVal.toString()];
+
+        let changeClass = 'comparison-unchanged';
+        let changeText = '変化なし';
+
+        if (prevVal !== currVal) {
+          // 改善: 前回ずれていた→正常に近づいた
+          if (currVal === 0 && prevVal !== 0) {
+            changeClass = 'comparison-improved';
+            changeText = '改善';
+          } else if (prevVal === 0 && currVal !== 0) {
+            changeClass = 'comparison-worsened';
+            changeText = '悪化';
+          } else if (Math.abs(currVal) < Math.abs(prevVal)) {
+            changeClass = 'comparison-improved';
+            changeText = '改善';
+          } else {
+            changeClass = 'comparison-worsened';
+            changeText = '悪化';
+          }
+        }
+
+        html += `<div class="comparison-row ${changeClass}">
+          <span class="comparison-landmark">${lmConfig.name}</span>
+          <span class="comparison-prev">${prevLabel}</span>
+          <span class="comparison-arrow">→</span>
+          <span class="comparison-curr">${currLabel}</span>
+          <span class="comparison-change">${changeText}</span>
+        </div>`;
+      }
+
+      html += '</div>';
+    }
+
+    // 詳細6ランドマーク比較
+    if (prevDetail && contractionResult) {
+      html += '<div class="comparison-position-block">';
+      html += '<h4 class="comparison-position-title">詳細検査（上半身）</h4>';
+
+      const prevUpperLandmarks = prevDetail.upper ? prevDetail.upper.landmarks : [];
+      const currUpperLandmarks = contractionResult.upper ? contractionResult.upper.landmarks : [];
+
+      for (let i = 0; i < currUpperLandmarks.length; i++) {
+        const curr = currUpperLandmarks[i];
+        const prev = prevUpperLandmarks[i];
+        if (!prev) continue;
+
+        const prevLabel = InspectionLogic.valueLabels[prev.value.toString()];
+        const currLabel = InspectionLogic.valueLabels[curr.value.toString()];
+        const changeInfo = getChangeInfo(prev.value, curr.value);
+
+        html += `<div class="comparison-row ${changeInfo.cls}">
+          <span class="comparison-landmark">${curr.name}</span>
+          <span class="comparison-prev">${prevLabel}</span>
+          <span class="comparison-arrow">→</span>
+          <span class="comparison-curr">${currLabel}</span>
+          <span class="comparison-change">${changeInfo.text}</span>
+        </div>`;
+      }
+
+      html += '</div>';
+
+      html += '<div class="comparison-position-block">';
+      html += '<h4 class="comparison-position-title">詳細検査（下半身）</h4>';
+
+      const prevLowerLandmarks = prevDetail.lower ? prevDetail.lower.landmarks : [];
+      const currLowerLandmarks = contractionResult.lower ? contractionResult.lower.landmarks : [];
+
+      for (let i = 0; i < currLowerLandmarks.length; i++) {
+        const curr = currLowerLandmarks[i];
+        const prev = prevLowerLandmarks[i];
+        if (!prev) continue;
+
+        const prevLabel = InspectionLogic.valueLabels[prev.value.toString()];
+        const currLabel = InspectionLogic.valueLabels[curr.value.toString()];
+        const changeInfo = getChangeInfo(prev.value, curr.value);
+
+        html += `<div class="comparison-row ${changeInfo.cls}">
+          <span class="comparison-landmark">${curr.name}</span>
+          <span class="comparison-prev">${prevLabel}</span>
+          <span class="comparison-arrow">→</span>
+          <span class="comparison-curr">${currLabel}</span>
+          <span class="comparison-change">${changeInfo.text}</span>
+        </div>`;
+      }
+
+      html += '</div>';
+
+      // 縮こまり・引っ張りの変化
+      html += renderContractionComparison(prevDetail, contractionResult);
+    }
+
+    html += '</div>'; // .comparison-card
+
+    compSection.innerHTML = html;
+    compSection.style.display = 'block';
+    compSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function getChangeInfo(prevVal, currVal) {
+    if (prevVal === currVal) {
+      return { cls: 'comparison-unchanged', text: '変化なし' };
+    }
+    if (currVal === 0 && prevVal !== 0) {
+      return { cls: 'comparison-improved', text: '改善' };
+    }
+    if (prevVal === 0 && currVal !== 0) {
+      return { cls: 'comparison-worsened', text: '悪化' };
+    }
+    if (Math.abs(currVal) < Math.abs(prevVal)) {
+      return { cls: 'comparison-improved', text: '改善' };
+    }
+    return { cls: 'comparison-worsened', text: '悪化' };
+  }
+
+  function renderContractionComparison(prevDetail, currDetail) {
+    let html = '<div class="comparison-position-block">';
+    html += '<h4 class="comparison-position-title">縮こまり・引っ張りの変化</h4>';
+
+    // 前回の問題箇所
+    const prevIssues = [];
+    if (prevDetail.upper) {
+      prevIssues.push(...prevDetail.upper.contractions.map(c => ({ ...c, bodyPart: '上半身' })));
+      prevIssues.push(...prevDetail.upper.tensions.map(t => ({ ...t, bodyPart: '上半身' })));
+    }
+    if (prevDetail.lower) {
+      prevIssues.push(...prevDetail.lower.contractions.map(c => ({ ...c, bodyPart: '下半身' })));
+      prevIssues.push(...prevDetail.lower.tensions.map(t => ({ ...t, bodyPart: '下半身' })));
+    }
+
+    // 今回の問題箇所
+    const currIssues = [];
+    if (currDetail.upper) {
+      currIssues.push(...currDetail.upper.contractions.map(c => ({ ...c, bodyPart: '上半身' })));
+      currIssues.push(...currDetail.upper.tensions.map(t => ({ ...t, bodyPart: '上半身' })));
+    }
+    if (currDetail.lower) {
+      currIssues.push(...currDetail.lower.contractions.map(c => ({ ...c, bodyPart: '下半身' })));
+      currIssues.push(...currDetail.lower.tensions.map(t => ({ ...t, bodyPart: '下半身' })));
+    }
+
+    // 比較
+    const allAreas = new Set();
+    prevIssues.forEach(i => allAreas.add(i.area));
+    currIssues.forEach(i => allAreas.add(i.area));
+
+    if (allAreas.size === 0) {
+      html += '<div class="comparison-row comparison-unchanged"><span>前回・今回ともに問題箇所なし</span></div>';
+    } else {
+      for (const area of allAreas) {
+        const prev = prevIssues.find(i => i.area === area);
+        const curr = currIssues.find(i => i.area === area);
+
+        let cls = 'comparison-unchanged';
+        let text = '';
+
+        if (prev && !curr) {
+          cls = 'comparison-improved';
+          const typeLabel = prev.type === 'contraction' ? '縮こまり' : '引っ張り';
+          text = `${area}: ${typeLabel}が解消`;
+        } else if (!prev && curr) {
+          cls = 'comparison-worsened';
+          const typeLabel = curr.type === 'contraction' ? '縮こまり' : '引っ張り';
+          text = `${area}: 新たに${typeLabel}が発生`;
+        } else if (prev && curr) {
+          if (prev.type === curr.type && prev.side === curr.side) {
+            const typeLabel = curr.type === 'contraction' ? '縮こまり' : '引っ張り';
+            text = `${area}: ${typeLabel}が継続`;
+          } else {
+            text = `${area}: 状態が変化`;
+          }
+        }
+
+        if (text) {
+          html += `<div class="comparison-row ${cls}"><span>${text}</span></div>`;
+        }
+      }
+    }
+
+    html += '</div>';
+    return html;
   }
 
   // ===== 診断結果の描画 =====
@@ -481,6 +799,9 @@
     if (selfcareBtn) {
       selfcareBtn.style.display = allIssues.length > 0 ? '' : 'none';
     }
+
+    // 比較ボタンも更新
+    updateCompareButton();
   }
 
   // ===== 統合分析結果の描画 =====
@@ -716,9 +1037,11 @@
       if (!diagnosisResult) return;
       const patientName = document.getElementById('patientName').value;
       const memo = document.getElementById('inspectionMemo').value;
-      const success = Storage.save(examData, diagnosisResult, patientName, memo, detailData, contractionResult, weightBalance);
+      const success = Storage.save(examData, diagnosisResult, patientName, memo, detailData, contractionResult, weightBalance, selectedPatientId);
       if (success) {
         alert('検査結果を保存しました');
+        // 保存後に比較ボタンを更新
+        updateCompareButton();
       } else {
         alert('保存に失敗しました');
       }
@@ -730,6 +1053,21 @@
       const inspectionDate = document.getElementById('inspectionDate').value;
       PdfExport.exportDiagnosis(patientName, inspectionDate, diagnosisResult);
     });
+
+    // 比較ボタン
+    const compareBtn = document.getElementById('compareBtn');
+    if (compareBtn) {
+      compareBtn.addEventListener('click', () => {
+        const compSection = document.getElementById('comparisonSection');
+        if (compSection.style.display === 'block') {
+          compSection.style.display = 'none';
+          compareBtn.textContent = '前回と比較';
+        } else {
+          renderComparison();
+          compareBtn.textContent = '比較を閉じる';
+        }
+      });
+    }
 
     // セルフケア提案ボタン
     const selfcareBtn = document.getElementById('showSelfcareBtn');
@@ -765,10 +1103,17 @@
     weightBalance = null;
     diagnosisResult = null;
     contractionResult = null;
+    selectedPatientId = null;
 
     document.querySelectorAll('.landmark-btn').forEach(btn => btn.classList.remove('selected'));
     document.getElementById('patientName').value = '';
     document.getElementById('inspectionMemo').value = '';
+    document.getElementById('patientSearch').value = '';
+    const examCountDiv = document.getElementById('patientExamCount');
+    if (examCountDiv) {
+      examCountDiv.style.display = 'none';
+      examCountDiv.textContent = '';
+    }
     setDefaultDate();
 
     document.getElementById('seatedComparison').style.display = 'none';
@@ -776,6 +1121,15 @@
     document.getElementById('diagnosisActions').style.display = 'none';
     document.getElementById('detailedExamSection').style.display = 'none';
     document.getElementById('contractionAnalysis').style.display = 'none';
+
+    const compSection = document.getElementById('comparisonSection');
+    if (compSection) compSection.style.display = 'none';
+    const compareBtn = document.getElementById('compareBtn');
+    if (compareBtn) {
+      compareBtn.style.display = 'none';
+      compareBtn.textContent = '前回と比較';
+    }
+
     const selfcareDiv = document.getElementById('selfcareSection');
     if (selfcareDiv) selfcareDiv.style.display = 'none';
     const selfcareBtn = document.getElementById('showSelfcareBtn');
@@ -811,10 +1165,23 @@
     if (entry.weightBalance) {
       weightBalance = entry.weightBalance;
     }
+    if (entry.patientId) {
+      selectedPatientId = entry.patientId;
+    }
 
     document.getElementById('patientName').value = entry.patientName || '';
     if (entry.memo) {
       document.getElementById('inspectionMemo').value = entry.memo;
+    }
+
+    // 患者検査回数を表示
+    if (entry.patientId) {
+      const history = Storage.getHistoryByPatient(entry.patientId);
+      const examCountDiv = document.getElementById('patientExamCount');
+      if (examCountDiv && history.length > 0) {
+        examCountDiv.textContent = `過去${history.length}回の検査記録があります`;
+        examCountDiv.style.display = 'block';
+      }
     }
 
     // ランドマークボタンの状態を復元
@@ -884,6 +1251,9 @@
         selfcareBtn.style.display = allIssues.length > 0 ? '' : 'none';
       }
     }
+
+    // 比較ボタンを更新
+    updateCompareButton();
 
     switchTab('diagnosis');
   }
