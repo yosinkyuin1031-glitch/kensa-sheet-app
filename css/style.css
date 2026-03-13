@@ -2948,20 +2948,415 @@ body[data-view="patient"] .patient-treatment-hint p {
 }
 
 /* ===== Print / PDF ===== */
+/* ===== 印刷用コンテナ（通常は非表示） ===== */
+.print-container {
+  display: none;
+}
+
+/* ===== 印刷用スタイル ===== */
 @media print {
-  .header { position: static; background: var(--primary); }
-  .tab-nav, .form-actions, .history-actions, .wizard-progress, .view-toggle, .app-footer { display: none; }
-  .tab-content { display: block !important; }
-  #exam-section, #history-section { display: none !important; }
-  #report-section { display: block !important; }
-  .practitioner-only { display: block !important; }
-  .patient-only { display: none !important; }
-  .report-header-card { background: var(--primary); print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-  .report-diagnosis-card { break-inside: avoid; }
-  .report-body-map { break-inside: avoid; }
-  .report-issues { break-inside: avoid; }
-  .report-comparison { break-inside: avoid; }
-  .report-selfcare { break-inside: avoid; }
-  .form-card:hover { transform: none; box-shadow: var(--shadow); }
-  .protocol-card:hover { transform: none; }
+  /* アプリ全体を非表示、印刷コンテナのみ表示 */
+  .header, .main-content, .app-footer, .tutorial-overlay { display: none !important; }
+
+  .print-container {
+    display: block !important;
+  }
+
+  * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+
+  @page {
+    size: A4;
+    margin: 8mm;
+  }
+}
+
+/* ===== 印刷ページ共通（画面プレビュー兼用） ===== */
+.print-page {
+  width: 100%;
+  max-width: 210mm;
+  min-height: 280mm;
+  margin: 0 auto;
+  padding: 16px 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+  color: #1e293b;
+  page-break-after: always;
+  break-after: page;
+  background: white;
+}
+
+.print-page:last-child {
+  page-break-after: auto;
+  break-after: auto;
+}
+
+/* ヘッダー */
+.print-header {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  border-bottom: 3px solid #2563eb;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+}
+
+.print-logo {
+  font-size: 11px;
+  font-weight: 700;
+  color: #2563eb;
+  white-space: nowrap;
+}
+
+.print-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+/* 患者情報 */
+.print-patient-info {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 14px;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.print-info-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.print-info-label {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.print-info-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+/* 2カラムレイアウト */
+.print-body {
+  display: flex;
+  gap: 16px;
+}
+
+.print-left-col {
+  flex: 1;
+  min-width: 0;
+}
+
+.print-right-col {
+  flex: 1;
+  min-width: 0;
+}
+
+/* セクション */
+.print-section {
+  margin-bottom: 12px;
+}
+
+.print-section-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: #2563eb;
+  margin-bottom: 6px;
+  padding-left: 8px;
+  border-left: 3px solid #2563eb;
+}
+
+/* 診断ボックス */
+.print-diagnosis-box {
+  padding: 10px 12px;
+  border: 2px solid;
+  border-radius: 8px;
+  background: white;
+}
+
+.print-diagnosis-label {
+  font-size: 14px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.print-diagnosis-summary {
+  font-size: 11px;
+  line-height: 1.6;
+  color: #475569;
+}
+
+/* 重心バランス */
+.print-balance-box {
+  padding: 8px 12px;
+  background: #f8fafc;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.print-balance-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.print-balance-label-l,
+.print-balance-label-r {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  width: 16px;
+  text-align: center;
+}
+
+.print-balance-track {
+  flex: 1;
+  height: 8px;
+  background: linear-gradient(to right, #3b82f6, #e2e8f0, #e2e8f0, #f97316);
+  border-radius: 4px;
+  position: relative;
+}
+
+.print-balance-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #1e293b;
+  border: 2px solid white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  position: absolute;
+  top: -3px;
+}
+
+.print-balance-dot.left { left: 15%; }
+.print-balance-dot.even { left: calc(50% - 7px); }
+.print-balance-dot.right { right: 15%; }
+
+.print-balance-text {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  margin-top: 4px;
+  color: #475569;
+}
+
+/* テーブル */
+.print-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.print-table th {
+  background: #f1f5f9;
+  padding: 5px 8px;
+  text-align: left;
+  font-weight: 700;
+  font-size: 10px;
+  color: #64748b;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.print-table td {
+  padding: 5px 8px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.print-even {
+  color: #22c55e;
+  font-weight: 600;
+}
+
+.print-uneven {
+  color: #ef4444;
+  font-weight: 700;
+}
+
+/* 人体図 */
+.print-diagram-box {
+  display: flex;
+  justify-content: center;
+  padding: 4px;
+}
+
+.print-diagram-box .body-diagram-container {
+  width: 200px;
+  border: none;
+  box-shadow: none;
+  padding: 4px;
+}
+
+/* 問題箇所 */
+.print-issues {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.print-issue {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  background: #fef2f2;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.print-issue.good {
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.print-issue-icon {
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.print-issue-icon.contraction {
+  color: #ef4444;
+}
+
+.print-issue-icon.tension {
+  color: #8b5cf6;
+}
+
+/* フッター */
+.print-footer {
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.print-footer p {
+  font-size: 9px;
+  color: #94a3b8;
+  text-align: center;
+}
+
+/* ===== 裏面：セルフケアシート ===== */
+.print-patient-sub {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #059669;
+  margin-bottom: 12px;
+  padding: 6px;
+  background: #f0fdf4;
+  border-radius: 6px;
+}
+
+.print-selfcare-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: #64748b;
+  font-size: 14px;
+}
+
+/* セルフケアグリッド：2つ */
+.print-selfcare-grid-2 {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* セルフケアグリッド：4つ */
+.print-selfcare-grid-4 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* セルフケアカード */
+.print-selfcare-card {
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px 12px;
+  position: relative;
+  break-inside: avoid;
+}
+
+.print-selfcare-num {
+  position: absolute;
+  top: -8px;
+  left: 10px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #2563eb;
+  color: white;
+  font-size: 12px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.print-selfcare-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 4px;
+  padding-left: 18px;
+}
+
+.print-selfcare-meta {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.print-selfcare-meta span {
+  font-size: 10px;
+  padding: 2px 6px;
+  background: #f1f5f9;
+  border-radius: 4px;
+  color: #475569;
+  font-weight: 600;
+}
+
+.print-selfcare-illust {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 6px;
+}
+
+.print-selfcare-illust svg {
+  width: 100%;
+  max-width: 180px;
+  height: auto;
+  max-height: 120px;
+}
+
+.print-selfcare-grid-2 .print-selfcare-illust svg {
+  max-width: 240px;
+  max-height: 160px;
+}
+
+.print-selfcare-steps {
+  font-size: 11px;
+  line-height: 1.5;
+  padding-left: 18px;
+  margin-bottom: 6px;
+  color: #334155;
+}
+
+.print-selfcare-steps li {
+  margin-bottom: 2px;
+}
+
+.print-selfcare-caution {
+  font-size: 9px;
+  color: #94a3b8;
+  padding: 4px 6px;
+  background: #fff7ed;
+  border-radius: 4px;
+  border-left: 2px solid #f59e0b;
 }

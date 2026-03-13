@@ -400,6 +400,7 @@
         <button type="button" id="showTrendBtn" class="btn btn-secondary" style="display:none;">経過グラフ</button>
         <button type="button" id="savePdfPatientBtn" class="btn btn-secondary">患者用PDF</button>
         <button type="button" id="savePdfClinicalBtn" class="btn btn-secondary">施術者用PDF</button>
+        <button type="button" id="printSheetBtn" class="btn btn-secondary" style="display:none;">印刷</button>
         <button type="button" id="showSelfcareBtn" class="btn btn-accent" style="display:none;">セルフケア提案</button>
         <button type="button" id="showProtocolBtn" class="btn btn-accent" style="display:none;">施術プロトコル</button>
         <button type="button" id="newExamBtn" class="btn btn-primary">新しい検査</button>
@@ -407,6 +408,7 @@
       <!-- アクションボタン（患者モード） -->
       <div class="form-actions action-bar patient-only patient-action-bar" id="patientActions" style="display:none;">
         <button type="button" id="patientPdfBtn" class="btn btn-primary btn-large">検査結果をPDFで保存</button>
+        <button type="button" id="patientPrintBtn" class="btn btn-secondary btn-large" style="display:none;">印刷する</button>
         <button type="button" id="patientSelfcareBtn" class="btn btn-accent btn-large" style="display:none;">セルフケアを見る</button>
       </div>
     </section>
@@ -487,6 +489,9 @@
       </div>
     </div>
   </div>
+
+  <!-- 印刷用コンテナ（通常は非表示、印刷時のみ表示） -->
+  <div id="printContainer" class="print-container"></div>
 
   <script src="js/inspection.js"></script>
   <script src="js/bodyDiagram.js"></script>

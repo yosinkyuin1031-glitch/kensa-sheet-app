@@ -29,6 +29,7 @@
     setupWeightBalanceButtons();
     setupDiagnosisActions();
     setupPatientModeButtons();
+    setupPrintButtons();
     setupDetailedExamButtons();
     setupPatientSearch();
     setupProtocolButton();
@@ -448,6 +449,10 @@
     const patientActions = document.getElementById('patientActions');
     if (!patientActions) return;
     patientActions.style.display = diagnosisResult ? 'flex' : 'none';
+
+    // 印刷ボタン
+    const patientPrintBtn = document.getElementById('patientPrintBtn');
+    if (patientPrintBtn) patientPrintBtn.style.display = diagnosisResult ? '' : 'none';
 
     const selfcareBtn = document.getElementById('patientSelfcareBtn');
     if (selfcareBtn && contractionResult) {
@@ -1083,6 +1088,9 @@
 
     container.innerHTML = html;
     document.getElementById('diagnosisActions').style.display = 'flex';
+    // 印刷ボタン表示
+    const printBtn = document.getElementById('printSheetBtn');
+    if (printBtn) printBtn.style.display = '';
     // 患者モード用アクションバーも同期
     syncPatientActions();
     // 患者待機カードを非表示
@@ -1671,6 +1679,268 @@
       }
     }
     return selfcareItems;
+  }
+
+  // ===== 印刷機能 =====
+  function setupPrintButtons() {
+    const printBtn = document.getElementById('printSheetBtn');
+    if (printBtn) {
+      printBtn.addEventListener('click', () => printSheet());
+    }
+    const patientPrintBtn = document.getElementById('patientPrintBtn');
+    if (patientPrintBtn) {
+      patientPrintBtn.addEventListener('click', () => printSheet());
+    }
+  }
+
+  function printSheet() {
+    if (!diagnosisResult) return;
+
+    const container = document.getElementById('printContainer');
+    if (!container) return;
+
+    const patientName = document.getElementById('patientName').value || '患者名未入力';
+    const inspectionDate = document.getElementById('inspectionDate').value || new Date().toISOString().split('T')[0];
+
+    // 印刷用HTML生成
+    container.innerHTML = generatePrintPage1(patientName, inspectionDate)
+                        + generatePrintPage2(patientName);
+
+    // SVGダイアグラムを印刷用コンテナ内に描画
+    const printDiagramEl = document.getElementById('print-diagram');
+    if (printDiagramEl) {
+      BodyDiagram.init('print-diagram');
+      if (detailData.upperDetail.acromion !== null || detailData.lowerDetail.greaterTrochanter !== null) {
+        BodyDiagram.updateUnified('print-diagram', detailData.upperDetail, detailData.lowerDetail);
+      } else {
+        BodyDiagram.update('print-diagram', 'firstStage', examData.standing);
+      }
+    }
+
+    // 少し待ってからSVG描画完了後に印刷
+    setTimeout(() => window.print(), 200);
+  }
+
+  // ===== 表面：身体の状態シート =====
+  function generatePrintPage1(patientName, inspectionDate) {
+    const causeInfo = InspectionLogic.causeLabels[diagnosisResult.primaryCause] || {};
+    const wbLabel = weightBalance === 'right' ? '右重心' : weightBalance === 'left' ? '左重心' : weightBalance === 'even' ? '均等' : '未測定';
+
+    // 左右差サマリー
+    let alignmentRows = '';
+    const landmarks = InspectionLogic.landmarks;
+    const standData = examData.standing || {};
+    for (const [key, config] of Object.entries(landmarks)) {
+      const val = standData[key] || 0;
+      const label = val === -1 ? '左が高い' : val === 1 ? '右が高い' : '均等';
+      const cls = val === 0 ? 'print-even' : 'print-uneven';
+      alignmentRows += `<tr><td>${config.name}</td><td class="${cls}">${label}</td></tr>`;
+    }
+
+    // 詳細ランドマーク（あれば）
+    let detailRows = '';
+    const hasDetail = detailData.upperDetail.acromion !== null;
+    if (hasDetail) {
+      const allDetailLandmarks = [
+        ...InspectionLogic.upperDetailLandmarks,
+        ...InspectionLogic.lowerDetailLandmarks
+      ];
+      const allDetailData = { ...detailData.upperDetail, ...detailData.lowerDetail };
+      for (const lm of allDetailLandmarks) {
+        const val = allDetailData[lm.key] || 0;
+        const label = val === -1 ? '左が高い' : val === 1 ? '右が高い' : '均等';
+        const cls = val === 0 ? 'print-even' : 'print-uneven';
+        detailRows += `<tr><td>${lm.name}</td><td class="${cls}">${label}</td></tr>`;
+      }
+    }
+
+    // 問題箇所リスト
+    let issuesList = '';
+    if (contractionResult) {
+      const allIssues = [
+        ...(contractionResult.upper ? [...contractionResult.upper.contractions, ...contractionResult.upper.tensions] : []),
+        ...(contractionResult.lower ? [...contractionResult.lower.contractions, ...contractionResult.lower.tensions] : [])
+      ];
+      if (allIssues.length > 0) {
+        for (const issue of allIssues) {
+          const typeLabel = issue.type === 'contraction' ? '縮こまり' : '引っ張り';
+          const sideLabel = issue.side === 'both' ? '両側' : issue.side === 'right' ? '右側' : '左側';
+          const icon = issue.type === 'contraction' ? '●' : '▲';
+          issuesList += `<div class="print-issue"><span class="print-issue-icon ${issue.type}">${icon}</span>${issue.area}（${sideLabel}）… ${typeLabel}</div>`;
+        }
+      } else {
+        issuesList = '<div class="print-issue good">明確な問題箇所は検出されませんでした</div>';
+      }
+    }
+
+    return `
+    <div class="print-page print-page-front">
+      <div class="print-header">
+        <div class="print-logo">Body Check Pro</div>
+        <h1 class="print-title">からだの状態シート</h1>
+      </div>
+
+      <div class="print-patient-info">
+        <div class="print-info-row">
+          <span class="print-info-label">お名前</span>
+          <span class="print-info-value">${patientName}</span>
+        </div>
+        <div class="print-info-row">
+          <span class="print-info-label">検査日</span>
+          <span class="print-info-value">${inspectionDate}</span>
+        </div>
+      </div>
+
+      <div class="print-body">
+        <div class="print-left-col">
+          <!-- 診断結果 -->
+          <div class="print-section">
+            <h2 class="print-section-title">総合判定</h2>
+            <div class="print-diagnosis-box" style="border-color: ${causeInfo.color || '#64748b'}">
+              <div class="print-diagnosis-label" style="color: ${causeInfo.color || '#64748b'}">${causeInfo.label || '判定なし'}</div>
+              <p class="print-diagnosis-summary">${diagnosisResult.summary}</p>
+            </div>
+          </div>
+
+          <!-- 重心バランス -->
+          <div class="print-section">
+            <h2 class="print-section-title">重心バランス</h2>
+            <div class="print-balance-box">
+              <div class="print-balance-bar">
+                <span class="print-balance-label-l">左</span>
+                <div class="print-balance-track">
+                  <div class="print-balance-dot ${weightBalance || 'even'}"></div>
+                </div>
+                <span class="print-balance-label-r">右</span>
+              </div>
+              <div class="print-balance-text">${wbLabel}</div>
+            </div>
+          </div>
+
+          <!-- 左右差一覧 -->
+          <div class="print-section">
+            <h2 class="print-section-title">左右差チェック${hasDetail ? '（基本）' : ''}</h2>
+            <table class="print-table">
+              <thead><tr><th>ランドマーク</th><th>結果</th></tr></thead>
+              <tbody>${alignmentRows}</tbody>
+            </table>
+          </div>
+
+          ${hasDetail ? `
+          <div class="print-section">
+            <h2 class="print-section-title">左右差チェック（詳細）</h2>
+            <table class="print-table">
+              <thead><tr><th>ランドマーク</th><th>結果</th></tr></thead>
+              <tbody>${detailRows}</tbody>
+            </table>
+          </div>` : ''}
+        </div>
+
+        <div class="print-right-col">
+          <!-- 人体図 -->
+          <div class="print-section">
+            <h2 class="print-section-title">身体バランス図</h2>
+            <div class="print-diagram-box">
+              <div class="body-diagram-container" id="print-diagram"></div>
+            </div>
+          </div>
+
+          <!-- 検出された問題 -->
+          <div class="print-section">
+            <h2 class="print-section-title">検出された問題箇所</h2>
+            <div class="print-issues">${issuesList}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="print-footer">
+        <p>※この検査結果は施術時の参考情報です。裏面にセルフケアメニューがあります。</p>
+      </div>
+    </div>`;
+  }
+
+  // ===== 裏面：セルフケアシート =====
+  function generatePrintPage2(patientName) {
+    // セルフケアを収集（最大4つ）
+    const selfcareItems = [];
+    if (contractionResult) {
+      const allIssues = [
+        ...(contractionResult.upper ? [...contractionResult.upper.contractions, ...contractionResult.upper.tensions] : []),
+        ...(contractionResult.lower ? [...contractionResult.lower.contractions, ...contractionResult.lower.tensions] : [])
+      ];
+      const rendered = new Set();
+      for (const issue of allIssues) {
+        if (selfcareItems.length >= 4) break;
+        const cacheKey = `${issue.areaShort}_${issue.type}`;
+        if (rendered.has(cacheKey)) continue;
+        rendered.add(cacheKey);
+        if (typeof SelfcareDatabase !== 'undefined') {
+          const exercise = SelfcareDatabase.getSelfcareForArea(issue.areaShort, issue.type);
+          if (exercise) {
+            selfcareItems.push({ exercise, side: issue.side });
+          }
+        }
+      }
+    }
+
+    if (selfcareItems.length === 0) {
+      return `
+      <div class="print-page print-page-back">
+        <div class="print-header">
+          <div class="print-logo">Body Check Pro</div>
+          <h1 class="print-title">セルフケアメニュー</h1>
+        </div>
+        <div class="print-selfcare-empty">
+          <p>現在、特定のセルフケアメニューはありません。<br>良い状態を維持できています。</p>
+        </div>
+        <div class="print-footer">
+          <p>${patientName}様　※毎日のケアで身体のバランスを維持しましょう</p>
+        </div>
+      </div>`;
+    }
+
+    const gridClass = selfcareItems.length <= 2 ? 'print-selfcare-grid-2' : 'print-selfcare-grid-4';
+
+    let cardsHtml = '';
+    for (let i = 0; i < selfcareItems.length; i++) {
+      const { exercise, side } = selfcareItems[i];
+      const sideLabel = side === 'both' ? '両側' : side === 'right' ? '右側' : '左側';
+      const illustSvg = typeof SelfcareDatabase !== 'undefined' ? SelfcareDatabase.getIllustration(exercise.illustration) : '';
+
+      cardsHtml += `
+      <div class="print-selfcare-card">
+        <div class="print-selfcare-num">${i + 1}</div>
+        <h3 class="print-selfcare-name">${exercise.name}</h3>
+        <div class="print-selfcare-meta">
+          <span>${sideLabel}</span>
+          <span>${exercise.sets}</span>
+          <span>${exercise.frequency}</span>
+        </div>
+
+        ${illustSvg ? `<div class="print-selfcare-illust">${illustSvg}</div>` : ''}
+
+        <ol class="print-selfcare-steps">
+          ${exercise.steps.map(s => `<li>${s}</li>`).join('')}
+        </ol>
+
+        <div class="print-selfcare-caution">${exercise.caution}</div>
+      </div>`;
+    }
+
+    return `
+    <div class="print-page print-page-back">
+      <div class="print-header">
+        <div class="print-logo">Body Check Pro</div>
+        <h1 class="print-title">セルフケアメニュー</h1>
+      </div>
+      <div class="print-patient-sub">${patientName}様専用メニュー</div>
+      <div class="${gridClass}">
+        ${cardsHtml}
+      </div>
+      <div class="print-footer">
+        <p>※痛みが出た場合は無理をせず中止してください。次回の施術時にお伝えください。</p>
+      </div>
+    </div>`;
   }
 
   // ===== 施術プロトコルボタン =====
