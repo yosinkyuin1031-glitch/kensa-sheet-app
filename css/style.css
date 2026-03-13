@@ -330,6 +330,57 @@ body[data-view="patient"] .diagram-value {
   padding: 8px 0 16px;
 }
 
+.unified-diagram-wrapper {
+  padding: 16px 0 24px;
+}
+
+.unified-diagram-wrapper .body-diagram-container {
+  width: 320px;
+  max-width: 100%;
+  border: 2px solid var(--primary);
+  box-shadow: 0 4px 16px rgba(37,99,235,0.12);
+}
+
+.unified-diagram-desc {
+  font-size: 13px;
+  color: var(--text-light);
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.trunk-analysis {
+  background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(239,68,68,0.08));
+  border: 1.5px solid var(--moderate);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+
+.trunk-analysis.trunk-rotation {
+  border-color: var(--moderate);
+}
+
+.trunk-analysis.trunk-shift {
+  border-color: var(--severe);
+  background: linear-gradient(135deg, rgba(239,68,68,0.08), rgba(239,68,68,0.12));
+}
+
+.trunk-analysis.trunk-upper {
+  border-color: var(--primary);
+  background: rgba(37,99,235,0.06);
+}
+
+.trunk-analysis.trunk-lower {
+  border-color: var(--purple);
+  background: rgba(139,92,246,0.06);
+}
+
+.trunk-mark {
+  font-weight: 700;
+  font-size: 13px;
+  display: block;
+  margin-bottom: 2px;
+}
+
 .body-diagram-container {
   width: 260px;
   max-width: 100%;

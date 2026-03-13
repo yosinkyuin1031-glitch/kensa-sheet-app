@@ -1196,6 +1196,14 @@
 
     container.innerHTML = html;
     container.style.display = 'block';
+
+    // 全身統合ダイアグラムを描画（DOMが存在してから）
+    const unifiedContainer = document.getElementById('diagram-unified');
+    if (unifiedContainer) {
+      BodyDiagram.init('diagram-unified');
+      BodyDiagram.updateUnified('diagram-unified', detailData.upperDetail, detailData.lowerDetail);
+    }
+
     container.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
@@ -1203,9 +1211,16 @@
   function renderPractitionerAnalysis(allLandmarks, upperResult, lowerResult, allIssues) {
     let html = '';
 
-    // 統合ダイアグラム（全身を一本の流れで表示）
+    // === 全身統合ダイアグラム（SVG 1枚で全身表示） ===
     html += '<div class="contraction-section">';
-    html += '<h3>全身ランドマーク状態</h3>';
+    html += '<h3>全身統合ダイアグラム</h3>';
+    html += '<p class="unified-diagram-desc">肩峰〜外果まで全6ランドマークを1つの人体図で表示。体幹（肩峰↔大転子）のズレも可視化しています。</p>';
+    html += '<div class="body-diagram-wrapper unified-diagram-wrapper">';
+    html += '<div class="body-diagram-container" id="diagram-unified"></div>';
+    html += '</div>';
+
+    // テキスト版のランドマーク一覧
+    html += '<h3 style="margin-top:20px;">全身ランドマーク状態</h3>';
     html += '<div class="contraction-diagram">';
 
     // 上半身ヘッダー
@@ -1218,7 +1233,34 @@
       }
     }
 
-    // 区切り
+    // 体幹ズレ分析（肩峰↔大転子）
+    const acromVal = detailData.upperDetail.acromion || 0;
+    const gtVal = detailData.lowerDetail.greaterTrochanter || 0;
+    if (acromVal !== 0 || gtVal !== 0) {
+      let trunkDesc = '';
+      let trunkClass = '';
+      if (acromVal !== 0 && gtVal !== 0 && acromVal !== gtVal) {
+        trunkDesc = '体幹回旋ズレ（肩峰と大転子が逆方向）';
+        trunkClass = 'trunk-rotation';
+      } else if (acromVal !== 0 && gtVal !== 0 && acromVal === gtVal) {
+        trunkDesc = '全体偏位（肩峰と大転子が同方向）';
+        trunkClass = 'trunk-shift';
+      } else if (acromVal !== 0) {
+        trunkDesc = '上半身のみ偏位';
+        trunkClass = 'trunk-upper';
+      } else {
+        trunkDesc = '下半身のみ偏位';
+        trunkClass = 'trunk-lower';
+      }
+      html += `<div class="diagram-between trunk-analysis ${trunkClass}">
+        <span class="trunk-mark">⟷ ${trunkDesc}</span>
+        <span class="contraction-area">肩峰〜大転子（体幹）</span>
+      </div>`;
+    } else {
+      html += '<div class="body-part-divider"><span>体幹</span></div>';
+    }
+
+    // 下半身
     html += '<div class="body-part-divider"><span>下半身</span></div>';
 
     for (let i = 0; i < lowerResult.landmarks.length; i++) {
@@ -1309,6 +1351,11 @@
   // ===== 患者モード：シンプル分析表示 =====
   function renderPatientAnalysis(allIssues, allLandmarks, upperResult, lowerResult) {
     let html = '';
+
+    // 全身統合ダイアグラム（患者モードでも表示）
+    html += '<div class="body-diagram-wrapper unified-diagram-wrapper">';
+    html += '<div class="body-diagram-container" id="diagram-unified"></div>';
+    html += '</div>';
 
     if (allIssues.length === 0) {
       html += `<div class="patient-result-card good">

@@ -688,6 +688,310 @@ const BodyDiagram = {
     }
   },
 
+  // ===== 全身統合ダイアグラム =====
+  // 上半身(肩峰・肘頭・茎状突起) + 下半身(大転子・膝蓋骨上端・外果) を1体で表示
+  unifiedPositions: {
+    acromion:           { leftX: 78,  rightX: 222, baseY: 78,  label: '肩峰' },
+    mastoidDetail:      { leftX: 56,  rightX: 244, baseY: 146, label: '肘頭' },
+    radialStyloid:      { leftX: 46,  rightX: 254, baseY: 224, label: '茎状突起' },
+    greaterTrochanter:  { leftX: 116, rightX: 184, baseY: 252, label: '大転子' },
+    patellaUpper:       { leftX: 118, rightX: 182, baseY: 370, label: '膝蓋骨上端' },
+    lateralMalleolus:   { leftX: 112, rightX: 188, baseY: 500, label: '外果' }
+  },
+
+  // 全身統合ダイアグラムを描画（上半身データ＋下半身データを合わせて1枚で表示）
+  updateUnified(containerId, upperData, lowerData) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+
+    let svg = el.querySelector('svg');
+    if (!svg) {
+      this.init(containerId);
+      svg = el.querySelector('svg');
+      if (!svg) return;
+    }
+
+    const landmarkLayer = svg.querySelector('.landmark-layer');
+    const indicatorLayer = svg.querySelector('.indicator-layer');
+    const spineDynLayer = svg.querySelector('.spine-dynamic-layer');
+    const zoneLayer = svg.querySelector('.zone-layer');
+    landmarkLayer.innerHTML = '';
+    if (indicatorLayer) indicatorLayer.innerHTML = '';
+    if (spineDynLayer) spineDynLayer.innerHTML = '';
+    if (zoneLayer) zoneLayer.innerHTML = '';
+
+    // セグメントリセット
+    svg.querySelectorAll('.seg').forEach(g => g.removeAttribute('transform'));
+    this._resetParts(svg);
+
+    // 全データを統合
+    const allData = { ...upperData, ...lowerData };
+
+    // === 身体パーツの動的シフト（全身版） ===
+    this._applyUnifiedShifts(svg, allData);
+
+    // === 全6ランドマークのドット・ライン描画 ===
+    const posMap = this.unifiedPositions;
+    for (const [key, pos] of Object.entries(posMap)) {
+      const val = allData[key];
+      if (val === null || val === undefined) continue;
+
+      const leftY  = pos.baseY + this._lShift(val);
+      const rightY = pos.baseY + this._rShift(val);
+
+      // 接続線
+      landmarkLayer.appendChild(this._createSVGEl('line', {
+        x1: pos.leftX, y1: leftY, x2: pos.rightX, y2: rightY,
+        stroke: val === 0 ? '#22c55e' : '#e74c3c',
+        'stroke-width': 2.5,
+        'stroke-dasharray': val === 0 ? '' : '6,3',
+        opacity: 0.8
+      }));
+
+      // 左ドット
+      landmarkLayer.appendChild(this._createSVGEl('circle', {
+        cx: pos.leftX, cy: leftY, r: 6,
+        fill: val === -1 ? '#3b82f6' : val === 1 ? '#f97316' : '#22c55e',
+        stroke: 'white', 'stroke-width': 2
+      }));
+
+      // 右ドット
+      landmarkLayer.appendChild(this._createSVGEl('circle', {
+        cx: pos.rightX, cy: rightY, r: 6,
+        fill: val === 1 ? '#3b82f6' : val === -1 ? '#f97316' : '#22c55e',
+        stroke: 'white', 'stroke-width': 2
+      }));
+
+      // 矢印
+      if (val !== 0) {
+        const lArrow = val === -1 ? '↑' : '↓';
+        const lColor = val === -1 ? '#3b82f6' : '#f97316';
+        landmarkLayer.appendChild(this._createSVGEl('text', {
+          x: pos.leftX - 14, y: leftY + 4, 'text-anchor': 'end',
+          'font-size': 10, fill: lColor, 'font-weight': 700
+        }, lArrow));
+
+        const rArrow = val === 1 ? '↑' : '↓';
+        const rColor = val === 1 ? '#3b82f6' : '#f97316';
+        landmarkLayer.appendChild(this._createSVGEl('text', {
+          x: pos.rightX + 14, y: rightY + 4, 'text-anchor': 'start',
+          'font-size': 10, fill: rColor, 'font-weight': 700
+        }, rArrow));
+      }
+
+      // ラベル
+      landmarkLayer.appendChild(this._createSVGEl('text', {
+        x: 150, y: pos.baseY - 14, 'text-anchor': 'middle',
+        'font-size': 9, fill: '#64748b', 'font-weight': 600
+      }, pos.label));
+    }
+
+    // === 詰まり・伸びインジケーター（全身連続版） ===
+    this._drawUnifiedCompressionIndicators(svg, allData);
+
+    // === 肩峰↔大転子 体幹ズレ分析 ===
+    this._drawTrunkMisalignment(svg, allData);
+  },
+
+  // ===== 全身シフト（上半身＋下半身） =====
+  _applyUnifiedShifts(svg, data) {
+    // 腕: 肩峰(acromion)で上下
+    const acromVal = data.acromion || 0;
+    const lArmShift = this._lShift(acromVal);
+    const rArmShift = this._rShift(acromVal);
+    const lArmG = svg.querySelector('.seg-arm-l');
+    const rArmG = svg.querySelector('.seg-arm-r');
+    if (lArmG && lArmShift !== 0) lArmG.setAttribute('transform', `translate(0, ${lArmShift})`);
+    if (rArmG && rArmShift !== 0) rArmG.setAttribute('transform', `translate(0, ${rArmShift})`);
+
+    // 脚: 大転子(greaterTrochanter)で上下
+    const gtVal = data.greaterTrochanter || 0;
+    const lLegShift = this._lShift(gtVal);
+    const rLegShift = this._rShift(gtVal);
+    const lLegG = svg.querySelector('.seg-leg-l');
+    const rLegG = svg.querySelector('.seg-leg-r');
+    if (lLegG && lLegShift !== 0) lLegG.setAttribute('transform', `translate(0, ${lLegShift})`);
+    if (rLegG && rLegShift !== 0) rLegG.setAttribute('transform', `translate(0, ${rLegShift})`);
+
+    // 頭: 肩峰の傾きから軽く回転
+    const headRot = -acromVal * 2;
+    const headG = svg.querySelector('.seg-head');
+    if (headG && headRot !== 0) {
+      headG.setAttribute('transform', `rotate(${headRot}, 150, 28)`);
+    }
+  },
+
+  // ===== 全身連続の詰まり・伸びインジケーター =====
+  _drawUnifiedCompressionIndicators(svg, data) {
+    const indicatorLayer = svg.querySelector('.indicator-layer');
+    if (!indicatorLayer) return;
+
+    const keys = ['acromion', 'mastoidDetail', 'radialStyloid', 'greaterTrochanter', 'patellaUpper', 'lateralMalleolus'];
+    const posMap = this.unifiedPositions;
+
+    for (let i = 0; i < keys.length - 1; i++) {
+      const keyA = keys[i];
+      const keyB = keys[i + 1];
+      const valA = data[keyA];
+      const valB = data[keyB];
+
+      if (valA === null || valA === undefined || valB === null || valB === undefined) continue;
+      if (valA === 0 && valB === 0) continue;
+      if (valA === valB) continue;
+      if (valA === 0 || valB === 0) continue;
+
+      const leftCompressed = (valA === 1 && valB === -1);
+      const rightCompressed = (valA === -1 && valB === 1);
+      if (!leftCompressed && !rightCompressed) continue;
+
+      const posA = posMap[keyA];
+      const posB = posMap[keyB];
+      const midY = (posA.baseY + posB.baseY) / 2;
+
+      // 詰まり側
+      const compSide = leftCompressed ? 'left' : 'right';
+      const compX = compSide === 'left' ? 105 : 195;
+      const compLabel = compSide === 'left' ? '左' : '右';
+      const stretchX = compSide === 'left' ? 195 : 105;
+      const stretchLabel = compSide === 'left' ? '右' : '左';
+
+      // 特別ラベル: 肩峰↔大転子間 = 体幹ズレ
+      const isTrunkZone = (keyA === 'radialStyloid' && keyB === 'greaterTrochanter');
+      const zoneLabel = isTrunkZone ? '体幹' : '';
+
+      // 詰まりインジケーター
+      indicatorLayer.appendChild(this._createSVGEl('rect', {
+        x: compX - 22, y: midY - 28, width: 44, height: 56,
+        rx: 8, fill: 'rgba(239,68,68,0.12)', stroke: '#ef4444',
+        'stroke-width': 1.5, 'stroke-dasharray': '4,2'
+      }));
+      indicatorLayer.appendChild(this._createSVGEl('text', {
+        x: compX, y: midY - 10, 'text-anchor': 'middle',
+        'font-size': 16, fill: '#ef4444', 'font-weight': 900
+      }, '↓'));
+      indicatorLayer.appendChild(this._createSVGEl('text', {
+        x: compX, y: midY + 16, 'text-anchor': 'middle',
+        'font-size': 16, fill: '#ef4444', 'font-weight': 900
+      }, '↑'));
+      indicatorLayer.appendChild(this._createSVGEl('rect', {
+        x: compX - 14, y: midY - 4, width: 28, height: 18,
+        rx: 4, fill: '#ef4444'
+      }));
+      indicatorLayer.appendChild(this._createSVGEl('text', {
+        x: compX, y: midY + 10, 'text-anchor': 'middle',
+        'font-size': 11, fill: 'white', 'font-weight': 800
+      }, `${compLabel}詰`));
+
+      // 伸びインジケーター
+      indicatorLayer.appendChild(this._createSVGEl('rect', {
+        x: stretchX - 22, y: midY - 28, width: 44, height: 56,
+        rx: 8, fill: 'rgba(139,92,246,0.1)', stroke: '#8b5cf6',
+        'stroke-width': 1.2, 'stroke-dasharray': '4,2'
+      }));
+      indicatorLayer.appendChild(this._createSVGEl('text', {
+        x: stretchX, y: midY - 10, 'text-anchor': 'middle',
+        'font-size': 14, fill: '#8b5cf6', 'font-weight': 700
+      }, '↑'));
+      indicatorLayer.appendChild(this._createSVGEl('text', {
+        x: stretchX, y: midY + 16, 'text-anchor': 'middle',
+        'font-size': 14, fill: '#8b5cf6', 'font-weight': 700
+      }, '↓'));
+      indicatorLayer.appendChild(this._createSVGEl('rect', {
+        x: stretchX - 14, y: midY - 4, width: 28, height: 18,
+        rx: 4, fill: '#8b5cf6'
+      }));
+      indicatorLayer.appendChild(this._createSVGEl('text', {
+        x: stretchX, y: midY + 10, 'text-anchor': 'middle',
+        'font-size': 11, fill: 'white', 'font-weight': 800
+      }, `${stretchLabel}伸`));
+
+      // 横の圧迫ライン
+      const compLineX1 = compSide === 'left' ? 120 : 165;
+      const compLineX2 = compSide === 'left' ? 145 : 190;
+      for (let j = -2; j <= 2; j++) {
+        const ly = midY + j * 6;
+        indicatorLayer.appendChild(this._createSVGEl('line', {
+          x1: compLineX1, y1: ly, x2: compLineX2, y2: ly,
+          stroke: '#ef4444', 'stroke-width': 1.5, opacity: 0.35 - Math.abs(j) * 0.06
+        }));
+      }
+    }
+  },
+
+  // ===== 肩峰↔大転子 体幹ズレ分析 =====
+  _drawTrunkMisalignment(svg, data) {
+    const indicatorLayer = svg.querySelector('.indicator-layer');
+    if (!indicatorLayer) return;
+
+    const acromVal = data.acromion;
+    const gtVal = data.greaterTrochanter;
+    if (acromVal == null || gtVal == null) return;
+    if (acromVal === 0 && gtVal === 0) return;
+
+    const posAcrom = this.unifiedPositions.acromion;
+    const posGt = this.unifiedPositions.greaterTrochanter;
+
+    // 肩峰と大転子のズレ方向を比較
+    // 同方向: 全体が傾いている → 全体偏位
+    // 逆方向: 体幹がねじれている → 回旋ズレ
+    const cx = 150;
+    const leftAcromY = posAcrom.baseY + this._lShift(acromVal);
+    const leftGtY = posGt.baseY + this._lShift(gtVal);
+    const rightAcromY = posAcrom.baseY + this._rShift(acromVal);
+    const rightGtY = posGt.baseY + this._rShift(gtVal);
+
+    // 体幹の中心線を描画（肩峰中央→大転子中央を結ぶ）
+    const acromMidY = (leftAcromY + rightAcromY) / 2;
+    const gtMidY = (leftGtY + rightGtY) / 2;
+    // X方向のオフセット: 左が高い(val=-1)→体は右に湾曲
+    const acromXOff = (acromVal || 0) * 3;
+    const gtXOff = (gtVal || 0) * 3;
+
+    // 体幹中心ライン（肩峰↔大転子）
+    indicatorLayer.appendChild(this._createSVGEl('line', {
+      x1: cx + acromXOff, y1: posAcrom.baseY,
+      x2: cx + gtXOff, y2: posGt.baseY,
+      stroke: '#f59e0b', 'stroke-width': 2.5,
+      'stroke-dasharray': '8,4', opacity: 0.7
+    }));
+
+    // 肩峰↔大転子の関係性ラベル
+    const trunkMidY = (posAcrom.baseY + posGt.baseY) / 2;
+    let trunkLabel = '';
+    let trunkColor = '#22c55e';
+
+    if (acromVal !== 0 && gtVal !== 0 && acromVal !== gtVal) {
+      // 逆方向 = 体幹回旋ズレ
+      trunkLabel = '体幹回旋';
+      trunkColor = '#f59e0b';
+    } else if (acromVal !== 0 && gtVal !== 0 && acromVal === gtVal) {
+      // 同方向 = 全体偏位
+      trunkLabel = '全体偏位';
+      trunkColor = '#ef4444';
+    } else if (acromVal !== 0 || gtVal !== 0) {
+      // 片方だけズレ
+      if (acromVal !== 0 && gtVal === 0) {
+        trunkLabel = '上半身偏位';
+        trunkColor = '#3b82f6';
+      } else {
+        trunkLabel = '下半身偏位';
+        trunkColor = '#8b5cf6';
+      }
+    }
+
+    if (trunkLabel) {
+      // ラベル背景
+      indicatorLayer.appendChild(this._createSVGEl('rect', {
+        x: cx - 30, y: trunkMidY - 10, width: 60, height: 20,
+        rx: 10, fill: trunkColor, opacity: 0.9
+      }));
+      indicatorLayer.appendChild(this._createSVGEl('text', {
+        x: cx, y: trunkMidY + 4, 'text-anchor': 'middle',
+        'font-size': 10, fill: 'white', 'font-weight': 800
+      }, trunkLabel));
+    }
+  },
+
   _createSVGEl(tag, attrs, text) {
     const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
     for (const [k, v] of Object.entries(attrs)) {
