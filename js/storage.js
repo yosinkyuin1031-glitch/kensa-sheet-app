@@ -70,7 +70,7 @@ const Storage = {
     return null;
   },
 
-  save(examData, diagnosisResult, patientName, memo, detailData, contractionResult, weightBalance, patientId) {
+  save(examData, diagnosisResult, patientName, memo, detailData, contractionResult, weightBalance, patientId, painLevel, chiefComplaints) {
     const history = this.getAll();
     const causeInfo = InspectionLogic.causeLabels[diagnosisResult.primaryCause];
 
@@ -93,6 +93,8 @@ const Storage = {
       detailData: detailData || null,
       contractionResult: contractionResult || null,
       weightBalance: weightBalance || null,
+      painLevel: painLevel != null ? painLevel : null,
+      chiefComplaints: chiefComplaints || [],
       summary: `${causeInfo.icon} ${causeInfo.label}`
     };
 

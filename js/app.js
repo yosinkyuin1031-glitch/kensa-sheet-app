@@ -19,6 +19,8 @@
   let diagnosisResult = null;
   let contractionResult = null;  // { upper: ..., lower: ... }
   let selectedPatientId = null;  // 選択中の患者ID
+  let painLevel = null;  // NRS 0-10
+  let chiefComplaints = [];  // 主訴リスト
 
   // ===== 初期化 =====
   function init() {
@@ -27,6 +29,8 @@
     setupWizardNavigation();
     setupLandmarkButtons();
     setupWeightBalanceButtons();
+    setupNRSButtons();
+    setupChiefComplaints();
     setupDiagnosisActions();
     setupPatientModeButtons();
     setupPrintButtons();
@@ -657,6 +661,36 @@
     });
   }
 
+  // ===== NRS痛みスケール =====
+  function setupNRSButtons() {
+    const container = document.getElementById('nrsScale');
+    if (!container) return;
+    container.querySelectorAll('.nrs-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        container.querySelectorAll('.nrs-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        painLevel = parseInt(btn.dataset.nrs);
+      });
+    });
+  }
+
+  // ===== 主訴選択 =====
+  function setupChiefComplaints() {
+    const container = document.getElementById('chiefComplaints');
+    if (!container) return;
+    container.querySelectorAll('.complaint-tag').forEach(btn => {
+      btn.addEventListener('click', () => {
+        btn.classList.toggle('active');
+        const complaint = btn.dataset.complaint;
+        if (btn.classList.contains('active')) {
+          if (!chiefComplaints.includes(complaint)) chiefComplaints.push(complaint);
+        } else {
+          chiefComplaints = chiefComplaints.filter(c => c !== complaint);
+        }
+      });
+    });
+  }
+
   // ===== ランドマーク入力ボタン =====
   function setupLandmarkButtons() {
     document.querySelectorAll('.landmark-input').forEach(group => {
@@ -1025,6 +1059,9 @@
       ${weightBalance ? `<div class="diagnosis-treatment" style="margin-top:8px;">重心バランス：<strong>${weightBalance === 'right' ? '右重心' : weightBalance === 'left' ? '左重心' : '均等'}</strong></div>` : ''}
     </div>`;
 
+    // 前回比較（患者IDがあれば）
+    html += generatePreviousComparison();
+
     // === 治療家モード：詳細テーブルと判定 ===
     html += '<div class="practitioner-only">';
 
@@ -1118,6 +1155,51 @@
     // 患者待機カードを非表示
     const waitCard = document.getElementById('patientWaiting');
     if (waitCard) waitCard.style.display = 'none';
+  }
+
+  // ===== 前回比較セクション =====
+  function generatePreviousComparison() {
+    if (!selectedPatientId || !diagnosisResult) return '';
+    const history = Storage.getHistoryByPatient(selectedPatientId);
+    if (history.length < 2) return '';
+
+    // 直近の過去データ（現在保存前なので最新が前回）
+    const prev = history[0];
+    if (!prev.diagnosisResult) return '';
+
+    const prevCause = InspectionLogic.causeLabels[prev.diagnosisResult.primaryCause] || {};
+    const currCause = InspectionLogic.causeLabels[diagnosisResult.primaryCause] || {};
+
+    // NRS比較
+    let nrsCompare = '';
+    if (prev.painLevel != null && painLevel != null) {
+      const diff = painLevel - prev.painLevel;
+      const arrow = diff < 0 ? '↓ 改善' : diff > 0 ? '↑ 悪化' : '→ 変化なし';
+      const color = diff < 0 ? '#22c55e' : diff > 0 ? '#ef4444' : '#64748b';
+      nrsCompare = `<div class="compare-item"><span class="compare-label">痛みレベル</span><span style="color:${color};font-weight:700;">${prev.painLevel} → ${painLevel}（${arrow}）</span></div>`;
+    }
+
+    // 重心比較
+    let wbCompare = '';
+    if (prev.weightBalance && weightBalance) {
+      const wbLabels = { right: '右重心', left: '左重心', even: '均等' };
+      const changed = prev.weightBalance !== weightBalance;
+      wbCompare = `<div class="compare-item"><span class="compare-label">重心</span><span>${wbLabels[prev.weightBalance] || '?'} → ${wbLabels[weightBalance] || '?'}${changed ? ' (変化あり)' : ''}</span></div>`;
+    }
+
+    const prevDate = new Date(prev.date);
+    const prevDateStr = `${prevDate.getFullYear()}/${String(prevDate.getMonth()+1).padStart(2,'0')}/${String(prevDate.getDate()).padStart(2,'0')}`;
+
+    return `
+    <div class="prev-comparison-card">
+      <h4 class="prev-comparison-title">前回との比較（${prevDateStr}）</h4>
+      <div class="compare-item">
+        <span class="compare-label">判定</span>
+        <span>${prevCause.icon || ''} ${prevCause.label || '?'} → ${currCause.icon || ''} ${currCause.label || '?'}</span>
+      </div>
+      ${nrsCompare}
+      ${wbCompare}
+    </div>`;
   }
 
   // ===== 患者向けラベル =====
@@ -1557,7 +1639,7 @@
       if (!diagnosisResult) return;
       const patientName = document.getElementById('patientName').value;
       const memo = document.getElementById('inspectionMemo').value;
-      const success = Storage.save(examData, diagnosisResult, patientName, memo, detailData, contractionResult, weightBalance, selectedPatientId);
+      const success = Storage.save(examData, diagnosisResult, patientName, memo, detailData, contractionResult, weightBalance, selectedPatientId, painLevel, chiefComplaints);
       if (success) {
         alert('検査結果を保存しました');
         updateCompareButton();
@@ -1740,6 +1822,23 @@
     setTimeout(() => window.print(), 200);
   }
 
+  // NRS痛みスケールSVG（印刷用）
+  function generateNRSSvg(level) {
+    if (level == null) return '';
+    const color = level <= 2 ? '#22c55e' : level <= 4 ? '#eab308' : level <= 6 ? '#f97316' : '#ef4444';
+    let circles = '';
+    for (let i = 0; i <= 10; i++) {
+      const x = 8 + i * 22;
+      const fill = i <= level ? color : '#f1f5f9';
+      const stroke = i <= level ? color : '#e2e8f0';
+      circles += `<circle cx="${x}" cy="10" r="8" fill="${fill}" stroke="${stroke}" stroke-width="1"/>`;
+      if (i === level) {
+        circles += `<text x="${x}" y="14" text-anchor="middle" font-size="10" fill="white" font-weight="700">${i}</text>`;
+      }
+    }
+    return `<svg viewBox="0 0 250 20" style="width:200px;height:20px;display:inline-block;vertical-align:middle;">${circles}</svg> <strong>${level}/10</strong>`;
+  }
+
   // 重心バランスSVG（背景色不要で確実に印刷）
   function generateBalanceSVG(wb) {
     const dotX = wb === 'left' ? 45 : wb === 'right' ? 255 : 150;
@@ -1824,6 +1923,14 @@
           <span class="print-info-label">検査日</span>
           <span class="print-info-value">${inspectionDate}</span>
         </div>
+        ${painLevel != null ? `<div class="print-info-row">
+          <span class="print-info-label">痛みレベル</span>
+          <span class="print-info-value">${generateNRSSvg(painLevel)}</span>
+        </div>` : ''}
+        ${chiefComplaints.length > 0 ? `<div class="print-info-row">
+          <span class="print-info-label">主訴</span>
+          <span class="print-info-value">${chiefComplaints.join('、')}</span>
+        </div>` : ''}
       </div>
 
       <div class="print-body">
@@ -1953,6 +2060,7 @@
         </ol>
 
         <div class="print-selfcare-caution">${exercise.caution}</div>
+        ${exercise.evidence ? `<div class="print-selfcare-evidence">${exercise.evidence}</div>` : ''}
       </div>`;
     }
 
@@ -2252,8 +2360,12 @@
     diagnosisResult = null;
     contractionResult = null;
     selectedPatientId = null;
+    painLevel = null;
+    chiefComplaints = [];
 
     document.querySelectorAll('.landmark-btn').forEach(btn => btn.classList.remove('selected'));
+    document.querySelectorAll('.nrs-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.complaint-tag').forEach(btn => btn.classList.remove('active'));
     document.getElementById('patientName').value = '';
     document.getElementById('inspectionMemo').value = '';
     document.getElementById('patientSearch').value = '';
@@ -2335,6 +2447,12 @@
     if (entry.patientId) {
       selectedPatientId = entry.patientId;
     }
+    if (entry.painLevel != null) {
+      painLevel = entry.painLevel;
+    }
+    if (entry.chiefComplaints) {
+      chiefComplaints = [...entry.chiefComplaints];
+    }
 
     document.getElementById('patientName').value = entry.patientName || '';
     if (entry.memo) {
@@ -2374,6 +2492,26 @@
       if (wbContainer) {
         wbContainer.querySelectorAll('.weight-btn').forEach(btn => {
           btn.classList.toggle('selected', btn.dataset.value === entry.weightBalance);
+        });
+      }
+    }
+
+    // NRSボタンの復元
+    if (entry.painLevel != null) {
+      const nrsContainer = document.getElementById('nrsScale');
+      if (nrsContainer) {
+        nrsContainer.querySelectorAll('.nrs-btn').forEach(btn => {
+          btn.classList.toggle('active', parseInt(btn.dataset.nrs) === entry.painLevel);
+        });
+      }
+    }
+
+    // 主訴タグの復元
+    if (entry.chiefComplaints && entry.chiefComplaints.length > 0) {
+      const ccContainer = document.getElementById('chiefComplaints');
+      if (ccContainer) {
+        ccContainer.querySelectorAll('.complaint-tag').forEach(btn => {
+          btn.classList.toggle('active', entry.chiefComplaints.includes(btn.dataset.complaint));
         });
       }
     }

@@ -98,6 +98,43 @@
             <label for="inspectionMemo">メモ（任意）</label>
             <textarea id="inspectionMemo" rows="2" placeholder="主訴や気になる点をメモ"></textarea>
           </div>
+          <div class="form-group">
+            <label>痛みレベル（NRS）</label>
+            <p class="field-hint">現在の痛みを0〜10で選択してください</p>
+            <div class="nrs-scale" id="nrsScale">
+              <button type="button" class="nrs-btn" data-nrs="0">0</button>
+              <button type="button" class="nrs-btn" data-nrs="1">1</button>
+              <button type="button" class="nrs-btn" data-nrs="2">2</button>
+              <button type="button" class="nrs-btn" data-nrs="3">3</button>
+              <button type="button" class="nrs-btn" data-nrs="4">4</button>
+              <button type="button" class="nrs-btn" data-nrs="5">5</button>
+              <button type="button" class="nrs-btn" data-nrs="6">6</button>
+              <button type="button" class="nrs-btn" data-nrs="7">7</button>
+              <button type="button" class="nrs-btn" data-nrs="8">8</button>
+              <button type="button" class="nrs-btn" data-nrs="9">9</button>
+              <button type="button" class="nrs-btn" data-nrs="10">10</button>
+            </div>
+            <div class="nrs-labels">
+              <span>痛みなし</span>
+              <span>中程度</span>
+              <span>最大の痛み</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>主訴（複数選択可）</label>
+            <div class="chief-complaint-tags" id="chiefComplaints">
+              <button type="button" class="complaint-tag" data-complaint="腰痛">腰痛</button>
+              <button type="button" class="complaint-tag" data-complaint="肩こり">肩こり</button>
+              <button type="button" class="complaint-tag" data-complaint="首の痛み">首の痛み</button>
+              <button type="button" class="complaint-tag" data-complaint="頭痛">頭痛</button>
+              <button type="button" class="complaint-tag" data-complaint="背中の張り">背中の張り</button>
+              <button type="button" class="complaint-tag" data-complaint="股関節の違和感">股関節の違和感</button>
+              <button type="button" class="complaint-tag" data-complaint="膝の痛み">膝の痛み</button>
+              <button type="button" class="complaint-tag" data-complaint="足首の不安定">足首の不安定</button>
+              <button type="button" class="complaint-tag" data-complaint="しびれ">しびれ</button>
+              <button type="button" class="complaint-tag" data-complaint="疲労感">疲労感</button>
+            </div>
+          </div>
         </div>
         <div class="form-actions">
           <button type="button" class="btn btn-primary wizard-next">立位検査へ →</button>
