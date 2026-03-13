@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "body-check",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8080", "--bind", "0.0.0.0", "-d", "/Users/ooguchiyouhei/検査シート作成"],
+      "port": 8080
+    }
+  ]
+}
