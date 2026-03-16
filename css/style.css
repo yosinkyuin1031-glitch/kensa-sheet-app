@@ -255,19 +255,20 @@ body[data-view="patient"] .patient-issue-card strong {
   line-height: 1.8;
 }
 
-/* 患者用大きなボタン */
+/* 患者用ボタン */
 .btn-large {
-  padding: 16px 24px;
-  font-size: 16px;
-  border-radius: 14px;
+  padding: 12px 18px;
+  font-size: 0.9rem;
+  border-radius: 10px;
   width: 100%;
   text-align: center;
 }
 
 .patient-action-bar {
-  flex-direction: column;
-  gap: 12px;
-  padding: 16px;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
 }
 
 /* ===== 患者モード：セルフケアを強調 ===== */
@@ -906,16 +907,23 @@ body[data-view="patient"] .patient-treatment-hint p {
 }
 
 .btn {
-  padding: 14px 24px;
+  padding: 10px 18px;
   border: none;
   border-radius: var(--radius-sm);
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
   flex: 1;
-  min-width: 140px;
+  min-width: 120px;
   text-align: center;
+}
+
+.btn-sm {
+  padding: 8px 14px;
+  font-size: 0.82rem;
+  min-width: 90px;
+  flex: 0;
 }
 
 .btn-primary {
@@ -953,13 +961,20 @@ body[data-view="patient"] .patient-treatment-hint p {
 .action-bar {
   position: sticky;
   bottom: 0;
-  background: rgba(248, 250, 252, 0.85);
+  background: rgba(248, 250, 252, 0.92);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  padding: 14px 0;
+  padding: 10px 0;
   border-top: 1px solid rgba(226, 232, 240, 0.6);
   z-index: 50;
   box-shadow: 0 -2px 12px rgba(0,0,0,0.06);
+}
+
+.action-bar .btn {
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  min-width: auto;
+  flex: 0 1 auto;
 }
 
 /* ===== Comparison Box (立位 vs 座位) ===== */
@@ -2175,7 +2190,21 @@ body[data-view="patient"] .patient-treatment-hint p {
   }
 
   .action-bar {
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+  }
+
+  .action-bar .btn {
+    padding: 7px 10px;
+    font-size: 0.75rem;
+    min-width: auto;
+  }
+
+  .patient-action-bar .btn-large {
+    padding: 10px 14px;
+    font-size: 0.82rem;
   }
 
   .comparison-row {
@@ -3475,4 +3504,214 @@ body[data-view="patient"] .patient-treatment-hint p {
   content: '※ ';
   font-weight: 700;
   color: #f59e0b;
+}
+
+/* ===== Required field marker ===== */
+.required {
+  color: var(--severe);
+  font-size: 0.8rem;
+}
+
+/* ===== Select styling ===== */
+select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  color: var(--text);
+  background: var(--card-bg);
+  appearance: auto;
+}
+
+select:focus {
+  border-color: var(--primary);
+  outline: none;
+}
+
+/* ===== 検査結果サマリー (Step 5) ===== */
+.summary-patient-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+
+.summary-patient-name {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.summary-patient-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--text-light);
+  margin-bottom: 6px;
+}
+
+.summary-patient-meta span {
+  background: var(--primary-light);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.summary-meta-row {
+  font-size: 0.85rem;
+  color: var(--text);
+  margin-top: 4px;
+  padding: 2px 0;
+}
+
+.summary-diagnosis-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.summary-diagnosis-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.summary-diagnosis-label {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.summary-diagnosis-text {
+  font-size: 0.88rem;
+  color: var(--text-light);
+  line-height: 1.5;
+}
+
+.summary-treatment {
+  font-size: 0.85rem;
+  margin-top: 6px;
+}
+
+.summary-item {
+  background: var(--card-bg);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--shadow);
+}
+
+.summary-item-label {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  font-weight: 500;
+}
+
+.summary-exam-table {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+
+.summary-section-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.summary-table th,
+.summary-table td {
+  padding: 8px 6px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+
+.summary-table th {
+  font-weight: 600;
+  color: var(--text-light);
+  font-size: 0.78rem;
+}
+
+.summary-table td:first-child {
+  text-align: left;
+}
+
+.summary-steps {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+
+.summary-step-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.summary-step-item:last-child {
+  border-bottom: none;
+}
+
+.summary-step-num {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--primary-light);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.summary-step-item.has-influence .summary-step-num {
+  background: var(--moderate-light);
+  color: var(--moderate);
+}
+
+.summary-step-item.no-influence .summary-step-num {
+  background: var(--normal-light);
+  color: var(--normal);
+}
+
+.summary-step-item strong {
+  font-size: 0.85rem;
+}
+
+.summary-step-item p {
+  font-size: 0.8rem;
+  color: var(--text-light);
+  margin-top: 2px;
+}
+
+.summary-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 12px;
 }

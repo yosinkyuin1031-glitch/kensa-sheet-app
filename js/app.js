@@ -21,6 +21,12 @@
   let selectedPatientId = null;  // 選択中の患者ID
   let painLevel = null;  // NRS 0-10
   let chiefComplaints = [];  // 主訴リスト
+  let patientAge = null;
+  let patientGender = '';
+  let patientOccupation = '';
+  let visitType = 'initial';
+  let medicalHistory = '';
+  let symptomDetail = '';
 
   // ===== 初期化 =====
   function init() {
@@ -611,10 +617,17 @@
         if (validateCurrentStep()) runDiagnosis();
       });
     }
+
+    const goToDiagnosisBtn = document.getElementById('goToDiagnosisBtn');
+    if (goToDiagnosisBtn) {
+      goToDiagnosisBtn.addEventListener('click', () => {
+        switchTab('diagnosis');
+      });
+    }
   }
 
   function goToStep(step) {
-    if (step < 0 || step > 3) return;
+    if (step < 0 || step > 4) return;
     currentStep = step;
 
     document.querySelectorAll('.wizard-panel').forEach(panel => {
@@ -777,6 +790,20 @@
 
   // ===== 診断実行 =====
   function runDiagnosis() {
+    // 患者追加情報を収集
+    const ageInput = document.getElementById('patientAge');
+    if (ageInput && ageInput.value) patientAge = parseInt(ageInput.value);
+    const genderInput = document.getElementById('patientGender');
+    if (genderInput) patientGender = genderInput.value;
+    const occInput = document.getElementById('patientOccupation');
+    if (occInput) patientOccupation = occInput.value;
+    const visitInput = document.getElementById('visitType');
+    if (visitInput) visitType = visitInput.value;
+    const histInput = document.getElementById('medicalHistory');
+    if (histInput) medicalHistory = histInput.value;
+    const detailInput = document.getElementById('symptomDetail');
+    if (detailInput) symptomDetail = detailInput.value;
+
     diagnosisResult = InspectionLogic.diagnose(examData);
     renderDiagnosis(diagnosisResult);
     showDetailedExam();
@@ -787,7 +814,9 @@
     if (protocolBtn) protocolBtn.style.display = '';
     // Auto-generate report
     renderReport();
-    switchTab('diagnosis');
+    // Show summary step
+    renderExamSummary();
+    goToStep(4);
   }
 
   // ===== 比較ボタンの表示制御 =====
@@ -2166,6 +2195,135 @@
     section.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
+  // ===== 検査結果サマリー（Step 5: 全データ統合表示） =====
+  function renderExamSummary() {
+    const container = document.getElementById('examSummaryContent');
+    if (!container || !diagnosisResult) return;
+
+    const causeInfo = InspectionLogic.causeLabels[diagnosisResult.primaryCause];
+    const patientName = document.getElementById('patientName').value || '名前未入力';
+    const inspectionDate = document.getElementById('inspectionDate').value || '';
+    const genderLabel = patientGender === 'male' ? '男性' : patientGender === 'female' ? '女性' : '';
+    const visitLabel = visitType === 'initial' ? '初診' : '再診';
+
+    let html = '';
+
+    // --- 患者情報ヘッダー ---
+    html += '<div class="summary-patient-card">';
+    html += `<div class="summary-patient-name">${patientName}</div>`;
+    html += '<div class="summary-patient-meta">';
+    if (patientAge) html += `<span>${patientAge}歳</span>`;
+    if (genderLabel) html += `<span>${genderLabel}</span>`;
+    html += `<span>${visitLabel}</span>`;
+    if (inspectionDate) html += `<span>${inspectionDate}</span>`;
+    html += '</div>';
+    if (patientOccupation) html += `<div class="summary-meta-row">職業: ${patientOccupation}</div>`;
+    if (chiefComplaints.length > 0) html += `<div class="summary-meta-row">主訴: ${chiefComplaints.join('、')}</div>`;
+    if (painLevel !== null) html += `<div class="summary-meta-row">痛みレベル: <strong>${painLevel}/10</strong></div>`;
+    if (symptomDetail) html += `<div class="summary-meta-row">症状詳細: ${symptomDetail}</div>`;
+    if (medicalHistory) html += `<div class="summary-meta-row">既往歴: ${medicalHistory}</div>`;
+    html += '</div>';
+
+    // --- 総合判定 ---
+    html += `<div class="summary-diagnosis-card" style="border-left: 4px solid ${causeInfo.color}">
+      <div class="summary-diagnosis-icon">${causeInfo.icon}</div>
+      <div>
+        <div class="summary-diagnosis-label" style="color: ${causeInfo.color}">${causeInfo.label}</div>
+        <p class="summary-diagnosis-text">${diagnosisResult.summary}</p>
+        ${diagnosisResult.treatmentArea !== 'なし' ? `<div class="summary-treatment">治療対象: <strong>${diagnosisResult.treatmentArea}</strong></div>` : ''}
+      </div>
+    </div>`;
+
+    // --- 重心バランス ---
+    if (weightBalance) {
+      const wbLabel = weightBalance === 'right' ? '右重心' : weightBalance === 'left' ? '左重心' : '均等';
+      const wbColor = weightBalance === 'even' ? 'var(--normal)' : 'var(--moderate)';
+      html += `<div class="summary-item"><span class="summary-item-label">重心バランス</span><span style="color:${wbColor};font-weight:600;">${wbLabel}</span></div>`;
+    }
+
+    // --- 検査データ一覧（立位・座位・上半身） ---
+    html += '<div class="summary-exam-table">';
+    html += '<h4 class="summary-section-title">検査結果一覧</h4>';
+    html += '<table class="summary-table"><thead><tr><th>ランドマーク</th><th>立位</th><th>座位</th><th>上半身</th></tr></thead><tbody>';
+    for (const [lmKey, lmConfig] of Object.entries(InspectionLogic.landmarks)) {
+      html += `<tr><td><strong>${lmConfig.name}</strong></td>`;
+      for (const pos of ['standing', 'seated', 'upperBody']) {
+        const val = examData[pos][lmKey] || 0;
+        const label = InspectionLogic.valueLabels[val.toString()];
+        const cls = val === 0 ? 'val-even' : (val < 0 ? 'val-left' : 'val-right');
+        html += `<td class="${cls}">${label}</td>`;
+      }
+      html += '</tr>';
+    }
+    html += '</tbody></table>';
+    html += '</div>';
+
+    // --- 段階的判定サマリー ---
+    html += '<div class="summary-steps">';
+    html += '<h4 class="summary-section-title">段階的判定</h4>';
+
+    const footAnalysis = InspectionLogic.compareStandingSeated(examData.standing, examData.seated);
+    html += `<div class="summary-step-item ${footAnalysis.hasFootInfluence ? 'has-influence' : 'no-influence'}">
+      <span class="summary-step-num">1</span>
+      <div>
+        <strong>立位→座位</strong>
+        <p>${footAnalysis.hasFootInfluence ? '足の影響あり' : '足の影響なし'}</p>
+      </div>
+    </div>`;
+
+    if (diagnosisResult.steps.length >= 3 && diagnosisResult.steps[2].comparison) {
+      const ubComp = diagnosisResult.steps[2].comparison;
+      html += `<div class="summary-step-item ${ubComp.hasUpperBodyInfluence ? 'has-influence' : 'no-influence'}">
+        <span class="summary-step-num">2</span>
+        <div>
+          <strong>座位→上半身</strong>
+          <p>${ubComp.hasUpperBodyInfluence ? '上半身の影響あり' : '上半身の影響なし'}</p>
+        </div>
+      </div>`;
+    }
+
+    if (diagnosisResult.pattern && diagnosisResult.pattern.pattern !== 'normal') {
+      html += `<div class="summary-step-item">
+        <span class="summary-step-num">3</span>
+        <div>
+          <strong>パターン</strong>
+          <p>${diagnosisResult.pattern.description}</p>
+        </div>
+      </div>`;
+    }
+    html += '</div>';
+
+    // --- アクションボタン ---
+    html += '<div class="summary-actions">';
+    html += '<button type="button" class="btn btn-sm btn-secondary" id="summaryPdfBtn">PDF保存</button>';
+    html += '<button type="button" class="btn btn-sm btn-secondary" id="summarySaveBtn">履歴に保存</button>';
+    html += '</div>';
+
+    container.innerHTML = html;
+
+    // サマリー内ボタンのイベント
+    const summaryPdfBtn = document.getElementById('summaryPdfBtn');
+    if (summaryPdfBtn) {
+      summaryPdfBtn.addEventListener('click', () => {
+        const selfcareItems = gatherSelfcareItems();
+        PdfExport.exportPatientPdf(patientName, inspectionDate, diagnosisResult, contractionResult, selfcareItems);
+      });
+    }
+    const summarySaveBtn = document.getElementById('summarySaveBtn');
+    if (summarySaveBtn) {
+      summarySaveBtn.addEventListener('click', () => {
+        if (!diagnosisResult) return;
+        const memo = document.getElementById('inspectionMemo').value;
+        const success = Storage.save(examData, diagnosisResult, patientName, memo, detailData, contractionResult, weightBalance, selectedPatientId, painLevel, chiefComplaints);
+        if (success) {
+          alert('検査結果を保存しました');
+          updateCompareButton();
+          updateTrendButton();
+        }
+      });
+    }
+  }
+
   // ===== レポート描画 =====
   function renderReport() {
     const container = document.getElementById('reportContent');
@@ -2362,6 +2520,12 @@
     selectedPatientId = null;
     painLevel = null;
     chiefComplaints = [];
+    patientAge = null;
+    patientGender = '';
+    patientOccupation = '';
+    visitType = 'initial';
+    medicalHistory = '';
+    symptomDetail = '';
 
     document.querySelectorAll('.landmark-btn').forEach(btn => btn.classList.remove('selected'));
     document.querySelectorAll('.nrs-btn').forEach(btn => btn.classList.remove('active'));
@@ -2369,6 +2533,18 @@
     document.getElementById('patientName').value = '';
     document.getElementById('inspectionMemo').value = '';
     document.getElementById('patientSearch').value = '';
+    const ageInput = document.getElementById('patientAge');
+    if (ageInput) ageInput.value = '';
+    const genderInput = document.getElementById('patientGender');
+    if (genderInput) genderInput.value = '';
+    const occInput = document.getElementById('patientOccupation');
+    if (occInput) occInput.value = '';
+    const visitInput = document.getElementById('visitType');
+    if (visitInput) visitInput.value = 'initial';
+    const histInput = document.getElementById('medicalHistory');
+    if (histInput) histInput.value = '';
+    const detailInput = document.getElementById('symptomDetail');
+    if (detailInput) detailInput.value = '';
     const examCountDiv = document.getElementById('patientExamCount');
     if (examCountDiv) {
       examCountDiv.style.display = 'none';
@@ -2379,6 +2555,8 @@
     document.getElementById('seatedComparison').style.display = 'none';
     document.getElementById('diagnosisContent').innerHTML = '';
     document.getElementById('diagnosisActions').style.display = 'none';
+    const summaryContent = document.getElementById('examSummaryContent');
+    if (summaryContent) summaryContent.innerHTML = '';
     document.getElementById('detailedExamSection').style.display = 'none';
     document.getElementById('contractionAnalysis').style.display = 'none';
 
