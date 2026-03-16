@@ -153,12 +153,12 @@ const BodyDiagram = {
             fill="url(#skinGrad)" stroke="#c4956e" stroke-width="1.1"/>
           <ellipse class="joint" cx="258" cy="226" rx="6" ry="4" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
           <path class="body-part" data-part="hand-r"
-            d="M252,230 L252,260 C253,268 254,280 255,290 C256,296 258,304 256,308 C254,314 246,314 244,308 C242,302 242,290 242,280 L240,260 L240,230 Z"
+            d="M262,230 L264,260 C265,268 266,280 267,290 C268,296 270,304 268,308 C266,314 258,314 256,308 C254,302 254,290 254,280 L252,260 L252,230 Z"
             fill="url(#skinGradDark)" stroke="#c4956e" stroke-width="1"/>
-          <line x1="254" y1="296" x2="256" y2="308" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
-          <line x1="251" y1="296" x2="252" y2="310" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
-          <line x1="248" y1="296" x2="248" y2="312" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
-          <line x1="245" y1="296" x2="245" y2="310" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
+          <line x1="266" y1="296" x2="268" y2="308" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
+          <line x1="263" y1="296" x2="264" y2="310" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
+          <line x1="260" y1="296" x2="260" y2="312" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
+          <line x1="257" y1="296" x2="257" y2="310" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
         </g>
 
         <!-- ===== 左脚（iliacCrestで上下）===== -->
