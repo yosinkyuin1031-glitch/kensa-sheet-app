@@ -125,16 +125,17 @@ const Storage = {
     return this.getAll().find(entry => entry.id === id) || null;
   },
 
-  // 患者ごとにグループ化した履歴表示
-  renderHistoryList(onLoad, onDelete) {
+  // ===== カルテ方式：患者一覧 → 個別フォルダ =====
+  renderKarteList(onLoad, onDelete, filterQuery) {
     const history = this.getAll();
-    const container = document.getElementById('historyList');
+    const container = document.getElementById('kartePatientList');
+    if (!container) return;
 
     if (history.length === 0) {
       container.innerHTML = `
         <div class="history-empty">
-          <p>まだ検査履歴がありません</p>
-          <p>検査結果を保存すると、ここに表示されます</p>
+          <p>まだカルテがありません</p>
+          <p>検査結果を保存すると、ここに患者一覧が表示されます</p>
         </div>`;
       return;
     }
@@ -150,85 +151,146 @@ const Storage = {
           patientId: pid,
           patientName: entry.patientName || '名前未入力',
           entries: [],
-          lastDate: entry.date
+          lastDate: entry.date,
+          lastSummary: entry.summary || ''
         };
         groupOrder.push(pid);
       }
       groups[pid].entries.push(entry);
       if (entry.date > groups[pid].lastDate) {
         groups[pid].lastDate = entry.date;
+        groups[pid].lastSummary = entry.summary || '';
       }
+    }
+
+    // フィルタ
+    let patients = groupOrder.map(pid => groups[pid]);
+    if (filterQuery && filterQuery.trim()) {
+      const q = filterQuery.trim().toLowerCase();
+      patients = patients.filter(p => p.patientName.toLowerCase().includes(q));
+    }
+
+    if (patients.length === 0) {
+      container.innerHTML = '<div class="history-empty"><p>該当する患者が見つかりません</p></div>';
+      return;
     }
 
     let html = '';
-
-    for (const pid of groupOrder) {
-      const group = groups[pid];
+    for (const group of patients) {
       const lastDate = new Date(group.lastDate);
       const lastDateStr = `${lastDate.getFullYear()}/${String(lastDate.getMonth() + 1).padStart(2, '0')}/${String(lastDate.getDate()).padStart(2, '0')}`;
 
-      html += `<div class="history-patient-group" data-patient-id="${pid}">`;
-      html += `<div class="history-patient-header" data-patient-id="${pid}">
-        <div class="history-patient-info">
-          <span class="history-patient-name">${group.patientName}</span>
-          <span class="history-patient-meta">検査 ${group.entries.length}回 / 最終: ${lastDateStr}</span>
+      html += `<div class="karte-patient-card" data-patient-id="${group.patientId}">
+        <div class="karte-patient-icon">${group.patientName.charAt(0)}</div>
+        <div class="karte-patient-body">
+          <div class="karte-patient-name">${group.patientName}</div>
+          <div class="karte-patient-sub">
+            <span>検査 ${group.entries.length}回</span>
+            <span>最終: ${lastDateStr}</span>
+          </div>
+          <div class="karte-patient-last">${group.lastSummary}</div>
         </div>
-        <span class="history-patient-toggle">▼</span>
+        <div class="karte-patient-arrow">›</div>
       </div>`;
-
-      html += `<div class="history-patient-items" data-patient-id="${pid}" style="display:none;">`;
-
-      for (const entry of group.entries) {
-        const date = new Date(entry.date);
-        const dateStr = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-
-        html += `
-        <div class="history-item" data-id="${entry.id}">
-          <div class="history-info">
-            <div class="history-date">${dateStr}</div>
-            <div class="history-summary">${entry.summary || ''}</div>
-          </div>
-          <div class="history-actions">
-            <button class="history-btn load-btn" data-id="${entry.id}">読み込み</button>
-            <button class="history-btn delete" data-id="${entry.id}">削除</button>
-          </div>
-        </div>`;
-      }
-
-      html += '</div>'; // .history-patient-items
-      html += '</div>'; // .history-patient-group
     }
-
     container.innerHTML = html;
 
-    // 患者ヘッダーのトグル
-    container.querySelectorAll('.history-patient-header').forEach(header => {
-      header.addEventListener('click', () => {
-        const pid = header.dataset.patientId;
-        const items = container.querySelector(`.history-patient-items[data-patient-id="${pid}"]`);
-        const toggle = header.querySelector('.history-patient-toggle');
-        if (items.style.display === 'none') {
-          items.style.display = 'block';
-          toggle.textContent = '▲';
-        } else {
-          items.style.display = 'none';
-          toggle.textContent = '▼';
-        }
+    // カードタップ → 個別カルテを開く
+    container.querySelectorAll('.karte-patient-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const pid = card.dataset.patientId;
+        this.renderKarteDetail(pid, onLoad, onDelete);
       });
     });
 
-    container.querySelectorAll('.load-btn').forEach(btn => {
+    // コールバックを保持
+    this._onLoad = onLoad;
+    this._onDelete = onDelete;
+  },
+
+  // ===== 個別患者のカルテフォルダ =====
+  renderKarteDetail(patientId, onLoad, onDelete) {
+    const listView = document.getElementById('karteListView');
+    const detailView = document.getElementById('karteDetailView');
+    const infoDiv = document.getElementById('karteDetailPatientInfo');
+    const listDiv = document.getElementById('karteDetailList');
+    if (!listView || !detailView) return;
+
+    const entries = this.getHistoryByPatient(patientId).sort((a, b) => new Date(b.date) - new Date(a.date));
+    if (entries.length === 0) return;
+
+    const patientName = entries[0].patientName || '名前未入力';
+
+    // ヘッダー情報
+    infoDiv.innerHTML = `
+      <div class="karte-detail-name">${patientName}</div>
+      <div class="karte-detail-stats">
+        <span>検査 ${entries.length}回</span>
+      </div>`;
+
+    // 検査カード一覧
+    let html = '';
+    for (const entry of entries) {
+      const date = new Date(entry.date);
+      const dateStr = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
+      const timeStr = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+      const causeInfo = entry.diagnosisResult
+        ? (InspectionLogic.causeLabels[entry.diagnosisResult.primaryCause] || {})
+        : {};
+      const painStr = entry.painLevel != null ? `NRS: ${entry.painLevel}/10` : '';
+      const complaints = entry.chiefComplaints && entry.chiefComplaints.length > 0
+        ? entry.chiefComplaints.join('・') : '';
+
+      html += `<div class="karte-record-card">
+        <div class="karte-record-header">
+          <div class="karte-record-date">
+            <span class="karte-date-main">${dateStr}</span>
+            <span class="karte-date-time">${timeStr}</span>
+          </div>
+          <div class="karte-record-badge" style="background:${causeInfo.color || '#94a3b8'}">
+            ${causeInfo.icon || '?'} ${causeInfo.label || '未診断'}
+          </div>
+        </div>
+        <div class="karte-record-body">
+          ${complaints ? `<div class="karte-record-row">主訴: ${complaints}</div>` : ''}
+          ${painStr ? `<div class="karte-record-row">${painStr}</div>` : ''}
+          ${entry.memo ? `<div class="karte-record-row memo">メモ: ${entry.memo}</div>` : ''}
+        </div>
+        <div class="karte-record-actions">
+          <button type="button" class="btn btn-sm btn-primary karte-load-btn" data-id="${entry.id}">読み込み</button>
+          <button type="button" class="btn btn-sm btn-secondary karte-delete-btn" data-id="${entry.id}">削除</button>
+        </div>
+      </div>`;
+    }
+    listDiv.innerHTML = html;
+
+    // ビュー切り替え
+    listView.style.display = 'none';
+    detailView.style.display = 'block';
+
+    // 戻るボタン
+    const backBtn = document.getElementById('karteBackBtn');
+    if (backBtn) {
+      backBtn.onclick = () => {
+        detailView.style.display = 'none';
+        listView.style.display = 'block';
+      };
+    }
+
+    // 読み込み・削除ボタン
+    listDiv.querySelectorAll('.karte-load-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        onLoad(btn.dataset.id);
+        if (onLoad) onLoad(btn.dataset.id);
       });
     });
-
-    container.querySelectorAll('.delete').forEach(btn => {
+    listDiv.querySelectorAll('.karte-delete-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (confirm('この履歴を削除しますか？')) {
-          onDelete(btn.dataset.id);
+        if (confirm('この検査記録を削除しますか？')) {
+          if (onDelete) onDelete(btn.dataset.id);
+          // 再描画
+          this.renderKarteDetail(patientId, onLoad, onDelete);
         }
       });
     });

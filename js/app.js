@@ -2600,15 +2600,31 @@
     switchTab(viewMode === 'patient' ? 'diagnosis' : 'exam');
   }
 
-  // ===== 履歴 =====
+  // ===== カルテ =====
   function refreshHistory() {
-    Storage.renderHistoryList(
+    Storage.renderKarteList(
       (id) => loadFromHistory(id),
       (id) => {
         Storage.delete(id);
         refreshHistory();
       }
     );
+    // 検索バー
+    const searchInput = document.getElementById('karteSearchInput');
+    if (searchInput && !searchInput._karteListenerAdded) {
+      searchInput._karteListenerAdded = true;
+      let timer = null;
+      searchInput.addEventListener('input', () => {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          Storage.renderKarteList(
+            (id) => loadFromHistory(id),
+            (id) => { Storage.delete(id); refreshHistory(); },
+            searchInput.value
+          );
+        }, 200);
+      });
+    }
   }
 
   function loadFromHistory(id) {

@@ -40,7 +40,7 @@
       <button class="tab-btn active" data-tab="exam">検査</button>
       <button class="tab-btn" data-tab="diagnosis">診断結果</button>
       <button class="tab-btn" data-tab="report">レポート</button>
-      <button class="tab-btn" data-tab="history">履歴</button>
+      <button class="tab-btn" data-tab="history">カルテ</button>
     </nav>
     <!-- ナビゲーションタブ（患者モード） -->
     <nav class="tab-nav patient-only patient-tab-nav">
@@ -509,20 +509,34 @@
       <div id="reportContent" class="report-content"></div>
     </section>
 
-    <!-- ===== 履歴セクション（施術者のみ） ===== -->
+    <!-- ===== カルテセクション（施術者のみ） ===== -->
     <section id="history-section" class="tab-content practitioner-only">
-      <div class="section-header">
-        <h2>検査履歴</h2>
-      </div>
-      <div id="historyList" class="history-list"></div>
-      <div class="backup-section">
-        <h3>データ管理</h3>
-        <div class="backup-actions">
-          <button type="button" id="exportDataBtn" class="btn btn-secondary">データをエクスポート</button>
-          <button type="button" id="importDataBtn" class="btn btn-secondary">データをインポート</button>
-          <input type="file" id="importFileInput" accept=".json" style="display:none;">
+      <!-- 患者一覧ビュー -->
+      <div id="karteListView">
+        <div class="section-header">
+          <h2>カルテ</h2>
         </div>
-        <p class="backup-note">端末の買い替え時やデータのバックアップにご利用ください</p>
+        <div class="karte-search-bar">
+          <input type="text" id="karteSearchInput" placeholder="患者名で検索..." autocomplete="off">
+        </div>
+        <div id="kartePatientList" class="karte-patient-list"></div>
+        <div class="backup-section">
+          <h3>データ管理</h3>
+          <div class="backup-actions">
+            <button type="button" id="exportDataBtn" class="btn btn-sm btn-secondary">エクスポート</button>
+            <button type="button" id="importDataBtn" class="btn btn-sm btn-secondary">インポート</button>
+            <input type="file" id="importFileInput" accept=".json" style="display:none;">
+          </div>
+          <p class="backup-note">端末の買い替え時やデータのバックアップにご利用ください</p>
+        </div>
+      </div>
+      <!-- 個別患者カルテビュー -->
+      <div id="karteDetailView" style="display:none;">
+        <div class="karte-detail-header">
+          <button type="button" id="karteBackBtn" class="btn btn-sm btn-secondary">← 一覧に戻る</button>
+          <div id="karteDetailPatientInfo" class="karte-detail-patient-info"></div>
+        </div>
+        <div id="karteDetailList" class="karte-detail-list"></div>
       </div>
     </section>
   </main>
