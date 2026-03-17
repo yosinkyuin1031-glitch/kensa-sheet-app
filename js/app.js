@@ -1175,12 +1175,11 @@
       }
     }
 
-    document.getElementById('diagnosisActions').style.display = 'flex';
-    // 印刷ボタン表示
-    const printBtn = document.getElementById('printSheetBtn');
-    if (printBtn) printBtn.style.display = '';
-    // 患者モード用アクションバーも同期
-    syncPatientActions();
+    // アクションボタンは全身統合分析後に表示するため、ここでは非表示のまま
+    document.getElementById('diagnosisActions').style.display = 'none';
+    // 患者モード用アクションバーも非表示
+    const patientActionsEl = document.getElementById('patientActions');
+    if (patientActionsEl) patientActionsEl.style.display = 'none';
     // 患者待機カードを非表示
     const waitCard = document.getElementById('patientWaiting');
     if (waitCard) waitCard.style.display = 'none';
@@ -1376,6 +1375,12 @@
     // プロトコルボタン表示
     const protocolBtn = document.getElementById('showProtocolBtn');
     if (protocolBtn) protocolBtn.style.display = '';
+
+    // 全身統合分析完了後にアクションボタンを表示
+    const diagActions = document.getElementById('diagnosisActions');
+    if (diagActions) diagActions.style.display = 'flex';
+    const printBtn = document.getElementById('printSheetBtn');
+    if (printBtn) printBtn.style.display = '';
 
     // 比較ボタンも更新
     updateCompareButton();

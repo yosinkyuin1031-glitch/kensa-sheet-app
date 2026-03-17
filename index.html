@@ -483,23 +483,31 @@
       <!-- 経過グラフ -->
       <div id="trendSection" style="display:none;"></div>
 
-      <!-- アクションボタン（施術者モード） -->
-      <div class="form-actions action-bar practitioner-only" id="diagnosisActions" style="display:none;">
-        <button type="button" id="saveHistoryBtn" class="btn btn-secondary">履歴に保存</button>
-        <button type="button" id="compareBtn" class="btn btn-secondary" style="display:none;">前回と比較</button>
-        <button type="button" id="showTrendBtn" class="btn btn-secondary" style="display:none;">経過グラフ</button>
-        <button type="button" id="savePdfPatientBtn" class="btn btn-secondary">患者用PDF</button>
-        <button type="button" id="savePdfClinicalBtn" class="btn btn-secondary">施術者用PDF</button>
-        <button type="button" id="printSheetBtn" class="btn btn-secondary" style="display:none;">印刷</button>
-        <button type="button" id="showSelfcareBtn" class="btn btn-accent" style="display:none;">セルフケア提案</button>
-        <button type="button" id="showProtocolBtn" class="btn btn-accent" style="display:none;">施術プロトコル</button>
-        <button type="button" id="newExamBtn" class="btn btn-primary">新しい検査</button>
+      <!-- アクションボタン（施術者モード）— 全身統合分析後に表示 -->
+      <div class="form-actions action-bar-compact practitioner-only" id="diagnosisActions" style="display:none;">
+        <div class="action-bar-row">
+          <button type="button" id="showSelfcareBtn" class="btn btn-sm btn-accent" style="display:none;">セルフケア提案</button>
+          <button type="button" id="showProtocolBtn" class="btn btn-sm btn-accent" style="display:none;">施術プロトコル</button>
+          <button type="button" id="newExamBtn" class="btn btn-sm btn-primary">新しい検査</button>
+        </div>
+        <div class="action-bar-row action-bar-sub">
+          <button type="button" id="saveHistoryBtn" class="btn btn-xs btn-secondary">保存</button>
+          <button type="button" id="savePdfPatientBtn" class="btn btn-xs btn-secondary">患者PDF</button>
+          <button type="button" id="savePdfClinicalBtn" class="btn btn-xs btn-secondary">施術者PDF</button>
+          <button type="button" id="printSheetBtn" class="btn btn-xs btn-secondary" style="display:none;">印刷</button>
+          <button type="button" id="compareBtn" class="btn btn-xs btn-secondary" style="display:none;">前回比較</button>
+          <button type="button" id="showTrendBtn" class="btn btn-xs btn-secondary" style="display:none;">経過</button>
+        </div>
       </div>
-      <!-- アクションボタン（患者モード） -->
-      <div class="form-actions action-bar patient-only patient-action-bar" id="patientActions" style="display:none;">
-        <button type="button" id="patientPdfBtn" class="btn btn-primary btn-large">検査結果をPDFで保存</button>
-        <button type="button" id="patientPrintBtn" class="btn btn-secondary btn-large" style="display:none;">印刷する</button>
-        <button type="button" id="patientSelfcareBtn" class="btn btn-accent btn-large" style="display:none;">セルフケアを見る</button>
+      <!-- アクションボタン（患者モード）— 全身統合分析後に表示 -->
+      <div class="form-actions action-bar-compact patient-only patient-action-bar" id="patientActions" style="display:none;">
+        <div class="action-bar-row">
+          <button type="button" id="patientSelfcareBtn" class="btn btn-sm btn-accent" style="display:none;">セルフケアを見る</button>
+        </div>
+        <div class="action-bar-row action-bar-sub">
+          <button type="button" id="patientPdfBtn" class="btn btn-xs btn-secondary">PDF保存</button>
+          <button type="button" id="patientPrintBtn" class="btn btn-xs btn-secondary" style="display:none;">印刷</button>
+        </div>
       </div>
     </section>
 

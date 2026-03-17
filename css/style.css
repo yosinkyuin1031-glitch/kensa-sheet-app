@@ -977,6 +977,34 @@ body[data-view="patient"] .patient-treatment-hint p {
   flex: 0 1 auto;
 }
 
+/* Compact action bar (post-analysis) */
+.action-bar-compact {
+  margin-top: 20px;
+  padding: 12px;
+  background: var(--bg);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+.action-bar-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.action-bar-sub {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.btn-xs {
+  padding: 5px 10px;
+  font-size: 0.72rem;
+  min-width: auto;
+  flex: 0;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
 /* ===== Comparison Box (立位 vs 座位) ===== */
 .comparison-box {
   background: var(--card-bg);
@@ -1647,13 +1675,14 @@ body[data-view="patient"] .patient-treatment-hint p {
   display: flex;
   justify-content: center;
   margin-bottom: 16px;
-  padding: 12px;
-  background: var(--bg);
-  border-radius: var(--radius-sm);
+  padding: 16px 12px;
+  background: #f0f7ff;
+  border-radius: var(--radius);
+  border: 1px solid #dbeafe;
 }
 
 .selfcare-illust {
-  width: 280px;
+  width: 320px;
   max-width: 100%;
   height: auto;
 }
@@ -1705,6 +1734,27 @@ body[data-view="patient"] .patient-treatment-hint p {
   margin-top: 4px;
 }
 .evidence-icon {
+  margin-right: 4px;
+}
+
+.selfcare-steps-header {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 6px;
+  padding-left: 2px;
+}
+.selfcare-tip {
+  font-size: 0.85rem;
+  color: #1e40af;
+  background: #eff6ff;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  line-height: 1.6;
+  margin-bottom: 8px;
+  border-left: 3px solid #3b82f6;
+}
+.tip-icon, .caution-icon {
   margin-right: 4px;
 }
 

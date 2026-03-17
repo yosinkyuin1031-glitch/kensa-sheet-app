@@ -715,6 +715,9 @@ const SelfcareDatabase = {
     const sideLabel = side === 'both' ? '両側' : side === 'right' ? '右側' : '左側';
     const illustSvg = this.getIllustration(exercise.illustration);
 
+    // 実用的なポイントを自動生成
+    const tipText = this._getTip(exercise.illustration);
+
     return `
     <div class="selfcare-card">
       <div class="selfcare-header">
@@ -726,6 +729,7 @@ const SelfcareDatabase = {
 
       ${illustSvg ? `<div class="selfcare-illust-wrapper">${illustSvg}</div>` : ''}
 
+      <div class="selfcare-steps-header">やり方</div>
       <ol class="selfcare-steps">
         ${exercise.steps.map(s => `<li>${s}</li>`).join('')}
       </ol>
@@ -733,8 +737,28 @@ const SelfcareDatabase = {
         <span class="selfcare-meta-item">回数：${exercise.sets}</span>
         <span class="selfcare-meta-item">頻度：${exercise.frequency}</span>
       </div>
-      <div class="selfcare-caution">${exercise.caution}</div>
+      ${tipText ? `<div class="selfcare-tip"><span class="tip-icon">💡</span> <strong>ポイント：</strong>${tipText}</div>` : ''}
+      <div class="selfcare-caution"><span class="caution-icon">⚠️</span> ${exercise.caution}</div>
       ${exercise.evidence ? `<div class="selfcare-evidence"><span class="evidence-icon">📋</span> ${exercise.evidence}</div>` : ''}
     </div>`;
+  },
+
+  // 実用的なポイントテキスト
+  _getTip(illustrationKey) {
+    const tips = {
+      neckStretch: '呼吸を止めずにゆっくり伸ばしましょう。お風呂上がりが効果的です。',
+      shoulderShrug: '肩を上げるときは「ぎゅっ」と力を入れ、ストンと一気に脱力するのがコツです。',
+      armStretch: '肩が上がらないように注意。胸を開くイメージで伸ばしましょう。',
+      scapulaExercise: '肩甲骨が動いているのを意識してください。鏡で確認するとわかりやすいです。',
+      wristStretch: 'デスクワークの合間に行うと効果的です。強く引きすぎないように。',
+      gripExercise: 'タオルがなければペットボトルでもOK。握る→脱力のリズムが大切です。',
+      hipFlexorStretch: '腰が反らないように、おへそを引き込む意識を持ちましょう。',
+      pelvicStabilize: 'クッションがなければ丸めたバスタオルでもOK。内ももに力を入れる感覚を覚えましょう。',
+      hamstringStretch: 'つま先を天井に向け、背中を丸めずに股関節から前屈しましょう。',
+      quadStretch: 'バランスが不安な方は壁に手をついて行ってください。膝が痛い場合は中止を。',
+      calfStretch: 'かかとが床から離れないように。アキレス腱まで伸びを感じましょう。',
+      ankleExercise: '足指を意識的に動かすことで足裏の筋肉が活性化します。毎日続けるのがコツです。'
+    };
+    return tips[illustrationKey] || '';
   }
 };
