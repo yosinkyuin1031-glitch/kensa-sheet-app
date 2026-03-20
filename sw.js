@@ -1,8 +1,10 @@
-const CACHE_NAME = 'bodycheck-v2';
+const CACHE_NAME = 'bodycheck-v3-auth';
 const urlsToCache = [
   '/',
   '/index.html',
   '/css/style.css',
+  '/js/supabase-cdn.min.js',
+  '/js/supabase.js',
   '/js/inspection.js',
   '/js/bodyDiagram.js',
   '/js/selfcare.js',
@@ -29,20 +31,24 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
+  // 認証APIリクエストはキャッシュしない
+  if (event.request.url.includes('supabase.co')) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
+  // ネットワーク優先、失敗時にキャッシュ（常に最新を取得）
   event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        if (response) return response;
-        return fetch(event.request).then(fetchResponse => {
-          if (fetchResponse && fetchResponse.status === 200) {
-            const responseClone = fetchResponse.clone();
-            caches.open(CACHE_NAME).then(cache => {
-              cache.put(event.request, responseClone);
-            });
-          }
-          return fetchResponse;
-        });
+    fetch(event.request)
+      .then(fetchResponse => {
+        if (fetchResponse && fetchResponse.status === 200) {
+          const responseClone = fetchResponse.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseClone);
+          });
+        }
+        return fetchResponse;
       })
-      .catch(() => caches.match('/index.html'))
+      .catch(() => caches.match(event.request).then(r => r || caches.match('/index.html')))
   );
 });
