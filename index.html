@@ -23,7 +23,7 @@
   <link rel="apple-touch-icon" href="icons/icon.svg">
   <meta name="theme-color" content="#2563eb">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
-  <script src="js/supabase-cdn.min.js"></script>
+  <script src="js/supabase-cdn.min.js?v=20260320b"></script>
 </head>
 <body data-view="practitioner">
   <!-- ===== ログイン画面 ===== -->
@@ -680,5 +680,48 @@
   <script src="js/storage.js?v=20260320b"></script>
   <script src="js/pdf.js?v=20260320b"></script>
   <script src="js/app.js?v=20260320b"></script>
+  <script>
+    // フォールバック：app.jsでエラーが出た場合のログイン処理
+    window.addEventListener('load', function() {
+      var btn = document.getElementById('loginBtn');
+      if (!btn) return;
+      // 既にapp.jsでリスナーが付いていても二重実行を防ぐ
+      btn.addEventListener('click', function fallbackLogin() {
+        var email = document.getElementById('loginEmail').value.trim();
+        var password = document.getElementById('loginPassword').value;
+        var errorDiv = document.getElementById('loginError');
+        if (!email || !password) {
+          errorDiv.textContent = 'メールアドレスとパスワードを入力してください';
+          errorDiv.style.display = 'block';
+          return;
+        }
+        // SupabaseAuthが存在するか確認
+        if (typeof SupabaseAuth === 'undefined') {
+          errorDiv.textContent = 'システムの読み込みに失敗しました。ページを再読み込みしてください。';
+          errorDiv.style.display = 'block';
+          return;
+        }
+        if (!SupabaseAuth.client) {
+          try { SupabaseAuth.init(); } catch(e) {
+            errorDiv.textContent = 'エラー: ' + e.message;
+            errorDiv.style.display = 'block';
+            return;
+          }
+        }
+        btn.disabled = true;
+        btn.textContent = 'ログイン中...';
+        SupabaseAuth.login(email, password).then(function() {
+          document.getElementById('authScreen').style.display = 'none';
+          document.getElementById('mainApp').style.display = 'block';
+        }).catch(function(err) {
+          errorDiv.textContent = err.message;
+          errorDiv.style.display = 'block';
+        }).finally(function() {
+          btn.disabled = false;
+          btn.textContent = 'ログイン';
+        });
+      });
+    });
+  </script>
 </body>
 </html>
