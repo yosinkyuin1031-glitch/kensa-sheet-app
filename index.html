@@ -686,6 +686,13 @@
       var btn = document.getElementById('loginBtn');
       if (!btn) return;
       // 既にapp.jsでリスナーが付いていても二重実行を防ぐ
+      // Enterキーでログイン
+      document.getElementById('loginEmail').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') btn.click();
+      });
+      document.getElementById('loginPassword').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') btn.click();
+      });
       btn.addEventListener('click', function fallbackLogin() {
         var email = document.getElementById('loginEmail').value.trim();
         var password = document.getElementById('loginPassword').value;
