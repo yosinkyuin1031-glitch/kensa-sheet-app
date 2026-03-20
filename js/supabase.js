@@ -9,7 +9,18 @@ const SupabaseAuth = {
 
   // Supabaseクライアント初期化
   init() {
-    this.client = supabase.createClient(this.SUPABASE_URL, this.SUPABASE_ANON_KEY);
+    // UMD版: window.supabase.createClient or window.supabase.supabase.createClient
+    const sb = window.supabase;
+    if (!sb) {
+      console.error('Supabase CDN が読み込まれていません');
+      return null;
+    }
+    const createFn = sb.createClient || (sb.supabase && sb.supabase.createClient);
+    if (!createFn) {
+      console.error('supabase.createClient が見つかりません。keys:', Object.keys(sb));
+      return null;
+    }
+    this.client = createFn(this.SUPABASE_URL, this.SUPABASE_ANON_KEY);
     return this.client;
   },
 
