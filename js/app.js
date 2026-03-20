@@ -158,11 +158,9 @@
     showTutorialIfNeeded();
   }
 
-  // ===== Service Worker登録 =====
+  // ===== Service Worker登録（キャッシュ問題のため無効化） =====
   function registerServiceWorker() {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(() => {});
-    }
+    // SW登録は一旦停止（index.htmlで既存SWを自動解除済み）
   }
 
   // ===== チュートリアル =====
