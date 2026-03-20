@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>検査アプリ - 段階的原因特定システム</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=20260320a">
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -12,8 +12,61 @@
   <link rel="apple-touch-icon" href="icons/icon.svg">
   <meta name="theme-color" content="#2563eb">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
 </head>
 <body data-view="practitioner">
+  <!-- ===== ログイン画面 ===== -->
+  <div id="authScreen" class="auth-screen">
+    <div class="auth-container">
+      <div class="auth-header">
+        <h1>検査アプリ</h1>
+        <p>段階的原因特定システム</p>
+      </div>
+
+      <!-- ログインフォーム -->
+      <div id="loginForm" class="auth-form">
+        <h2>ログイン</h2>
+        <div class="auth-field">
+          <label for="loginEmail">メールアドレス</label>
+          <input type="email" id="loginEmail" placeholder="example@clinic.com" autocomplete="email">
+        </div>
+        <div class="auth-field">
+          <label for="loginPassword">パスワード</label>
+          <input type="password" id="loginPassword" placeholder="パスワード" autocomplete="current-password">
+        </div>
+        <div id="loginError" class="auth-error" style="display:none;"></div>
+        <button type="button" id="loginBtn" class="btn btn-primary auth-btn">ログイン</button>
+        <p class="auth-switch">アカウントをお持ちでない方は <a href="#" id="showSignup">新規登録</a></p>
+      </div>
+
+      <!-- 新規登録フォーム -->
+      <div id="signupForm" class="auth-form" style="display:none;">
+        <h2>新規登録</h2>
+        <div class="auth-field">
+          <label for="signupName">お名前</label>
+          <input type="text" id="signupName" placeholder="山田 太郎">
+        </div>
+        <div class="auth-field">
+          <label for="signupClinic">院名</label>
+          <input type="text" id="signupClinic" placeholder="○○整体院">
+        </div>
+        <div class="auth-field">
+          <label for="signupEmail">メールアドレス</label>
+          <input type="email" id="signupEmail" placeholder="example@clinic.com" autocomplete="email">
+        </div>
+        <div class="auth-field">
+          <label for="signupPassword">パスワード（6文字以上）</label>
+          <input type="password" id="signupPassword" placeholder="パスワード" autocomplete="new-password">
+        </div>
+        <div id="signupError" class="auth-error" style="display:none;"></div>
+        <button type="button" id="signupBtn" class="btn btn-primary auth-btn">登録する</button>
+        <p class="auth-switch">既にアカウントをお持ちの方は <a href="#" id="showLogin">ログイン</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== メインアプリ（認証後に表示） ===== -->
+  <div id="mainApp" style="display:none;">
   <!-- ヘッダー -->
   <header class="header">
     <div class="header-inner">
@@ -26,9 +79,12 @@
           <p class="header-subtitle practitioner-only">段階的原因特定システム</p>
           <p class="header-subtitle patient-only">あなたの身体バランスをわかりやすくお伝えします</p>
         </div>
-        <div class="view-toggle" id="viewToggle">
-          <button class="toggle-btn active" data-mode="practitioner">施術者</button>
-          <button class="toggle-btn" data-mode="patient">患者さん</button>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="view-toggle" id="viewToggle">
+            <button class="toggle-btn active" data-mode="practitioner">施術者</button>
+            <button class="toggle-btn" data-mode="patient">患者さん</button>
+          </div>
+          <button type="button" id="logoutBtn" class="btn btn-sm btn-secondary" style="font-size:11px;padding:4px 8px;">ログアウト</button>
         </div>
       </div>
     </div>
@@ -191,10 +247,6 @@
           <p>患者さんに<strong>立った状態</strong>で、以下の3つのランドマークの左右差を確認してください。</p>
         </div>
 
-        <div class="body-diagram-wrapper">
-          <div class="body-diagram-container" id="diagram-standing"></div>
-        </div>
-
         <div class="form-card">
           <h3 class="card-title">乳様突起</h3>
           <p class="landmark-desc">耳の後ろの骨の突起の高さを左右で比較</p>
@@ -235,6 +287,10 @@
           </div>
         </div>
 
+        <div class="body-diagram-wrapper">
+          <div class="body-diagram-container" id="diagram-standing"></div>
+        </div>
+
         <div class="form-actions">
           <button type="button" class="btn btn-secondary wizard-prev">← 戻る</button>
           <button type="button" class="btn btn-primary wizard-next">座位検査へ →</button>
@@ -248,10 +304,6 @@
           <h3>座位検査</h3>
           <p><strong>足が地面につかない高さ</strong>で座らせた状態で、同じ3つのランドマークを確認します。</p>
           <div class="instruction-important">足が地面についていないことを必ず確認してください</div>
-        </div>
-
-        <div class="body-diagram-wrapper">
-          <div class="body-diagram-container" id="diagram-seated"></div>
         </div>
 
         <div class="form-card">
@@ -281,6 +333,10 @@
           </div>
         </div>
 
+        <div class="body-diagram-wrapper">
+          <div class="body-diagram-container" id="diagram-seated"></div>
+        </div>
+
         <!-- 立位との比較結果（自動表示） -->
         <div id="seatedComparison" class="comparison-box" style="display:none;"></div>
 
@@ -303,10 +359,6 @@
             <li>手首を前方へ <strong>掌屈</strong> させて脱力（ダラーンとした状態）</li>
           </ol>
           <div class="instruction-important">足が地面についていないことを引き続き確認してください</div>
-        </div>
-
-        <div class="body-diagram-wrapper">
-          <div class="body-diagram-container" id="diagram-upperBody"></div>
         </div>
 
         <div class="form-card">
@@ -334,6 +386,10 @@
             <button type="button" class="landmark-btn" data-value="0">同じ高さ</button>
             <button type="button" class="landmark-btn" data-value="1">右が高い →</button>
           </div>
+        </div>
+
+        <div class="body-diagram-wrapper">
+          <div class="body-diagram-container" id="diagram-upperBody"></div>
         </div>
 
         <div class="form-actions">
@@ -380,11 +436,6 @@
           <h3>詳細検査（全身統合）</h3>
           <p>上半身・下半身の<strong>全6ランドマーク</strong>を確認し、身体全体の縮こまり・引っ張りを特定します。</p>
           <p class="instruction-note">各ランドマークの左右の高さを上から順に入力してください。</p>
-        </div>
-
-        <!-- 全身統合ダイアグラム（入力中リアルタイム更新） -->
-        <div class="body-diagram-wrapper unified-diagram-wrapper">
-          <div class="body-diagram-container" id="diagram-detailUnified"></div>
         </div>
 
         <!-- 上半身詳細 -->
@@ -461,6 +512,11 @@
               <button type="button" class="landmark-btn" data-value="1">右が高い →</button>
             </div>
           </div>
+        </div>
+
+        <!-- 全身統合ダイアグラム（入力中リアルタイム更新） -->
+        <div class="body-diagram-wrapper unified-diagram-wrapper">
+          <div class="body-diagram-container" id="diagram-unified"></div>
         </div>
 
         <div class="form-actions">
@@ -550,6 +606,7 @@
   </main>
 
   <footer class="app-footer"><p>Body Check Pro v2.0</p></footer>
+  </div><!-- /mainApp -->
 
   <!-- チュートリアルオーバーレイ -->
   <div id="tutorialOverlay" class="tutorial-overlay" style="display:none;">
@@ -605,11 +662,12 @@
   <!-- 印刷用コンテナ（通常は非表示、印刷時のみ表示） -->
   <div id="printContainer" class="print-container"></div>
 
-  <script src="js/inspection.js"></script>
-  <script src="js/bodyDiagram.js"></script>
-  <script src="js/selfcare.js"></script>
-  <script src="js/storage.js"></script>
-  <script src="js/pdf.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/supabase.js?v=20260320a"></script>
+  <script src="js/inspection.js?v=20260320a"></script>
+  <script src="js/bodyDiagram.js?v=20260320a"></script>
+  <script src="js/selfcare.js?v=20260320a"></script>
+  <script src="js/storage.js?v=20260320a"></script>
+  <script src="js/pdf.js?v=20260320a"></script>
+  <script src="js/app.js?v=20260320a"></script>
 </body>
 </html>

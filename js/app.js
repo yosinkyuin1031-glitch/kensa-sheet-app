@@ -28,8 +28,108 @@
   let medicalHistory = '';
   let symptomDetail = '';
 
-  // ===== 初期化 =====
-  function init() {
+  // ===== 認証・初期化 =====
+  async function initAuth() {
+    SupabaseAuth.init();
+
+    // ログイン/登録フォームの切り替え
+    document.getElementById('showSignup').addEventListener('click', (e) => {
+      e.preventDefault();
+      document.getElementById('loginForm').style.display = 'none';
+      document.getElementById('signupForm').style.display = 'block';
+    });
+    document.getElementById('showLogin').addEventListener('click', (e) => {
+      e.preventDefault();
+      document.getElementById('signupForm').style.display = 'none';
+      document.getElementById('loginForm').style.display = 'block';
+    });
+
+    // ログインボタン
+    document.getElementById('loginBtn').addEventListener('click', async () => {
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const errorDiv = document.getElementById('loginError');
+      if (!email || !password) {
+        errorDiv.textContent = 'メールアドレスとパスワードを入力してください';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      try {
+        document.getElementById('loginBtn').disabled = true;
+        document.getElementById('loginBtn').textContent = 'ログイン中...';
+        await SupabaseAuth.login(email, password);
+        showMainApp();
+      } catch (err) {
+        errorDiv.textContent = err.message;
+        errorDiv.style.display = 'block';
+      } finally {
+        document.getElementById('loginBtn').disabled = false;
+        document.getElementById('loginBtn').textContent = 'ログイン';
+      }
+    });
+
+    // 登録ボタン
+    document.getElementById('signupBtn').addEventListener('click', async () => {
+      const name = document.getElementById('signupName').value.trim();
+      const clinic = document.getElementById('signupClinic').value.trim();
+      const email = document.getElementById('signupEmail').value.trim();
+      const password = document.getElementById('signupPassword').value;
+      const errorDiv = document.getElementById('signupError');
+      if (!name || !email || !password) {
+        errorDiv.textContent = 'お名前・メールアドレス・パスワードは必須です';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      if (password.length < 6) {
+        errorDiv.textContent = 'パスワードは6文字以上にしてください';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      try {
+        document.getElementById('signupBtn').disabled = true;
+        document.getElementById('signupBtn').textContent = '登録中...';
+        await SupabaseAuth.signup(email, password, clinic, name);
+        showMainApp();
+      } catch (err) {
+        errorDiv.textContent = err.message;
+        errorDiv.style.display = 'block';
+      } finally {
+        document.getElementById('signupBtn').disabled = false;
+        document.getElementById('signupBtn').textContent = '登録する';
+      }
+    });
+
+    // Enterキーでログイン/登録
+    document.getElementById('loginPassword').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') document.getElementById('loginBtn').click();
+    });
+    document.getElementById('signupPassword').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') document.getElementById('signupBtn').click();
+    });
+
+    // ログアウトボタン
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      if (confirm('ログアウトしますか？')) {
+        await SupabaseAuth.logout();
+        document.getElementById('mainApp').style.display = 'none';
+        document.getElementById('authScreen').style.display = 'flex';
+      }
+    });
+
+    // セッション確認
+    const session = await SupabaseAuth.getSession();
+    if (session) {
+      showMainApp();
+    }
+  }
+
+  async function showMainApp() {
+    document.getElementById('authScreen').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    await init();
+  }
+
+  async function init() {
     setupViewToggle();
     setupTabNavigation();
     setupWizardNavigation();
@@ -46,7 +146,7 @@
     setupBackupButtons();
     setupTrendButton();
     setDefaultDate();
-    refreshHistory();
+    await refreshHistory();
     initDiagrams();
     registerServiceWorker();
     showTutorialIfNeeded();
@@ -116,9 +216,9 @@
     const importInput = document.getElementById('importFileInput');
     if (!exportBtn || !importBtn || !importInput) return;
 
-    exportBtn.addEventListener('click', () => {
+    exportBtn.addEventListener('click', async () => {
       try {
-        const history = Storage.getAll();
+        const history = await Storage.getAll();
         const exportData = {
           appName: 'BodyCheckPro',
           version: '2.0',
@@ -173,28 +273,27 @@
             }
           }
 
-          const existingData = Storage.getAll();
+          const existingData = await Storage.getAll();
           const existingIds = new Set(existingData.map(e => e.id));
           let newCount = 0;
 
-          // 既存データとマージ（重複IDはスキップ）
+          // 既存データとマージ（重複IDはクラウドにインポート）
           for (const entry of imported.data) {
             if (!existingIds.has(entry.id)) {
-              existingData.push(entry);
+              // クラウドに保存
+              const causeInfo = entry.diagnosisResult ? InspectionLogic.causeLabels[entry.diagnosisResult.primaryCause] : null;
+              await Storage.save(
+                entry.examData, entry.diagnosisResult,
+                entry.patientName, entry.memo,
+                entry.detailData, entry.contractionResult,
+                entry.weightBalance, entry.patientId,
+                entry.painLevel, entry.chiefComplaints
+              );
               newCount++;
             }
           }
 
-          // 日付順にソート（新しい順）
-          existingData.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-          // 100件制限
-          if (existingData.length > 100) {
-            existingData.length = 100;
-          }
-
-          localStorage.setItem(Storage.STORAGE_KEY, JSON.stringify(existingData));
-          refreshHistory();
+          await refreshHistory();
 
           if (newCount > 0) {
             alert(`${newCount}件の新しいデータをインポートしました`);
@@ -229,29 +328,29 @@
     });
   }
 
-  function updateTrendButton() {
+  async function updateTrendButton() {
     const trendBtn = document.getElementById('showTrendBtn');
     if (!trendBtn) return;
 
     const patientName = document.getElementById('patientName').value;
-    const pid = selectedPatientId || Storage.findPatientIdByName(patientName);
+    const pid = selectedPatientId || await Storage.findPatientIdByName(patientName);
     if (!pid) {
       trendBtn.style.display = 'none';
       return;
     }
-    const history = Storage.getHistoryByPatient(pid);
+    const history = await Storage.getHistoryByPatient(pid);
     trendBtn.style.display = history.length >= 2 ? '' : 'none';
   }
 
-  function renderPatientTrend() {
+  async function renderPatientTrend() {
     const trendSection = document.getElementById('trendSection');
     if (!trendSection) return;
 
     const patientName = document.getElementById('patientName').value;
-    const pid = selectedPatientId || Storage.findPatientIdByName(patientName);
+    const pid = selectedPatientId || await Storage.findPatientIdByName(patientName);
     if (!pid) return;
 
-    const history = Storage.getHistoryByPatient(pid);
+    const history = await Storage.getHistoryByPatient(pid);
     if (history.length < 2) return;
 
     // 古い順にソート
@@ -391,7 +490,7 @@
     const toggle = document.getElementById('viewToggle');
     if (!toggle) return;
     toggle.querySelectorAll('.toggle-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         toggle.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         viewMode = btn.dataset.mode;
@@ -417,11 +516,11 @@
 
         // 既に表示済みの結果を再描画
         if (diagnosisResult) {
-          renderDiagnosis(diagnosisResult);
+          await renderDiagnosis(diagnosisResult);
           if (contractionResult) {
             renderUnifiedAnalysis(contractionResult.upper, contractionResult.lower);
           }
-          renderReport();
+          await renderReport();
         }
       });
     });
@@ -451,7 +550,7 @@
       b.classList.toggle('active', b.dataset.tab === tabName);
     });
 
-    if (tabName === 'report') renderReport();
+    if (tabName === 'report') renderReport(); // async, no await needed in tab switch
   }
 
   // 患者モード用アクションバーの状態を同期
@@ -514,7 +613,7 @@
 
     searchInput.addEventListener('input', () => {
       clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => {
+      debounceTimer = setTimeout(async () => {
         const query = searchInput.value.trim();
         if (query.length === 0) {
           suggestionsDiv.innerHTML = '';
@@ -522,7 +621,7 @@
           return;
         }
 
-        const results = Storage.searchPatients(query);
+        const results = await Storage.searchPatients(query);
         if (results.length === 0) {
           suggestionsDiv.innerHTML = '<div class="patient-suggestion-empty">該当する患者が見つかりません</div>';
           suggestionsDiv.style.display = 'block';
@@ -560,11 +659,11 @@
     });
   }
 
-  function selectPatient(patientId, patientName) {
+  async function selectPatient(patientId, patientName) {
     selectedPatientId = patientId;
     document.getElementById('patientName').value = patientName;
 
-    const history = Storage.getHistoryByPatient(patientId);
+    const history = await Storage.getHistoryByPatient(patientId);
     const examCountDiv = document.getElementById('patientExamCount');
     if (examCountDiv && history.length > 0) {
       examCountDiv.textContent = `過去${history.length}回の検査記録があります`;
@@ -789,7 +888,7 @@
   }
 
   // ===== 診断実行 =====
-  function runDiagnosis() {
+  async function runDiagnosis() {
     // 患者追加情報を収集
     const ageInput = document.getElementById('patientAge');
     if (ageInput && ageInput.value) patientAge = parseInt(ageInput.value);
@@ -805,35 +904,34 @@
     if (detailInput) symptomDetail = detailInput.value;
 
     diagnosisResult = InspectionLogic.diagnose(examData);
-    renderDiagnosis(diagnosisResult);
+    await renderDiagnosis(diagnosisResult);
     showDetailedExam();
-    updateCompareButton();
-    updateTrendButton();
+    await updateCompareButton();
+    await updateTrendButton();
     // Show protocol button
     const protocolBtn = document.getElementById('showProtocolBtn');
     if (protocolBtn) protocolBtn.style.display = '';
     // Auto-generate report
-    renderReport();
+    await renderReport();
     // Show summary step
     renderExamSummary();
     goToStep(4);
   }
 
   // ===== 比較ボタンの表示制御 =====
-  function updateCompareButton() {
+  async function updateCompareButton() {
     const compareBtn = document.getElementById('compareBtn');
     if (!compareBtn) return;
 
-    // 現在の患者IDを特定
     const patientName = document.getElementById('patientName').value;
-    const pid = selectedPatientId || Storage.findPatientIdByName(patientName);
+    const pid = selectedPatientId || await Storage.findPatientIdByName(patientName);
 
     if (!pid) {
       compareBtn.style.display = 'none';
       return;
     }
 
-    const history = Storage.getHistoryByPatient(pid);
+    const history = await Storage.getHistoryByPatient(pid);
     if (history.length > 0) {
       compareBtn.style.display = '';
     } else {
@@ -842,15 +940,15 @@
   }
 
   // ===== ビフォーアフター比較 =====
-  function renderComparison() {
+  async function renderComparison() {
     const compSection = document.getElementById('comparisonSection');
     if (!compSection) return;
 
     const patientName = document.getElementById('patientName').value;
-    const pid = selectedPatientId || Storage.findPatientIdByName(patientName);
+    const pid = selectedPatientId || await Storage.findPatientIdByName(patientName);
     if (!pid) return;
 
-    const history = Storage.getHistoryByPatient(pid);
+    const history = await Storage.getHistoryByPatient(pid);
     if (history.length === 0) return;
 
     // 最新（＝前回）の検査を取得
@@ -1066,7 +1164,7 @@
   }
 
   // ===== 診断結果の描画 =====
-  function renderDiagnosis(result) {
+  async function renderDiagnosis(result) {
     const container = document.getElementById('diagnosisContent');
     const causeInfo = InspectionLogic.causeLabels[result.primaryCause];
     const isPatient = viewMode === 'patient';
@@ -1089,7 +1187,7 @@
     </div>`;
 
     // 前回比較（患者IDがあれば）
-    html += generatePreviousComparison();
+    html += await generatePreviousComparison();
 
     // === 治療家モード：詳細テーブルと判定 ===
     html += '<div class="practitioner-only">';
@@ -1186,9 +1284,9 @@
   }
 
   // ===== 前回比較セクション =====
-  function generatePreviousComparison() {
+  async function generatePreviousComparison() {
     if (!selectedPatientId || !diagnosisResult) return '';
-    const history = Storage.getHistoryByPatient(selectedPatientId);
+    const history = await Storage.getHistoryByPatient(selectedPatientId);
     if (history.length < 2) return '';
 
     // 直近の過去データ（現在保存前なので最新が前回）
@@ -1347,7 +1445,7 @@
   }
 
   // ===== 統合分析（上半身＋下半身） =====
-  function runComprehensiveAnalysis() {
+  async function runComprehensiveAnalysis() {
     const upperResult = InspectionLogic.analyzeContraction(
       InspectionLogic.upperDetailLandmarks, detailData.upperDetail
     );
@@ -1362,14 +1460,13 @@
 
     renderUnifiedAnalysis(upperResult, lowerResult);
 
-    // セルフケアボタンの表示制御
-    const allIssues = [
-      ...upperResult.contractions, ...upperResult.tensions,
-      ...lowerResult.contractions, ...lowerResult.tensions
-    ];
+    // セルフケアを自動表示
+    renderSelfcare(upperResult, lowerResult);
+
+    // セルフケアボタンは非表示（自動表示のため不要）
     const selfcareBtn = document.getElementById('showSelfcareBtn');
     if (selfcareBtn) {
-      selfcareBtn.style.display = allIssues.length > 0 ? '' : 'none';
+      selfcareBtn.style.display = 'none';
     }
 
     // プロトコルボタン表示
@@ -1445,16 +1542,10 @@
   function renderPractitionerAnalysis(allLandmarks, upperResult, lowerResult, allIssues) {
     let html = '';
 
-    // === 全身統合ダイアグラム（SVG 1枚で全身表示） ===
     html += '<div class="contraction-section">';
-    html += '<h3>全身統合ダイアグラム</h3>';
-    html += '<p class="unified-diagram-desc">肩峰〜外果まで全6ランドマークを1つの人体図で表示。体幹（肩峰↔大転子）のズレも可視化しています。</p>';
-    html += '<div class="body-diagram-wrapper unified-diagram-wrapper">';
-    html += '<div class="body-diagram-container" id="diagram-unified"></div>';
-    html += '</div>';
 
     // テキスト版のランドマーク一覧
-    html += '<h3 style="margin-top:20px;">全身ランドマーク状態</h3>';
+    html += '<h3>全身ランドマーク状態</h3>';
     html += '<div class="contraction-diagram">';
 
     // 上半身ヘッダー
@@ -1505,6 +1596,13 @@
     }
 
     html += '</div>'; // .contraction-diagram
+
+    // === 全身統合ダイアグラム（SVG 1枚で全身表示） ===
+    html += '<h3 style="margin-top:20px;">全身統合ダイアグラム</h3>';
+    html += '<p class="unified-diagram-desc">肩峰〜外果まで全6ランドマークを1つの人体図で表示。体幹（肩峰↔大転子）のズレも可視化しています。</p>';
+    html += '<div class="body-diagram-wrapper unified-diagram-wrapper">';
+    html += '<div class="body-diagram-container" id="diagram-unified"></div>';
+    html += '</div>';
 
     // 検出された問題一覧
     if (allIssues.length > 0) {
@@ -1586,39 +1684,38 @@
   function renderPatientAnalysis(allIssues, allLandmarks, upperResult, lowerResult) {
     let html = '';
 
-    // 全身統合ダイアグラム（患者モードでも表示）
-    html += '<div class="body-diagram-wrapper unified-diagram-wrapper">';
-    html += '<div class="body-diagram-container" id="diagram-unified"></div>';
-    html += '</div>';
-
     if (allIssues.length === 0) {
       html += `<div class="patient-result-card good">
         <div class="patient-result-icon">✅</div>
         <h3>良好な状態です</h3>
         <p>身体に大きな縮こまりや引っ張りは見られません。</p>
       </div>`;
-      return html;
-    }
-
-    html += `<div class="patient-result-card">
-      <h3>気になる箇所が見つかりました</h3>
-      <p>以下の部分にバランスの乱れがあります。施術で改善していきましょう。</p>
-    </div>`;
-
-    for (const issue of allIssues) {
-      const typeLabel = issue.type === 'contraction' ? '硬くなっている' : '引っ張られている';
-      const sideLabel = issue.side === 'both' ? '両側' : issue.side === 'right' ? '右側' : '左側';
-      const color = issue.type === 'contraction' ? 'var(--severe)' : 'var(--purple)';
-      const icon = issue.type === 'contraction' ? '🔴' : '🟣';
-
-      html += `<div class="patient-issue-card" style="border-left-color: ${color}">
-        <span class="patient-issue-icon">${icon}</span>
-        <div>
-          <strong>${issue.area}</strong>
-          <p>${sideLabel}が${typeLabel}状態です</p>
-        </div>
+    } else {
+      html += `<div class="patient-result-card">
+        <h3>気になる箇所が見つかりました</h3>
+        <p>以下の部分にバランスの乱れがあります。施術で改善していきましょう。</p>
       </div>`;
+
+      for (const issue of allIssues) {
+        const typeLabel = issue.type === 'contraction' ? '硬くなっている' : '引っ張られている';
+        const sideLabel = issue.side === 'both' ? '両側' : issue.side === 'right' ? '右側' : '左側';
+        const color = issue.type === 'contraction' ? 'var(--severe)' : 'var(--purple)';
+        const icon = issue.type === 'contraction' ? '🔴' : '🟣';
+
+        html += `<div class="patient-issue-card" style="border-left-color: ${color}">
+          <span class="patient-issue-icon">${icon}</span>
+          <div>
+            <strong>${issue.area}</strong>
+            <p>${sideLabel}が${typeLabel}状態です</p>
+          </div>
+        </div>`;
+      }
     }
+
+    // 全身統合ダイアグラム（患者モードでも表示）
+    html += '<div class="body-diagram-wrapper unified-diagram-wrapper">';
+    html += '<div class="body-diagram-container" id="diagram-unified"></div>';
+    html += '</div>';
 
     return html;
   }
@@ -1635,7 +1732,22 @@
       ...lowerResult.tensions.map(t => ({ ...t, bodyPart: 'lower' }))
     ];
 
-    if (allIssues.length === 0) {
+    // 外果（lateralMalleolus）の左右差を確認 → 足裏ケア提案
+    let footRollSide = null;
+    if (detailData && detailData.lowerDetail) {
+      const lateralVal = detailData.lowerDetail.lateralMalleolus;
+      if (lateralVal === 1) {
+        // 右が高い → 左が下がっている → 左足の足裏ケア
+        footRollSide = 'left';
+      } else if (lateralVal === -1) {
+        // 左が高い → 右が下がっている → 右足の足裏ケア
+        footRollSide = 'right';
+      }
+    }
+
+    const hasIssues = allIssues.length > 0 || footRollSide;
+
+    if (!hasIssues) {
       selfcareDiv.style.display = 'none';
       return;
     }
@@ -1660,6 +1772,14 @@
       }
     }
 
+    // 外果が下がっている側の足裏ケアを追加
+    if (footRollSide) {
+      const footExercise = SelfcareDatabase.getSelfcareForArea('足裏', 'contraction');
+      if (footExercise) {
+        html += SelfcareDatabase.renderSelfcareCard(footExercise, footRollSide);
+      }
+    }
+
     html += '</div>';
 
     selfcareDiv.innerHTML = html;
@@ -1669,15 +1789,23 @@
 
   // ===== 診断アクション =====
   function setupDiagnosisActions() {
-    document.getElementById('saveHistoryBtn').addEventListener('click', () => {
+    document.getElementById('saveHistoryBtn').addEventListener('click', async () => {
       if (!diagnosisResult) return;
       const patientName = document.getElementById('patientName').value;
       const memo = document.getElementById('inspectionMemo').value;
-      const success = Storage.save(examData, diagnosisResult, patientName, memo, detailData, contractionResult, weightBalance, selectedPatientId, painLevel, chiefComplaints);
+      const extraFields = {
+        age: patientAge,
+        gender: patientGender,
+        occupation: patientOccupation,
+        visitType: visitType,
+        medicalHistory: medicalHistory,
+        symptomDetail: symptomDetail
+      };
+      const success = await Storage.save(examData, diagnosisResult, patientName, memo, detailData, contractionResult, weightBalance, selectedPatientId, painLevel, chiefComplaints, extraFields);
       if (success) {
         alert('検査結果を保存しました');
-        updateCompareButton();
-        updateTrendButton();
+        await updateCompareButton();
+        await updateTrendButton();
       } else {
         alert('保存に失敗しました');
       }
@@ -1726,13 +1854,13 @@
     // 比較ボタン
     const compareBtn = document.getElementById('compareBtn');
     if (compareBtn) {
-      compareBtn.addEventListener('click', () => {
+      compareBtn.addEventListener('click', async () => {
         const compSection = document.getElementById('comparisonSection');
         if (compSection.style.display === 'block') {
           compSection.style.display = 'none';
           compareBtn.textContent = '前回と比較';
         } else {
-          renderComparison();
+          await renderComparison();
           compareBtn.textContent = '比較を閉じる';
         }
       });
@@ -1810,6 +1938,19 @@
               duration: exercise.frequency || exercise.duration || ''
             });
           }
+        }
+      }
+    }
+    // 足裏ケアも追加
+    if (detailData && detailData.lowerDetail && detailData.lowerDetail.lateralMalleolus !== 0) {
+      if (typeof SelfcareDatabase !== 'undefined') {
+        const footExercise = SelfcareDatabase.getSelfcareForArea('足裏', 'contraction');
+        if (footExercise) {
+          selfcareItems.push({
+            name: footExercise.name,
+            description: footExercise.description || '',
+            duration: footExercise.frequency || ''
+          });
         }
       }
     }
@@ -2316,21 +2457,29 @@
     }
     const summarySaveBtn = document.getElementById('summarySaveBtn');
     if (summarySaveBtn) {
-      summarySaveBtn.addEventListener('click', () => {
+      summarySaveBtn.addEventListener('click', async () => {
         if (!diagnosisResult) return;
         const memo = document.getElementById('inspectionMemo').value;
-        const success = Storage.save(examData, diagnosisResult, patientName, memo, detailData, contractionResult, weightBalance, selectedPatientId, painLevel, chiefComplaints);
+        const extraFields = {
+          age: patientAge,
+          gender: patientGender,
+          occupation: patientOccupation,
+          visitType: visitType,
+          medicalHistory: medicalHistory,
+          symptomDetail: symptomDetail
+        };
+        const success = await Storage.save(examData, diagnosisResult, patientName, memo, detailData, contractionResult, weightBalance, selectedPatientId, painLevel, chiefComplaints, extraFields);
         if (success) {
           alert('検査結果を保存しました');
-          updateCompareButton();
-          updateTrendButton();
+          await updateCompareButton();
+          await updateTrendButton();
         }
       });
     }
   }
 
   // ===== レポート描画 =====
-  function renderReport() {
+  async function renderReport() {
     const container = document.getElementById('reportContent');
     if (!container || !diagnosisResult) {
       if (container) {
@@ -2418,9 +2567,9 @@
     }
 
     // Before/after comparison (if previous data exists)
-    const pid = selectedPatientId || Storage.findPatientIdByName(patientName);
+    const pid = selectedPatientId || await Storage.findPatientIdByName(patientName);
     if (pid) {
-      const history = Storage.getHistoryByPatient(pid);
+      const history = await Storage.getHistoryByPatient(pid);
       if (history.length > 0) {
         const prevEntry = history[0];
         const prevDate = new Date(prevEntry.date);
@@ -2606,12 +2755,12 @@
   }
 
   // ===== カルテ =====
-  function refreshHistory() {
-    Storage.renderKarteList(
+  async function refreshHistory() {
+    await Storage.renderKarteList(
       (id) => loadFromHistory(id),
-      (id) => {
-        Storage.delete(id);
-        refreshHistory();
+      async (id) => {
+        await Storage.delete(id);
+        await refreshHistory();
       }
     );
     // 検索バー
@@ -2621,10 +2770,10 @@
       let timer = null;
       searchInput.addEventListener('input', () => {
         clearTimeout(timer);
-        timer = setTimeout(() => {
-          Storage.renderKarteList(
+        timer = setTimeout(async () => {
+          await Storage.renderKarteList(
             (id) => loadFromHistory(id),
-            (id) => { Storage.delete(id); refreshHistory(); },
+            async (id) => { await Storage.delete(id); await refreshHistory(); },
             searchInput.value
           );
         }, 200);
@@ -2632,8 +2781,8 @@
     }
   }
 
-  function loadFromHistory(id) {
-    const entry = Storage.getById(id);
+  async function loadFromHistory(id) {
+    const entry = await Storage.getById(id);
     if (!entry) return;
 
     examData = { ...entry.examData };
@@ -2660,7 +2809,7 @@
 
     // 患者検査回数を表示
     if (entry.patientId) {
-      const history = Storage.getHistoryByPatient(entry.patientId);
+      const history = await Storage.getHistoryByPatient(entry.patientId);
       const examCountDiv = document.getElementById('patientExamCount');
       if (examCountDiv && history.length > 0) {
         examCountDiv.textContent = `過去${history.length}回の検査記録があります`;
@@ -2738,7 +2887,7 @@
 
     // 診断結果を再計算して表示
     diagnosisResult = InspectionLogic.diagnose(examData);
-    renderDiagnosis(diagnosisResult);
+    await renderDiagnosis(diagnosisResult);
     showDetailedExam();
 
     // 縮こまり分析結果があれば復元
@@ -2750,10 +2899,10 @@
         ...contractionResult.upper.contractions, ...contractionResult.upper.tensions,
         ...contractionResult.lower.contractions, ...contractionResult.lower.tensions
       ];
+      // セルフケア自動表示
+      renderSelfcare(contractionResult.upper, contractionResult.lower);
       const selfcareBtn = document.getElementById('showSelfcareBtn');
-      if (selfcareBtn) {
-        selfcareBtn.style.display = allIssues.length > 0 ? '' : 'none';
-      }
+      if (selfcareBtn) selfcareBtn.style.display = 'none';
     }
 
     // プロトコルボタン表示
@@ -2761,19 +2910,19 @@
     if (protocolBtn) protocolBtn.style.display = '';
 
     // 比較ボタンを更新
-    updateCompareButton();
-    updateTrendButton();
+    await updateCompareButton();
+    await updateTrendButton();
 
     // レポート更新
-    renderReport();
+    await renderReport();
 
     switchTab('diagnosis');
   }
 
-  // ===== DOM準備完了時に初期化 =====
+  // ===== DOM準備完了時に認証初期化 =====
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', initAuth);
   } else {
-    init();
+    initAuth();
   }
 })();

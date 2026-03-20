@@ -220,6 +220,65 @@ const SelfcareDatabase = {
         caution: 'つま先が浮かないように注意してください',
         illustration: 'ankleExercise'
       }
+    },
+
+    // ===== 足裏ケア（全身統合分析：外果が下がっている側） =====
+    '足裏': {
+      contraction: {
+        name: '足裏アーチケア（ボール・芯踏み）',
+        target: '足底筋膜・足底筋群・足部アーチ',
+        description: '外果（くるぶし外側）が下がっている側は、足裏のアーチが崩れて重心が外側に偏っています。足裏をほぐしてアーチを回復させることで、下半身全体のバランスが改善します。',
+        evidence: '足底筋膜のリリースは足部アライメント改善・姿勢制御向上に有効（足部バイオメカニクスのエビデンス）',
+        steps: [
+          'テニスボールまたはサランラップの芯を床に置きます',
+          '下がっている側の足を乗せ、土踏まずを中心にゆっくり転がします',
+          'かかと → 土踏まず → 指の付け根の順に、30秒ずつ圧をかけます',
+          '痛気持ちいい程度の圧で、体重をかけすぎないように調整します',
+          '合計2〜3分間、丁寧にほぐします'
+        ],
+        sets: '各エリア30秒 × 合計2〜3分',
+        frequency: '1日2〜3回（朝・昼・夜）',
+        caution: '強く踏みすぎると逆効果です。痛気持ちいい程度で行ってください。炎症がある場合は中止してください。',
+        illustration: 'footRoll'
+      }
+    },
+
+    // ===== 体幹ケア（基本検査：肩甲下角〜腸骨稜間の問題） =====
+    '体幹': {
+      contraction: {
+        name: '体幹の縮こまりケア',
+        target: '腰方形筋・腹斜筋・広背筋',
+        description: '体幹が左右どちらかに縮こまっています。側屈ストレッチで縮んだ側を伸ばしましょう。',
+        evidence: '体幹側屈ストレッチは腰方形筋の柔軟性改善・腰痛予防に有効（運動療法ガイドライン）',
+        steps: [
+          '足を肩幅に開いて立ちます',
+          '縮こまっている側と反対方向に上体を倒します',
+          '倒す側の手を頭の上に伸ばし、脇腹の伸びを感じます',
+          '15秒キープして3回繰り返します',
+          '反対側も軽く行い、左右のバランスを整えます'
+        ],
+        sets: '15秒 × 3回',
+        frequency: '1日2〜3回',
+        caution: '腰に痛みがある場合は無理をせず、椅子に座って行ってください',
+        illustration: 'trunkStretch'
+      },
+      tension: {
+        name: '体幹の引っ張りケア',
+        target: '多裂筋・腹横筋・骨盤底筋群',
+        description: '体幹が上下に引っ張られて不安定になっています。体幹を安定させるエクササイズが効果的です。',
+        evidence: '体幹安定化運動は腰痛予防・姿勢改善に高いエビデンスがある（コクランレビュー推奨）',
+        steps: [
+          '仰向けに寝て、両膝を立てます',
+          'おへそを背骨に近づけるようにお腹を凹ませます（ドローイン）',
+          'その状態を10秒キープします',
+          '呼吸は止めずにゆっくり続けます',
+          '10回繰り返します'
+        ],
+        sets: '10秒 × 10回',
+        frequency: '1日2回（朝・夜）',
+        caution: '息を止めないように注意してください。腰を反らさず床にしっかりつけましょう',
+        illustration: 'trunkStabilize'
+      }
     }
   },
 
@@ -659,6 +718,114 @@ const SelfcareDatabase = {
         <text x="130" y="230" text-anchor="middle" font-size="10" fill="${A}" font-weight="600">20秒キープ × 3回（左右）</text>
       </svg>`,
 
+      footRoll: `<svg viewBox="0 0 260 240" class="selfcare-illust">
+        ${defs}
+        <!-- 床 -->
+        <line x1="20" y1="192" x2="240" y2="192" stroke="#cbd5e1" stroke-width="1.5"/>
+        <!-- すね -->
+        <path d="M110,20 L106,80" stroke="${S}" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.5"/>
+        <path d="M110,20 L106,80" stroke="${K}" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <!-- 足首関節 -->
+        <circle cx="106" cy="82" r="6" fill="#fbbf24" stroke="#d97706" stroke-width="1.2" opacity="0.7"/>
+        <!-- 足（ボールの上に乗っている） -->
+        <path d="M68,82 Q64,92 62,104 Q60,118 64,128 Q72,136 92,138 Q108,138 122,134 Q132,128 132,118 Q132,108 128,96 Q124,86 118,82"
+          fill="${S}" stroke="${K}" stroke-width="1.8"/>
+        <!-- テニスボール -->
+        <circle cx="96" cy="148" r="18" fill="#c4f17e" stroke="#84cc16" stroke-width="2"/>
+        <path d="M80,140 Q96,132 112,140" fill="none" stroke="#84cc16" stroke-width="1.2" opacity="0.5"/>
+        <path d="M82,156 Q96,164 110,156" fill="none" stroke="#84cc16" stroke-width="1.2" opacity="0.5"/>
+        <!-- ボールラベル -->
+        <text x="96" y="152" text-anchor="middle" font-size="8" fill="#4d7c0f" font-weight="600">ボール</text>
+        <!-- 圧の矢印 -->
+        <path d="M96,128 L96,136" stroke="${M}" stroke-width="3" marker-end="url(#aD)"/>
+        ${badge(60,130,'1',A)}
+        <text x="24" y="134" font-size="10" fill="${A}" font-weight="600">乗せる</text>
+        <!-- 転がす矢印 -->
+        <path d="M68,160 L124,160" stroke="${A}" stroke-width="2.5" fill="none" marker-end="url(#aB)" filter="url(#glow)"/>
+        ${badge(96,174,'2',A)}
+        <text x="76" y="180" font-size="11" fill="${A}" font-weight="700">転がす</text>
+        <!-- サランラップ芯（右側に代替表示） -->
+        <rect x="160" y="58" width="80" height="130" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.2"/>
+        <text x="200" y="76" text-anchor="middle" font-size="10" fill="#1e293b" font-weight="600">代わりに</text>
+        <!-- サランラップ芯イラスト -->
+        <rect x="185" y="88" width="30" height="80" rx="15" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5"/>
+        <rect x="192" y="88" width="16" height="80" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="0.8"/>
+        <text x="200" y="182" text-anchor="middle" font-size="10" fill="#64748b" font-weight="600">ラップの芯</text>
+        <!-- 足裏エリア表示 -->
+        <rect x="40" y="200" width="180" height="34" rx="6" fill="#f0f9ff" stroke="#bfdbfe" stroke-width="1"/>
+        <text x="130" y="214" text-anchor="middle" font-size="10" fill="${A}" font-weight="600">かかと → 土踏まず → 指の付け根</text>
+        <text x="130" y="228" text-anchor="middle" font-size="9" fill="#64748b">各30秒 × 合計2〜3分</text>
+      </svg>`,
+
+      trunkStretch: `<svg viewBox="0 0 260 240" class="selfcare-illust">
+        ${defs}
+        <line x1="20" y1="212" x2="240" y2="212" stroke="#cbd5e1" stroke-width="1.5"/>
+        <!-- 筋肉ハイライト：脇腹 -->
+        <path d="M100,78 Q88,96 86,118 L98,120 Q96,100 106,82 Z" fill="url(#muscleHL)" stroke="${M}" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.6"/>
+        <!-- 体（側屈） -->
+        <path d="M112,80 Q106,78 100,82 L86,140 L106,144 Z" fill="${S}" stroke="${K}" stroke-width="1.2"/>
+        <!-- 首 -->
+        <path d="M102,66 Q108,70 114,66 L112,80 L104,80 Z" fill="${S}" stroke="${K}" stroke-width="1"/>
+        <!-- 頭（傾いた） -->
+        <ellipse cx="96" cy="52" rx="18" ry="17" fill="${S}" stroke="${K}" stroke-width="1.2"/>
+        <path d="M80,44 C82,32 110,32 112,44" fill="${H}" opacity="0.45"/>
+        <!-- 伸ばす腕（頭の上） -->
+        <path d="M112,84 Q118,64 104,44 Q96,36 86,32" stroke="${K}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        ${badge(72,28,'2',A)}
+        <text x="50" y="24" font-size="10" fill="${A}" font-weight="600">腕を伸ばす</text>
+        <!-- 反対の腕 -->
+        <path d="M100,86 Q88,94 82,108 Q78,118 80,130" stroke="${K}" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <!-- STEP1: 側屈方向 -->
+        <path d="M128,80 Q112,94 98,116" stroke="${A}" stroke-width="3" fill="none" marker-end="url(#aB)" filter="url(#glow)"/>
+        ${badge(138,72,'1',A)}
+        <text x="144" y="68" font-size="11" fill="${A}" font-weight="700">倒す</text>
+        <!-- 伸びライン -->
+        <path d="M104,82 Q94,100 90,120" stroke="${M}" stroke-width="3" stroke-dasharray="5,3" fill="none"/>
+        ${muscleLabel(48,110,'脇腹の伸び')}
+        <!-- 脚 -->
+        <path d="M90,140 Q84,172 80,210" stroke="${K}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <path d="M104,142 Q108,172 112,210" stroke="${K}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <ellipse cx="78" cy="212" rx="10" ry="4" fill="${S}" stroke="${K}" stroke-width="0.8"/>
+        <ellipse cx="114" cy="212" rx="10" ry="4" fill="${S}" stroke="${K}" stroke-width="0.8"/>
+        <rect x="60" y="220" width="140" height="14" rx="5" fill="#f0f9ff" stroke="#bfdbfe" stroke-width="1"/>
+        <text x="130" y="230" text-anchor="middle" font-size="10" fill="${A}" font-weight="600">15秒キープ × 3回</text>
+      </svg>`,
+
+      trunkStabilize: `<svg viewBox="0 0 260 240" class="selfcare-illust">
+        ${defs}
+        <!-- マット -->
+        <rect x="16" y="148" width="228" height="10" rx="4" fill="#e8f5e9" opacity="0.5"/>
+        <line x1="16" y1="158" x2="244" y2="158" stroke="#cbd5e1" stroke-width="1"/>
+        <!-- 仰向けの人物 -->
+        <ellipse cx="46" cy="122" rx="18" ry="16" fill="${S}" stroke="${K}" stroke-width="1.2"/>
+        <path d="M30,114 C30,104 62,104 62,114" fill="${H}" opacity="0.35"/>
+        <!-- 体 -->
+        <path d="M62,124 Q100,120 150,126" stroke="${S}" stroke-width="16" fill="none" stroke-linecap="round" opacity="0.6"/>
+        <path d="M62,124 Q100,120 150,126" stroke="${K}" stroke-width="5.5" fill="none" stroke-linecap="round"/>
+        <!-- 筋肉ハイライト：腹横筋 -->
+        <ellipse cx="106" cy="122" rx="30" ry="10" fill="url(#muscleHL)" stroke="${M}" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.5"/>
+        <!-- 腕 -->
+        <path d="M80,124 Q82,136 84,148" stroke="${K}" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M104,122 Q106,136 108,148" stroke="${K}" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <!-- 膝（立てた状態） -->
+        <path d="M150,126 Q160,104 170,80" stroke="${K}" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+        <path d="M170,80 L170,148" stroke="${K}" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M156,128 Q168,108 180,86" stroke="${K}" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M180,86 L180,148" stroke="${K}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <!-- STEP1: おへそを凹ます -->
+        <path d="M106,108 L106,118" stroke="${A}" stroke-width="3" marker-end="url(#aD)"/>
+        ${badge(106,96,'1',A)}
+        <text x="80" y="88" font-size="11" fill="${A}" font-weight="700">お腹を凹ます</text>
+        <!-- 呼吸マーク -->
+        <text x="46" y="98" font-size="16">💨</text>
+        ${badge(62,88,'2','#22c55e')}
+        <text x="26" y="76" font-size="9" fill="#22c55e" font-weight="600">呼吸を続ける</text>
+        ${muscleLabel(76,174,'腹横筋を活性化','start')}
+        <rect x="58" y="188" width="144" height="28" rx="6" fill="#f0f9ff" stroke="#bfdbfe" stroke-width="1"/>
+        <text x="130" y="200" text-anchor="middle" font-size="10" fill="${A}" font-weight="600">10秒キープ × 10回</text>
+        <text x="130" y="212" text-anchor="middle" font-size="9" fill="#64748b">朝・夜の1日2回</text>
+      </svg>`,
+
       ankleExercise: `<svg viewBox="0 0 260 240" class="selfcare-illust">
         ${defs}
         <!-- 椅子ヒント -->
@@ -757,7 +924,10 @@ const SelfcareDatabase = {
       hamstringStretch: 'つま先を天井に向け、背中を丸めずに股関節から前屈しましょう。',
       quadStretch: 'バランスが不安な方は壁に手をついて行ってください。膝が痛い場合は中止を。',
       calfStretch: 'かかとが床から離れないように。アキレス腱まで伸びを感じましょう。',
-      ankleExercise: '足指を意識的に動かすことで足裏の筋肉が活性化します。毎日続けるのがコツです。'
+      ankleExercise: '足指を意識的に動かすことで足裏の筋肉が活性化します。毎日続けるのがコツです。',
+      footRoll: '硬いボールよりテニスボールくらいの柔らかさがベスト。お風呂上がりにやると効果的です。',
+      trunkStretch: '呼吸を止めずに、息を吐きながら倒すとより深く伸びます。',
+      trunkStabilize: 'ドローインは「おへそを背骨に近づける」イメージ。最初は手をお腹に当てて確認しましょう。'
     };
     return tips[illustrationKey] || '';
   }

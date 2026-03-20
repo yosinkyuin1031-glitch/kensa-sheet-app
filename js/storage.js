@@ -1,16 +1,76 @@
-// ===== localStorage 保存・履歴管理（段階的検査対応版） =====
+// ===== Supabase クラウド保存・履歴管理（BtoB対応版） =====
+// 旧localStorage版と同じ公開APIを維持
 
 const Storage = {
-  STORAGE_KEY: 'bodyCheckHistory_v2',
+  _cache: null,        // メモリキャッシュ
+  _cacheTime: 0,       // キャッシュ更新時刻
+  CACHE_TTL: 5000,     // キャッシュ有効期間(ms)
 
-  getAll() {
-    try {
-      const data = localStorage.getItem(this.STORAGE_KEY);
-      return data ? JSON.parse(data) : [];
-    } catch (e) {
-      console.error('履歴の読み込みに失敗しました:', e);
+  _db() {
+    return SupabaseAuth.client;
+  },
+
+  _clinicId() {
+    return SupabaseAuth.getClinicId();
+  },
+
+  _userId() {
+    return SupabaseAuth.getUserId();
+  },
+
+  _invalidateCache() {
+    this._cache = null;
+    this._cacheTime = 0;
+  },
+
+  // DB行 → 旧形式のentryオブジェクトに変換
+  _rowToEntry(row) {
+    return {
+      id: row.id,
+      date: row.exam_date || row.created_at,
+      patientId: row.patient_id,
+      patientName: row.patient_name || '名前未入力',
+      memo: row.memo || '',
+      examData: row.exam_data || {},
+      diagnosisResult: row.diagnosis_result || null,
+      detailData: row.detail_data || null,
+      contractionResult: row.contraction_result || null,
+      weightBalance: row.weight_balance || null,
+      painLevel: row.pain_level != null ? row.pain_level : null,
+      chiefComplaints: row.chief_complaints || [],
+      summary: row.summary || '',
+      patientAge: row.patient_age,
+      patientGender: row.patient_gender,
+      patientOccupation: row.patient_occupation,
+      visitType: row.visit_type,
+      medicalHistory: row.medical_history,
+      symptomDetail: row.symptom_detail
+    };
+  },
+
+  // 全件取得（キャッシュ付き）
+  async getAll() {
+    if (this._cache && (Date.now() - this._cacheTime < this.CACHE_TTL)) {
+      return this._cache;
+    }
+    const clinicId = this._clinicId();
+    if (!clinicId) return [];
+
+    const { data, error } = await this._db()
+      .from('ks_examinations')
+      .select('*')
+      .eq('clinic_id', clinicId)
+      .order('exam_date', { ascending: false })
+      .limit(500);
+
+    if (error) {
+      console.error('データ取得エラー:', error);
       return [];
     }
+
+    this._cache = (data || []).map(row => this._rowToEntry(row));
+    this._cacheTime = Date.now();
+    return this._cache;
   },
 
   // 患者IDを生成
@@ -18,9 +78,9 @@ const Storage = {
     return 'p_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 5);
   },
 
-  // 重複なしの患者一覧を返す（名前・ID・検査回数・最終検査日）
-  getPatientList() {
-    const history = this.getAll();
+  // 患者一覧（重複なし）
+  async getPatientList() {
+    const history = await this.getAll();
     const patientMap = {};
 
     for (const entry of history) {
@@ -37,7 +97,6 @@ const Storage = {
         };
       }
       patientMap[pid].examCount++;
-      // 最新の日付を保持
       if (entry.date > patientMap[pid].lastDate) {
         patientMap[pid].lastDate = entry.date;
       }
@@ -47,21 +106,22 @@ const Storage = {
   },
 
   // 特定患者の履歴のみ返す
-  getHistoryByPatient(patientId) {
-    return this.getAll().filter(entry => entry.patientId === patientId);
+  async getHistoryByPatient(patientId) {
+    const history = await this.getAll();
+    return history.filter(entry => entry.patientId === patientId);
   },
 
   // 名前で患者を検索（部分一致）
-  searchPatients(query) {
+  async searchPatients(query) {
     if (!query || query.trim() === '') return [];
     const q = query.trim().toLowerCase();
-    const patients = this.getPatientList();
+    const patients = await this.getPatientList();
     return patients.filter(p => p.patientName.toLowerCase().includes(q));
   },
 
   // 名前から既存の患者IDを探す（完全一致）
-  findPatientIdByName(name) {
-    const history = this.getAll();
+  async findPatientIdByName(name) {
+    const history = await this.getAll();
     for (const entry of history) {
       if (entry.patientName === name && entry.patientId) {
         return entry.patientId;
@@ -70,64 +130,114 @@ const Storage = {
     return null;
   },
 
-  save(examData, diagnosisResult, patientName, memo, detailData, contractionResult, weightBalance, patientId, painLevel, chiefComplaints) {
-    const history = this.getAll();
+  // 保存
+  async save(examData, diagnosisResult, patientName, memo, detailData, contractionResult, weightBalance, patientId, painLevel, chiefComplaints, extraFields) {
+    const clinicId = this._clinicId();
+    const userId = this._userId();
+    if (!clinicId) {
+      console.error('clinic_idが取得できません');
+      return false;
+    }
+
     const causeInfo = InspectionLogic.causeLabels[diagnosisResult.primaryCause];
 
     // patientIdが渡されなかった場合、名前から探すか新規生成
     if (!patientId) {
-      patientId = this.findPatientIdByName(patientName || '名前未入力');
+      patientId = await this.findPatientIdByName(patientName || '名前未入力');
       if (!patientId) {
         patientId = this._generatePatientId();
       }
     }
 
-    const entry = {
-      id: Date.now().toString(),
-      date: new Date().toISOString(),
-      patientId: patientId,
-      patientName: patientName || '名前未入力',
-      memo: memo || '',
-      examData,
-      diagnosisResult,
-      detailData: detailData || null,
-      contractionResult: contractionResult || null,
-      weightBalance: weightBalance || null,
-      painLevel: painLevel != null ? painLevel : null,
-      chiefComplaints: chiefComplaints || [],
-      summary: `${causeInfo.icon} ${causeInfo.label}`
+    // ks_patients にupsert（患者マスタ）
+    const patientRow = {
+      clinic_id: clinicId,
+      patient_id: patientId,
+      name: patientName || '名前未入力'
     };
+    if (extraFields) {
+      if (extraFields.age) patientRow.age = extraFields.age;
+      if (extraFields.gender) patientRow.gender = extraFields.gender;
+      if (extraFields.occupation) patientRow.occupation = extraFields.occupation;
+      if (extraFields.visitType) patientRow.visit_type = extraFields.visitType;
+      if (extraFields.medicalHistory) patientRow.medical_history = extraFields.medicalHistory;
+    }
 
-    history.unshift(entry);
-    if (history.length > 100) history.pop();
+    await this._db()
+      .from('ks_patients')
+      .upsert(patientRow, { onConflict: 'clinic_id,patient_id' });
 
-    try {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(history));
-      return true;
-    } catch (e) {
-      console.error('履歴の保存に失敗しました:', e);
+    // ks_examinations に挿入
+    const row = {
+      clinic_id: clinicId,
+      patient_id: patientId,
+      patient_name: patientName || '名前未入力',
+      exam_date: new Date().toISOString(),
+      exam_data: examData,
+      diagnosis_result: diagnosisResult,
+      detail_data: detailData || null,
+      contraction_result: contractionResult || null,
+      weight_balance: weightBalance || null,
+      pain_level: painLevel != null ? painLevel : null,
+      chief_complaints: chiefComplaints || [],
+      memo: memo || '',
+      summary: `${causeInfo.icon} ${causeInfo.label}`,
+      created_by: userId
+    };
+    if (extraFields) {
+      if (extraFields.age) row.patient_age = extraFields.age;
+      if (extraFields.gender) row.patient_gender = extraFields.gender;
+      if (extraFields.occupation) row.patient_occupation = extraFields.occupation;
+      if (extraFields.visitType) row.visit_type = extraFields.visitType;
+      if (extraFields.medicalHistory) row.medical_history = extraFields.medicalHistory;
+      if (extraFields.symptomDetail) row.symptom_detail = extraFields.symptomDetail;
+    }
+
+    const { error } = await this._db()
+      .from('ks_examinations')
+      .insert(row);
+
+    if (error) {
+      console.error('保存エラー:', error);
       return false;
     }
+
+    this._invalidateCache();
+    return true;
   },
 
-  delete(id) {
-    const history = this.getAll();
-    const filtered = history.filter(entry => entry.id !== id);
-    try {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(filtered));
-      return true;
-    } catch (e) {
+  // 削除
+  async delete(id) {
+    const { error } = await this._db()
+      .from('ks_examinations')
+      .delete()
+      .eq('id', id)
+      .eq('clinic_id', this._clinicId());
+
+    if (error) {
+      console.error('削除エラー:', error);
       return false;
     }
+    this._invalidateCache();
+    return true;
   },
 
-  getById(id) {
-    return this.getAll().find(entry => entry.id === id) || null;
+  // ID指定で取得
+  async getById(id) {
+    const { data, error } = await this._db()
+      .from('ks_examinations')
+      .select('*')
+      .eq('id', id)
+      .eq('clinic_id', this._clinicId())
+      .single();
+
+    if (error || !data) return null;
+    return this._rowToEntry(data);
   },
 
   // ===== カルテ方式：患者一覧 → 個別フォルダ =====
-  renderKarteList(onLoad, onDelete, filterQuery) {
-    const history = this.getAll();
+  async renderKarteList(onLoad, onDelete, filterQuery) {
+    const history = await this.getAll();
     const container = document.getElementById('kartePatientList');
     if (!container) return;
 
@@ -209,14 +319,14 @@ const Storage = {
   },
 
   // ===== 個別患者のカルテフォルダ =====
-  renderKarteDetail(patientId, onLoad, onDelete) {
+  async renderKarteDetail(patientId, onLoad, onDelete) {
     const listView = document.getElementById('karteListView');
     const detailView = document.getElementById('karteDetailView');
     const infoDiv = document.getElementById('karteDetailPatientInfo');
     const listDiv = document.getElementById('karteDetailList');
     if (!listView || !detailView) return;
 
-    const entries = this.getHistoryByPatient(patientId).sort((a, b) => new Date(b.date) - new Date(a.date));
+    const entries = (await this.getHistoryByPatient(patientId)).sort((a, b) => new Date(b.date) - new Date(a.date));
     if (entries.length === 0) return;
 
     const patientName = entries[0].patientName || '名前未入力';
@@ -285,12 +395,12 @@ const Storage = {
       });
     });
     listDiv.querySelectorAll('.karte-delete-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', async (e) => {
         e.stopPropagation();
         if (confirm('この検査記録を削除しますか？')) {
-          if (onDelete) onDelete(btn.dataset.id);
+          if (onDelete) await onDelete(btn.dataset.id);
           // 再描画
-          this.renderKarteDetail(patientId, onLoad, onDelete);
+          await this.renderKarteDetail(patientId, onLoad, onDelete);
         }
       });
     });
