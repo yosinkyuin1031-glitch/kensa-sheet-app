@@ -30,7 +30,13 @@
 
   // ===== 認証・初期化 =====
   async function initAuth() {
+    try {
     SupabaseAuth.init();
+    } catch(e) {
+      console.error('initAuth error:', e);
+      const errEl = document.getElementById('loginError');
+      if (errEl) { errEl.textContent = 'Init error: ' + e.message; errEl.style.display = 'block'; }
+    }
 
     // ログイン/登録フォームの切り替え
     document.getElementById('showSignup').addEventListener('click', (e) => {

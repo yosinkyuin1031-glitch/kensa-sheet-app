@@ -9,19 +9,19 @@ const SupabaseAuth = {
 
   // Supabaseクライアント初期化
   init() {
-    // UMD版: window.supabase.createClient or window.supabase.supabase.createClient
-    const sb = window.supabase;
-    if (!sb) {
-      console.error('Supabase CDN が読み込まれていません');
+    try {
+      this.client = window.supabase.createClient(this.SUPABASE_URL, this.SUPABASE_ANON_KEY);
+      return this.client;
+    } catch (e) {
+      console.error('Supabase初期化エラー:', e);
+      // 画面にエラー表示
+      const errEl = document.getElementById('loginError');
+      if (errEl) {
+        errEl.textContent = 'システム読み込みエラー: ' + e.message;
+        errEl.style.display = 'block';
+      }
       return null;
     }
-    const createFn = sb.createClient || (sb.supabase && sb.supabase.createClient);
-    if (!createFn) {
-      console.error('supabase.createClient が見つかりません。keys:', Object.keys(sb));
-      return null;
-    }
-    this.client = createFn(this.SUPABASE_URL, this.SUPABASE_ANON_KEY);
-    return this.client;
   },
 
   // セッション確認
