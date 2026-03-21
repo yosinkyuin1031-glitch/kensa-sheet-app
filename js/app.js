@@ -20,13 +20,12 @@
   let contractionResult = null;  // { upper: ..., lower: ... }
   let selectedPatientId = null;  // 選択中の患者ID
   let painLevel = null;  // NRS 0-10
-  let chiefComplaints = [];  // 主訴リスト
+  let chiefComplaintText = '';  // 主訴テキスト
   let patientAge = null;
   let patientGender = '';
   let patientOccupation = '';
   let visitType = 'initial';
   let medicalHistory = '';
-  let symptomDetail = '';
 
   // ===== 認証・初期化 =====
   async function initAuth() {
@@ -136,6 +135,7 @@
   }
 
   async function init() {
+    try {
     setupViewToggle();
     setupTabNavigation();
     setupWizardNavigation();
@@ -156,6 +156,11 @@
     initDiagrams();
     registerServiceWorker();
     showTutorialIfNeeded();
+    } catch(e) {
+      console.error('init() error:', e);
+      document.title = 'ERROR: ' + e.message;
+      alert('初期化エラー: ' + e.message);
+    }
   }
 
   // ===== Service Worker登録（キャッシュ問題のため無効化） =====
@@ -259,7 +264,7 @@
       if (!file) return;
 
       const reader = new FileReader();
-      reader.onload = (event) => {
+      reader.onload = async (event) => {
         try {
           const imported = JSON.parse(event.target.result);
 
@@ -597,7 +602,7 @@
 
     // 詳細検査入力時は全身統合ダイアグラムをリアルタイム更新
     if (position === 'upperDetail' || position === 'lowerDetail') {
-      BodyDiagram.updateUnified('diagram-detailUnified', detailData.upperDetail, detailData.lowerDetail);
+      BodyDiagram.updateUnified('diagram-detailUnified', detailData.upperDetail, detailData.lowerDetail, examData.standing);
     }
   }
 
@@ -790,20 +795,12 @@
     });
   }
 
-  // ===== 主訴選択 =====
+  // ===== 主訴テキスト入力 =====
   function setupChiefComplaints() {
-    const container = document.getElementById('chiefComplaints');
-    if (!container) return;
-    container.querySelectorAll('.complaint-tag').forEach(btn => {
-      btn.addEventListener('click', () => {
-        btn.classList.toggle('active');
-        const complaint = btn.dataset.complaint;
-        if (btn.classList.contains('active')) {
-          if (!chiefComplaints.includes(complaint)) chiefComplaints.push(complaint);
-        } else {
-          chiefComplaints = chiefComplaints.filter(c => c !== complaint);
-        }
-      });
+    const input = document.getElementById('chiefComplaintText');
+    if (!input) return;
+    input.addEventListener('input', () => {
+      chiefComplaintText = input.value;
     });
   }
 
@@ -904,8 +901,6 @@
     if (visitInput) visitType = visitInput.value;
     const histInput = document.getElementById('medicalHistory');
     if (histInput) medicalHistory = histInput.value;
-    const detailInput = document.getElementById('symptomDetail');
-    if (detailInput) symptomDetail = detailInput.value;
 
     diagnosisResult = InspectionLogic.diagnose(examData);
     await renderDiagnosis(diagnosisResult);
@@ -1271,7 +1266,7 @@
       BodyDiagram.init('diagram-diagnosis-body');
       // 詳細検査データがあれば全6ランドマーク表示、なければ基本3ランドマーク
       if (detailData.upperDetail.acromion !== null) {
-        BodyDiagram.updateUnified('diagram-diagnosis-body', detailData.upperDetail, detailData.lowerDetail);
+        BodyDiagram.updateUnified('diagram-diagnosis-body', detailData.upperDetail, detailData.lowerDetail, examData.standing);
       } else {
         BodyDiagram.update('diagram-diagnosis-body', 'firstStage', examData.standing);
       }
@@ -1410,16 +1405,8 @@
 
   // ===== 詳細検査：上半身＋下半身を表示 =====
   function showDetailedExam() {
-    const section = document.getElementById('detailedExamSection');
-    const contractionDiv = document.getElementById('contractionAnalysis');
-    const selfcareDiv = document.getElementById('selfcareSection');
-    const selfcareBtn = document.getElementById('showSelfcareBtn');
-
-    contractionDiv.style.display = 'none';
-    if (selfcareDiv) selfcareDiv.style.display = 'none';
-    if (selfcareBtn) selfcareBtn.style.display = 'none';
-
-    section.style.display = 'block';
+    // 詳細データは立位検査で入力済み → 自動で統合分析を実行
+    runComprehensiveAnalysis();
   }
 
   // ===== 詳細検査ボタンのセットアップ =====
@@ -1460,7 +1447,7 @@
     contractionResult = { upper: upperResult, lower: lowerResult };
 
     // 全身統合ダイアグラム更新
-    BodyDiagram.updateUnified('diagram-detailUnified', detailData.upperDetail, detailData.lowerDetail);
+    BodyDiagram.updateUnified('diagram-detailUnified', detailData.upperDetail, detailData.lowerDetail, examData.standing);
 
     renderUnifiedAnalysis(upperResult, lowerResult);
 
@@ -1536,7 +1523,7 @@
     const unifiedContainer = document.getElementById('diagram-unified');
     if (unifiedContainer) {
       BodyDiagram.init('diagram-unified');
-      BodyDiagram.updateUnified('diagram-unified', detailData.upperDetail, detailData.lowerDetail);
+      BodyDiagram.updateUnified('diagram-unified', detailData.upperDetail, detailData.lowerDetail, examData.standing);
     }
 
     container.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1796,15 +1783,16 @@
     document.getElementById('saveHistoryBtn').addEventListener('click', async () => {
       if (!diagnosisResult) return;
       const patientName = document.getElementById('patientName').value;
-      const memo = document.getElementById('inspectionMemo').value;
+      const memoEl = document.getElementById('inspectionMemo');
+      const memo = memoEl ? memoEl.value : '';
       const extraFields = {
         age: patientAge,
         gender: patientGender,
         occupation: patientOccupation,
         visitType: visitType,
-        medicalHistory: medicalHistory,
-        symptomDetail: symptomDetail
+        medicalHistory: medicalHistory
       };
+      const chiefComplaints = chiefComplaintText ? [chiefComplaintText] : [];
       const success = await Storage.save(examData, diagnosisResult, patientName, memo, detailData, contractionResult, weightBalance, selectedPatientId, painLevel, chiefComplaints, extraFields);
       if (success) {
         alert('検査結果を保存しました');
@@ -1991,7 +1979,7 @@
     if (printDiagramEl) {
       BodyDiagram.init('print-diagram');
       if (detailData.upperDetail.acromion !== null || detailData.lowerDetail.greaterTrochanter !== null) {
-        BodyDiagram.updateUnified('print-diagram', detailData.upperDetail, detailData.lowerDetail);
+        BodyDiagram.updateUnified('print-diagram', detailData.upperDetail, detailData.lowerDetail, examData.standing);
       } else {
         BodyDiagram.update('print-diagram', 'firstStage', examData.standing);
       }
@@ -2106,9 +2094,9 @@
           <span class="print-info-label">痛みレベル</span>
           <span class="print-info-value">${generateNRSSvg(painLevel)}</span>
         </div>` : ''}
-        ${chiefComplaints.length > 0 ? `<div class="print-info-row">
+        ${chiefComplaintText ? `<div class="print-info-row">
           <span class="print-info-label">主訴</span>
-          <span class="print-info-value">${chiefComplaints.join('、')}</span>
+          <span class="print-info-value">${chiefComplaintText}</span>
         </div>` : ''}
       </div>
 
@@ -2368,10 +2356,8 @@
     if (inspectionDate) html += `<span>${inspectionDate}</span>`;
     html += '</div>';
     if (patientOccupation) html += `<div class="summary-meta-row">職業: ${patientOccupation}</div>`;
-    if (chiefComplaints.length > 0) html += `<div class="summary-meta-row">主訴: ${chiefComplaints.join('、')}</div>`;
+    if (chiefComplaintText) html += `<div class="summary-meta-row">主訴: ${chiefComplaintText}</div>`;
     if (painLevel !== null) html += `<div class="summary-meta-row">痛みレベル: <strong>${painLevel}/10</strong></div>`;
-    if (symptomDetail) html += `<div class="summary-meta-row">症状詳細: ${symptomDetail}</div>`;
-    if (medicalHistory) html += `<div class="summary-meta-row">既往歴: ${medicalHistory}</div>`;
     html += '</div>';
 
     // --- 総合判定 ---
@@ -2463,16 +2449,17 @@
     if (summarySaveBtn) {
       summarySaveBtn.addEventListener('click', async () => {
         if (!diagnosisResult) return;
-        const memo = document.getElementById('inspectionMemo').value;
+        const memoEl = document.getElementById('inspectionMemo');
+      const memo = memoEl ? memoEl.value : '';
         const extraFields = {
           age: patientAge,
           gender: patientGender,
           occupation: patientOccupation,
           visitType: visitType,
-          medicalHistory: medicalHistory,
-          symptomDetail: symptomDetail
+          medicalHistory: medicalHistory
         };
-        const success = await Storage.save(examData, diagnosisResult, patientName, memo, detailData, contractionResult, weightBalance, selectedPatientId, painLevel, chiefComplaints, extraFields);
+        const chiefComplaints2 = chiefComplaintText ? [chiefComplaintText] : [];
+        const success = await Storage.save(examData, diagnosisResult, patientName, memo, detailData, contractionResult, weightBalance, selectedPatientId, painLevel, chiefComplaints2, extraFields);
         if (success) {
           alert('検査結果を保存しました');
           await updateCompareButton();
@@ -2677,19 +2664,20 @@
     contractionResult = null;
     selectedPatientId = null;
     painLevel = null;
-    chiefComplaints = [];
+    chiefComplaintText = '';
     patientAge = null;
     patientGender = '';
     patientOccupation = '';
     visitType = 'initial';
     medicalHistory = '';
-    symptomDetail = '';
 
     document.querySelectorAll('.landmark-btn').forEach(btn => btn.classList.remove('selected'));
     document.querySelectorAll('.nrs-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelectorAll('.complaint-tag').forEach(btn => btn.classList.remove('active'));
+    const chiefInput = document.getElementById('chiefComplaintText');
+    if (chiefInput) chiefInput.value = '';
     document.getElementById('patientName').value = '';
-    document.getElementById('inspectionMemo').value = '';
+    const memoResetEl = document.getElementById('inspectionMemo');
+    if (memoResetEl) memoResetEl.value = '';
     document.getElementById('patientSearch').value = '';
     const ageInput = document.getElementById('patientAge');
     if (ageInput) ageInput.value = '';
@@ -2701,8 +2689,6 @@
     if (visitInput) visitInput.value = 'initial';
     const histInput = document.getElementById('medicalHistory');
     if (histInput) histInput.value = '';
-    const detailInput = document.getElementById('symptomDetail');
-    if (detailInput) detailInput.value = '';
     const examCountDiv = document.getElementById('patientExamCount');
     if (examCountDiv) {
       examCountDiv.style.display = 'none';
@@ -2802,14 +2788,13 @@
     if (entry.painLevel != null) {
       painLevel = entry.painLevel;
     }
-    if (entry.chiefComplaints) {
-      chiefComplaints = [...entry.chiefComplaints];
+    if (entry.chiefComplaints && entry.chiefComplaints.length > 0) {
+      chiefComplaintText = entry.chiefComplaints.join('、');
     }
 
     document.getElementById('patientName').value = entry.patientName || '';
-    if (entry.memo) {
-      document.getElementById('inspectionMemo').value = entry.memo;
-    }
+    const chiefInput = document.getElementById('chiefComplaintText');
+    if (chiefInput) chiefInput.value = chiefComplaintText;
 
     // 患者検査回数を表示
     if (entry.patientId) {
@@ -2854,16 +2839,6 @@
       if (nrsContainer) {
         nrsContainer.querySelectorAll('.nrs-btn').forEach(btn => {
           btn.classList.toggle('active', parseInt(btn.dataset.nrs) === entry.painLevel);
-        });
-      }
-    }
-
-    // 主訴タグの復元
-    if (entry.chiefComplaints && entry.chiefComplaints.length > 0) {
-      const ccContainer = document.getElementById('chiefComplaints');
-      if (ccContainer) {
-        ccContainer.querySelectorAll('.complaint-tag').forEach(btn => {
-          btn.classList.toggle('active', entry.chiefComplaints.includes(btn.dataset.complaint));
         });
       }
     }

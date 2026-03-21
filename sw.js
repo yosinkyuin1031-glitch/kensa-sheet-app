@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bodycheck-v3-auth';
+const CACHE_NAME = 'bodycheck-v5-simple';
 const urlsToCache = [
   '/',
   '/index.html',

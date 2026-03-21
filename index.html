@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>検査アプリ - 段階的原因特定システム</title>
-  <link rel="stylesheet" href="css/style.css?v=20260320b">
+  <link rel="stylesheet" href="css/style.css?v=20260321j">
   <script>
     // Service Worker強制リセット（古いキャッシュを自動削除）
     if ('serviceWorker' in navigator) {
@@ -23,7 +23,7 @@
   <link rel="apple-touch-icon" href="icons/icon.svg">
   <meta name="theme-color" content="#2563eb">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
-  <script src="js/supabase-cdn.min.js?v=20260320b"></script>
+  <script src="js/supabase-cdn.min.js?v=20260321j"></script>
 </head>
 <body data-view="practitioner">
   <!-- ===== ログイン画面 ===== -->
@@ -194,10 +194,6 @@
             </div>
           </div>
           <div class="form-group">
-            <label for="medicalHistory">既往歴・通院歴（任意）</label>
-            <textarea id="medicalHistory" rows="2" placeholder="過去の病歴・手術歴・服薬など"></textarea>
-          </div>
-          <div class="form-group">
             <label>痛みレベル（NRS）</label>
             <p class="field-hint">現在の痛みを0〜10で選択してください</p>
             <div class="nrs-scale" id="nrsScale">
@@ -220,29 +216,8 @@
             </div>
           </div>
           <div class="form-group">
-            <label>主訴（複数選択可）</label>
-            <div class="chief-complaint-tags" id="chiefComplaints">
-              <button type="button" class="complaint-tag" data-complaint="腰痛">腰痛</button>
-              <button type="button" class="complaint-tag" data-complaint="肩こり">肩こり</button>
-              <button type="button" class="complaint-tag" data-complaint="首の痛み">首の痛み</button>
-              <button type="button" class="complaint-tag" data-complaint="頭痛">頭痛</button>
-              <button type="button" class="complaint-tag" data-complaint="背中の張り">背中の張り</button>
-              <button type="button" class="complaint-tag" data-complaint="股関節の違和感">股関節の違和感</button>
-              <button type="button" class="complaint-tag" data-complaint="膝の痛み">膝の痛み</button>
-              <button type="button" class="complaint-tag" data-complaint="足首の不安定">足首の不安定</button>
-              <button type="button" class="complaint-tag" data-complaint="しびれ">しびれ</button>
-              <button type="button" class="complaint-tag" data-complaint="疲労感">疲労感</button>
-              <button type="button" class="complaint-tag" data-complaint="自律神経の乱れ">自律神経の乱れ</button>
-              <button type="button" class="complaint-tag" data-complaint="めまい">めまい</button>
-            </div>
-          </div>
-          <div class="form-group">
-            <label for="symptomDetail">症状の詳細（任意）</label>
-            <textarea id="symptomDetail" rows="2" placeholder="いつから、どのような時に痛むかなど"></textarea>
-          </div>
-          <div class="form-group">
-            <label for="inspectionMemo">メモ（任意）</label>
-            <textarea id="inspectionMemo" rows="2" placeholder="その他気になる点をメモ"></textarea>
+            <label for="chiefComplaintText">主訴</label>
+            <input type="text" id="chiefComplaintText" placeholder="例: 腰痛、右肩の痛み" />
           </div>
         </div>
         <div class="form-actions">
@@ -255,7 +230,85 @@
         <div class="step-instruction">
           <div class="instruction-icon">🧍</div>
           <h3>立位検査</h3>
-          <p>患者さんに<strong>立った状態</strong>で、以下の3つのランドマークの左右差を確認してください。</p>
+          <p>患者さんに<strong>立った状態</strong>で、上から順にランドマークの左右差を確認してください。</p>
+        </div>
+
+        <!-- 全身詳細ランドマーク（上半身） -->
+        <div class="detail-section-header">
+          <span class="detail-section-icon">💪</span>
+          <h3>上半身</h3>
+        </div>
+
+        <div class="form-card">
+          <h3 class="card-title">① 肩峰</h3>
+          <p class="landmark-desc">肩の外側の一番高い骨</p>
+          <div class="landmark-input" data-position="upperDetail" data-landmark="acromion">
+            <button type="button" class="landmark-btn" data-value="-1">← 左が高い</button>
+            <button type="button" class="landmark-btn" data-value="0">同じ高さ</button>
+            <button type="button" class="landmark-btn" data-value="1">右が高い →</button>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <h3 class="card-title">② 肘頭</h3>
+          <p class="landmark-desc">肘の後ろの骨の突起</p>
+          <div class="landmark-input" data-position="upperDetail" data-landmark="mastoidDetail">
+            <button type="button" class="landmark-btn" data-value="-1">← 左が高い</button>
+            <button type="button" class="landmark-btn" data-value="0">同じ高さ</button>
+            <button type="button" class="landmark-btn" data-value="1">右が高い →</button>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <h3 class="card-title">③ 橈骨茎状突起</h3>
+          <p class="landmark-desc">手首の外側の骨の突起</p>
+          <div class="landmark-input" data-position="upperDetail" data-landmark="radialStyloid">
+            <button type="button" class="landmark-btn" data-value="-1">← 左が高い</button>
+            <button type="button" class="landmark-btn" data-value="0">同じ高さ</button>
+            <button type="button" class="landmark-btn" data-value="1">右が高い →</button>
+          </div>
+        </div>
+
+        <!-- 全身詳細ランドマーク（下半身） -->
+        <div class="detail-section-header" style="margin-top:20px;">
+          <span class="detail-section-icon">🦶</span>
+          <h3>下半身</h3>
+        </div>
+
+        <div class="form-card">
+          <h3 class="card-title">④ 大転子</h3>
+          <p class="landmark-desc">太ももの外側の骨の出っ張り</p>
+          <div class="landmark-input" data-position="lowerDetail" data-landmark="greaterTrochanter">
+            <button type="button" class="landmark-btn" data-value="-1">← 左が高い</button>
+            <button type="button" class="landmark-btn" data-value="0">同じ高さ</button>
+            <button type="button" class="landmark-btn" data-value="1">右が高い →</button>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <h3 class="card-title">⑤ 膝蓋骨上端</h3>
+          <p class="landmark-desc">膝のお皿の上端</p>
+          <div class="landmark-input" data-position="lowerDetail" data-landmark="patellaUpper">
+            <button type="button" class="landmark-btn" data-value="-1">← 左が高い</button>
+            <button type="button" class="landmark-btn" data-value="0">同じ高さ</button>
+            <button type="button" class="landmark-btn" data-value="1">右が高い →</button>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <h3 class="card-title">⑥ 外果（外くるぶし）</h3>
+          <p class="landmark-desc">足首の外側の骨の出っ張り</p>
+          <div class="landmark-input" data-position="lowerDetail" data-landmark="lateralMalleolus">
+            <button type="button" class="landmark-btn" data-value="-1">← 左が高い</button>
+            <button type="button" class="landmark-btn" data-value="0">同じ高さ</button>
+            <button type="button" class="landmark-btn" data-value="1">右が高い →</button>
+          </div>
+        </div>
+
+        <!-- 基本3ランドマーク -->
+        <div class="detail-section-header" style="margin-top:20px;">
+          <span class="detail-section-icon">📐</span>
+          <h3>基本検査</h3>
         </div>
 
         <div class="form-card">
@@ -285,16 +338,6 @@
             <button type="button" class="landmark-btn" data-value="-1">← 左が高い</button>
             <button type="button" class="landmark-btn" data-value="0">同じ高さ</button>
             <button type="button" class="landmark-btn" data-value="1">右が高い →</button>
-          </div>
-        </div>
-
-        <div class="form-card">
-          <h3 class="card-title">重心バランス</h3>
-          <p class="landmark-desc">立位時の荷重の偏りを確認</p>
-          <div class="weight-balance-input" id="weightBalanceInput">
-            <button type="button" class="landmark-btn weight-btn" data-value="right">右重心</button>
-            <button type="button" class="landmark-btn weight-btn" data-value="even">均等</button>
-            <button type="button" class="landmark-btn weight-btn" data-value="left">左重心</button>
           </div>
         </div>
 
@@ -439,101 +482,8 @@
       </div>
       <div id="diagnosisContent"></div>
 
-      <!-- ===== 詳細検査（上半身＋下半身 統合）（施術者のみ） ===== -->
-      <div id="detailedExamSection" class="practitioner-only" style="display:none;">
-
-        <div class="step-instruction detail-instruction" style="margin-bottom:20px;">
-          <div class="instruction-icon">🔍</div>
-          <h3>詳細検査（全身統合）</h3>
-          <p>上半身・下半身の<strong>全6ランドマーク</strong>を確認し、身体全体の縮こまり・引っ張りを特定します。</p>
-          <p class="instruction-note">各ランドマークの左右の高さを上から順に入力してください。</p>
-        </div>
-
-        <!-- 上半身詳細 -->
-        <div id="upperDetailExam">
-          <div class="detail-section-header">
-            <span class="detail-section-icon">💪</span>
-            <h3>上半身</h3>
-          </div>
-
-          <div class="form-card">
-            <h3 class="card-title">① 肩峰</h3>
-            <p class="landmark-desc">肩の外側の一番高い骨</p>
-            <div class="landmark-input" data-position="upperDetail" data-landmark="acromion">
-              <button type="button" class="landmark-btn" data-value="-1">← 左が高い</button>
-              <button type="button" class="landmark-btn" data-value="0">同じ高さ</button>
-              <button type="button" class="landmark-btn" data-value="1">右が高い →</button>
-            </div>
-          </div>
-
-          <div class="form-card">
-            <h3 class="card-title">② 肘頭</h3>
-            <p class="landmark-desc">肘の後ろの骨の突起</p>
-            <div class="landmark-input" data-position="upperDetail" data-landmark="mastoidDetail">
-              <button type="button" class="landmark-btn" data-value="-1">← 左が高い</button>
-              <button type="button" class="landmark-btn" data-value="0">同じ高さ</button>
-              <button type="button" class="landmark-btn" data-value="1">右が高い →</button>
-            </div>
-          </div>
-
-          <div class="form-card">
-            <h3 class="card-title">③ 橈骨茎状突起</h3>
-            <p class="landmark-desc">手首の外側の骨の突起</p>
-            <div class="landmark-input" data-position="upperDetail" data-landmark="radialStyloid">
-              <button type="button" class="landmark-btn" data-value="-1">← 左が高い</button>
-              <button type="button" class="landmark-btn" data-value="0">同じ高さ</button>
-              <button type="button" class="landmark-btn" data-value="1">右が高い →</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- 下半身詳細 -->
-        <div id="lowerDetailExam">
-          <div class="detail-section-header" style="margin-top:20px;">
-            <span class="detail-section-icon">🦶</span>
-            <h3>下半身</h3>
-          </div>
-
-          <div class="form-card">
-            <h3 class="card-title">④ 大転子</h3>
-            <p class="landmark-desc">太ももの外側の骨の出っ張り</p>
-            <div class="landmark-input" data-position="lowerDetail" data-landmark="greaterTrochanter">
-              <button type="button" class="landmark-btn" data-value="-1">← 左が高い</button>
-              <button type="button" class="landmark-btn" data-value="0">同じ高さ</button>
-              <button type="button" class="landmark-btn" data-value="1">右が高い →</button>
-            </div>
-          </div>
-
-          <div class="form-card">
-            <h3 class="card-title">⑤ 膝蓋骨上端</h3>
-            <p class="landmark-desc">膝のお皿の上端</p>
-            <div class="landmark-input" data-position="lowerDetail" data-landmark="patellaUpper">
-              <button type="button" class="landmark-btn" data-value="-1">← 左が高い</button>
-              <button type="button" class="landmark-btn" data-value="0">同じ高さ</button>
-              <button type="button" class="landmark-btn" data-value="1">右が高い →</button>
-            </div>
-          </div>
-
-          <div class="form-card">
-            <h3 class="card-title">⑥ 外果（外くるぶし）</h3>
-            <p class="landmark-desc">足首の外側の骨の出っ張り</p>
-            <div class="landmark-input" data-position="lowerDetail" data-landmark="lateralMalleolus">
-              <button type="button" class="landmark-btn" data-value="-1">← 左が高い</button>
-              <button type="button" class="landmark-btn" data-value="0">同じ高さ</button>
-              <button type="button" class="landmark-btn" data-value="1">右が高い →</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- 全身統合ダイアグラム（入力中リアルタイム更新） -->
-        <div class="body-diagram-wrapper unified-diagram-wrapper">
-          <div class="body-diagram-container" id="diagram-unified"></div>
-        </div>
-
-        <div class="form-actions">
-          <button type="button" class="btn btn-primary" id="analyzeAllBtn">全身統合分析 →</button>
-        </div>
-      </div>
+      <!-- 詳細検査セクション（立位で入力済みのため非表示、JS互換用に残す） -->
+      <div id="detailedExamSection" style="display:none;"></div>
 
       <!-- 統合分析結果 -->
       <div id="contractionAnalysis" style="display:none;"></div>
@@ -673,13 +623,13 @@
   <!-- 印刷用コンテナ（通常は非表示、印刷時のみ表示） -->
   <div id="printContainer" class="print-container"></div>
 
-  <script src="js/supabase.js?v=20260320b"></script>
-  <script src="js/inspection.js?v=20260320b"></script>
-  <script src="js/bodyDiagram.js?v=20260320b"></script>
-  <script src="js/selfcare.js?v=20260320b"></script>
-  <script src="js/storage.js?v=20260320b"></script>
-  <script src="js/pdf.js?v=20260320b"></script>
-  <script src="js/app.js?v=20260320b"></script>
+  <script src="js/supabase.js?v=20260321j"></script>
+  <script src="js/inspection.js?v=20260321j"></script>
+  <script src="js/bodyDiagram.js?v=20260321j"></script>
+  <script src="js/selfcare.js?v=20260321j"></script>
+  <script src="js/storage.js?v=20260321j"></script>
+  <script src="js/pdf.js?v=20260321j"></script>
+  <script src="js/app.js?v=20260321j"></script>
   <script>
     // フォールバック：app.jsでエラーが出た場合のログイン処理
     window.addEventListener('load', function() {

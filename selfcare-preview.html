@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>セルフケア一覧プレビュー</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif; background: #f8fafc; padding: 16px; }
+    h1 { text-align: center; font-size: 20px; margin-bottom: 20px; color: #1e293b; }
+    .grid { display: flex; flex-direction: column; gap: 24px; max-width: 600px; margin: 0 auto; }
+    .card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .card h3 { font-size: 16px; color: #1e293b; margin-bottom: 4px; }
+    .card .target { font-size: 12px; color: #64748b; margin-bottom: 8px; }
+    .card .desc { font-size: 13px; color: #475569; margin-bottom: 12px; line-height: 1.6; }
+    .card .type-badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 8px; margin-bottom: 8px; font-weight: 600; }
+    .type-contraction { background: #fef2f2; color: #dc2626; }
+    .type-tension { background: #f5f3ff; color: #7c3aed; }
+    .illust-wrap { background: #f8fafc; border-radius: 12px; padding: 8px; margin-bottom: 12px; }
+    .illust-wrap svg { width: 100%; height: auto; }
+    .steps { font-size: 13px; color: #334155; margin-bottom: 10px; padding-left: 20px; }
+    .steps li { margin-bottom: 4px; line-height: 1.5; }
+    .meta { font-size: 12px; color: #64748b; display: flex; gap: 12px; margin-bottom: 6px; }
+    .tip { font-size: 12px; color: #2563eb; background: #eff6ff; padding: 8px 10px; border-radius: 8px; margin-top: 8px; line-height: 1.5; }
+    .caution { font-size: 12px; color: #d97706; background: #fffbeb; padding: 8px 10px; border-radius: 8px; margin-top: 6px; line-height: 1.5; }
+    .section-title { font-size: 18px; font-weight: 700; color: #0f172a; padding: 12px 0 4px; border-bottom: 2px solid #e2e8f0; margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+  <h1>セルフケア イラスト・説明 一覧</h1>
+  <div class="grid" id="container"></div>
+
+  <script src="js/selfcare.js?v=20260321j"></script>
+  <script>
+    const container = document.getElementById('container');
+    const areas = Object.keys(SelfcareDatabase.exercises);
+
+    areas.forEach(area => {
+      // セクション見出し
+      const sectionEl = document.createElement('div');
+      sectionEl.innerHTML = `<div class="section-title">${area}</div>`;
+      container.appendChild(sectionEl);
+
+      const data = SelfcareDatabase.exercises[area];
+      ['contraction', 'tension'].forEach(type => {
+        if (!data[type]) return;
+        const ex = data[type];
+        const typeLabel = type === 'contraction' ? '縮こまり' : '引っ張り';
+        const typeClass = type === 'contraction' ? 'type-contraction' : 'type-tension';
+        const illust = SelfcareDatabase.getIllustration(ex.illustration);
+        const tip = SelfcareDatabase._getTip(ex.illustration);
+
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <span class="type-badge ${typeClass}">${typeLabel}</span>
+          <h3>${ex.name}</h3>
+          <div class="target">対象：${ex.target}</div>
+          <div class="desc">${ex.description}</div>
+          ${illust ? `<div class="illust-wrap">${illust}</div>` : ''}
+          <ol class="steps">${ex.steps.map(s => `<li>${s}</li>`).join('')}</ol>
+          <div class="meta">
+            <span>回数：${ex.sets}</span>
+            <span>頻度：${ex.frequency}</span>
+          </div>
+          ${tip ? `<div class="tip">💡 ${tip}</div>` : ''}
+          <div class="caution">⚠️ ${ex.caution}</div>
+        `;
+        container.appendChild(card);
+      });
+    });
+  </script>
+</body>
+</html>

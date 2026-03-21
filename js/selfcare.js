@@ -45,33 +45,35 @@ const SelfcareDatabase = {
       contraction: {
         name: '肩〜腕の縮こまりケア',
         target: '三角筋・上腕二頭筋',
-        description: '肩から腕にかけて縮こまりがあります。腕を伸ばすストレッチで改善を目指します。',
-        evidence: '壁面ストレッチは肩関節可動域の改善に有効（ROM改善のエビデンス）',
+        description: '肩から腕にかけて縮こまりがあります。座ったまま腕を胸の前でクロスして伸ばします。',
+        evidence: 'クロスボディストレッチは肩関節可動域の改善に有効（ROM改善のエビデンス）',
         steps: [
-          '壁の横に立ちます',
-          '縮こまっている側の腕を壁に沿って上に伸ばします',
-          '体を反対方向に少しひねり、脇の下から腕全体を伸ばします',
-          '15秒キープして3回繰り返します'
+          '椅子に座り、背筋を伸ばします',
+          '縮こまっている側の腕を胸の前にまっすぐ伸ばします',
+          '反対の手で肘あたりを持ち、胸に引き寄せます',
+          '肩の後ろに伸びを感じたら15秒キープ',
+          'ゆっくり戻して3回繰り返します'
         ],
         sets: '15秒 × 3回',
         frequency: '1日2回',
-        caution: '肩に痛みがある場合は腕の角度を低くして行ってください',
+        caution: '肩に痛みがある場合は引き寄せる力を弱めてください',
         illustration: 'armStretch'
       },
       tension: {
         name: '肩〜腕の引っ張りケア',
         target: '肩関節周囲筋・前鋸筋',
-        description: '肩から腕が上下に引っ張られています。肩甲骨の安定化が重要です。',
+        description: '肩から腕が上下に引っ張られています。座ったまま肩甲骨を動かして安定させます。',
         evidence: '肩甲骨安定化運動は肩関節障害の予防・改善に推奨（JOSPT推奨）',
         steps: [
-          '四つん這いになります',
-          '肩甲骨を背骨に寄せるように引きます（3秒）',
-          '次に肩甲骨を広げるように背中を丸めます（3秒）',
+          '椅子に浅く座り、背筋を伸ばします',
+          '両手を膝の上に置きます',
+          '胸を張りながら肩甲骨を背中の中心に寄せます（3秒）',
+          '次に背中を丸めて肩甲骨を広げます（3秒）',
           '10回ゆっくり繰り返します'
         ],
         sets: '10回 × 2セット',
         frequency: '1日2回（朝・夜）',
-        caution: '手首に負担がかかる場合は拳をついて行ってください',
+        caution: '無理に大きく動かさず、心地よい範囲で行ってください',
         illustration: 'scapulaExercise'
       }
     },
@@ -117,18 +119,18 @@ const SelfcareDatabase = {
       contraction: {
         name: '股関節〜太ももの縮こまりケア',
         target: '腸腰筋・中殿筋',
-        description: '股関節から太ももにかけて縮こまりがあります。股関節を開くストレッチが有効です。',
+        description: '股関節から太ももにかけて縮こまりがあります。椅子に座ったまま股関節を伸ばします。',
         evidence: '腸腰筋ストレッチは腰痛軽減に有効（システマティックレビューで推奨）',
         steps: [
-          '片膝立ちになります（前の膝は90度）',
-          '後ろ足側の股関節を前に押し出します',
-          '股関節の前面に伸びを感じたら20秒キープ',
-          'お尻を横に伸ばす意識も加えます',
+          '椅子に浅く座ります',
+          '片足を少し後ろに引きます',
+          '背筋を伸ばしたまま、おへそを前に突き出すイメージで骨盤を前傾させます',
+          '股関節の前面に伸びを感じたら15秒キープ',
           '左右各3回ずつ行います'
         ],
-        sets: '20秒 × 3回（左右）',
+        sets: '15秒 × 3回（左右）',
         frequency: '1日2回',
-        caution: '腰を反らさないよう、お腹に力を入れて行ってください',
+        caution: '腰を反らさないよう、お腹に軽く力を入れて行ってください',
         illustration: 'hipFlexorStretch'
       },
       tension: {
@@ -170,18 +172,18 @@ const SelfcareDatabase = {
       tension: {
         name: '太もも〜膝の引っ張りケア',
         target: '大腿直筋・腸脛靭帯',
-        description: '太ももが上下に引っ張られています。太もも全体のバランスを整えます。',
+        description: '太ももが上下に引っ張られています。うつ伏せで太もも前面を伸ばします。',
         evidence: '大腿四頭筋ストレッチは膝関節の柔軟性改善に効果的（スポーツ医学エビデンス）',
         steps: [
-          '壁に手をつき、片足立ちになります',
-          '後ろの足首を手で持ち、かかとをお尻に近づけます',
-          '太もも前面の伸びを感じたら15秒キープ',
-          '左右各3回ずつ行います',
-          '次に体側ストレッチ（腸脛靭帯）も行います'
+          'うつ伏せに寝ます',
+          '片方の膝をゆっくり曲げます',
+          '手が届く人は足首を持ち、お尻に近づけます',
+          '太もも前面に伸びを感じたら15秒キープ',
+          '左右各3回ずつ行います'
         ],
         sets: '15秒 × 3回（左右）',
         frequency: '1日2回',
-        caution: 'バランスを崩さないよう壁を使ってください',
+        caution: '腰が反る場合はお腹の下にタオルを入れてください',
         illustration: 'quadStretch'
       }
     },
@@ -189,18 +191,18 @@ const SelfcareDatabase = {
       contraction: {
         name: 'すね〜足首の縮こまりケア',
         target: '腓腹筋・ヒラメ筋',
-        description: 'すねから足首にかけて縮こまっています。ふくらはぎのストレッチが効果的です。',
+        description: 'すねから足首にかけて縮こまっています。座ったままタオルでふくらはぎを伸ばします。',
         evidence: '腓腹筋ストレッチは足関節背屈可動域改善に有効（理学療法エビデンス）',
         steps: [
-          '壁に両手をつきます',
-          '片足を後ろに大きく引きます',
-          '後ろ足のかかとを床につけたまま前膝を曲げます',
-          'ふくらはぎの伸びを感じたら20秒キープ',
+          '床に座り、片足をまっすぐ前に伸ばします',
+          'タオルを足の裏にかけます',
+          'タオルの両端を持ち、手前にゆっくり引きます',
+          'ふくらはぎに伸びを感じたら20秒キープ',
           '左右各3回ずつ行います'
         ],
         sets: '20秒 × 3回（左右）',
         frequency: '1日3回',
-        caution: 'かかとが浮かないように注意してください',
+        caution: '膝が曲がらないように注意してください',
         illustration: 'calfStretch'
       },
       tension: {
@@ -248,18 +250,18 @@ const SelfcareDatabase = {
       contraction: {
         name: '体幹の縮こまりケア',
         target: '腰方形筋・腹斜筋・広背筋',
-        description: '体幹が左右どちらかに縮こまっています。側屈ストレッチで縮んだ側を伸ばしましょう。',
+        description: '体幹が左右どちらかに縮こまっています。椅子に座ったまま側屈ストレッチで伸ばします。',
         evidence: '体幹側屈ストレッチは腰方形筋の柔軟性改善・腰痛予防に有効（運動療法ガイドライン）',
         steps: [
-          '足を肩幅に開いて立ちます',
-          '縮こまっている側と反対方向に上体を倒します',
-          '倒す側の手を頭の上に伸ばし、脇腹の伸びを感じます',
+          '椅子に座り、背筋を伸ばします',
+          '縮こまっている側と反対方向にゆっくり上体を倒します',
+          '倒す方向の手を頭の上に伸ばし、脇腹の伸びを感じます',
           '15秒キープして3回繰り返します',
           '反対側も軽く行い、左右のバランスを整えます'
         ],
         sets: '15秒 × 3回',
         frequency: '1日2〜3回',
-        caution: '腰に痛みがある場合は無理をせず、椅子に座って行ってください',
+        caution: '痛みが出ない範囲でゆっくり行ってください',
         illustration: 'trunkStretch'
       },
       tension: {
@@ -282,587 +284,288 @@ const SelfcareDatabase = {
     }
   },
 
-  // ===== SVGイラスト生成（プロフェッショナル版） =====
+  // ===== SVGイラスト生成（シンプル大きめ版） =====
   getIllustration(key) {
-    // 共通定義
-    const S = '#fde8d0'; // skin fill
-    const K = '#c4956e'; // skin stroke
-    const H = '#4a2c1a'; // hair
-    const M = '#ef4444'; // muscle/stretch highlight
-    const A = '#3b82f6'; // action/arrow
-    // 共通SVGヘッダー（筋肉グラデーション含む）
-    const defs = `<defs>
-      <linearGradient id="muscleHL" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${M}" stop-opacity="0.15"/><stop offset="100%" stop-color="${M}" stop-opacity="0.35"/></linearGradient>
-      <marker id="aB" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8" fill="${A}"/></marker>
-      <marker id="aU" markerWidth="8" markerHeight="8" refX="4" refY="8" orient="auto"><path d="M0,8 L4,0 L8,8" fill="${A}"/></marker>
-      <marker id="aD" markerWidth="8" markerHeight="8" refX="4" refY="0" orient="auto"><path d="M0,0 L4,8 L8,0" fill="${M}"/></marker>
-      <filter id="glow"><feGaussianBlur stdDeviation="2" result="g"/><feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-    </defs>`;
-    // ステップ番号バッジ
-    const badge = (x,y,n,c='#3b82f6') => `<circle cx="${x}" cy="${y}" r="11" fill="${c}" opacity="0.9"/><text x="${x}" y="${y+4}" text-anchor="middle" font-size="11" fill="white" font-weight="700">${n}</text>`;
-    // 筋肉エリアラベル
-    const muscleLabel = (x,y,t,align='start') => `<rect x="${align==='middle'?x-t.length*4:align==='end'?x-t.length*7.5:x-4}" y="${y-12}" width="${t.length*7.5+8}" height="17" rx="4" fill="white" opacity="0.85"/><text x="${x}" y="${y}" text-anchor="${align}" font-size="11" fill="${M}" font-weight="700">${t}</text>`;
+    // 太くて丸い棒人間スタイル - 一目でわかるシンプルさ重視
+    const B = '#475569';  // 体の色（ダークグレー）
+    const BG = '#f1f5f9'; // 背景
+    const HL = '#fbbf24';  // ハイライト（伸びる場所）
+    const AR = '#3b82f6';  // 矢印・アクション
+    const W = 14;          // 腕の太さ
+    const L = 16;          // 脚の太さ
+
+    const svg = (inner, vb='0 0 240 200') => `<svg viewBox="${vb}" class="selfcare-illust" style="background:${BG};border-radius:16px">${inner}</svg>`;
+    // 丸い頭
+    const hd = (x,y,r=20) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${B}"/>`;
+    // 太い丸い線（腕・脚・体）
+    const rod = (x1,y1,x2,y2,w=W,c=B) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c}" stroke-width="${w}" stroke-linecap="round"/>`;
+    // ハイライト（伸ばす部分）
+    const hlrod = (x1,y1,x2,y2,w=W) => rod(x1,y1,x2,y2,w+6,HL) + rod(x1,y1,x2,y2,w,B);
+    // 矢印（太くて見やすい）
+    const arrow = (x1,y1,x2,y2) => {
+      const a = Math.atan2(y2-y1,x2-x1), s = 12;
+      return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${AR}" stroke-width="4" stroke-linecap="round"/>` +
+        `<polygon points="${x2},${y2} ${x2-s*Math.cos(a-0.4)},${y2-s*Math.sin(a-0.4)} ${x2-s*Math.cos(a+0.4)},${y2-s*Math.sin(a+0.4)}" fill="${AR}"/>`;
+    };
+    // ラベル
+    const lbl = (x,y,t,sz=14,c=AR) => `<text x="${x}" y="${y}" text-anchor="middle" font-size="${sz}" fill="${c}" font-weight="800" font-family="sans-serif">${t}</text>`;
+    // 回数ラベル（下部）
+    const rep = (t,y=188) => `<rect x="20" y="${y-14}" width="200" height="24" rx="12" fill="white" opacity="0.9"/>${lbl(120,y+2,t,13,'#64748b')}`;
+    // 椅子（シンプル）
+    const ch = (x,y) => `<path d="M${x},${y} L${x+50},${y} M${x+45},${y-50} L${x+45},${y} M${x+5},${y} L${x+5},${y+30} M${x+45},${y} L${x+45},${y+30}" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" fill="none"/>`;
+    // 床
+    const fl = (y=170) => `<line x1="10" y1="${y}" x2="230" y2="${y}" stroke="#cbd5e1" stroke-width="2"/>`;
 
     const illustrations = {
-      neckStretch: `<svg viewBox="0 0 260 240" class="selfcare-illust">
-        ${defs}
-        <!-- 椅子 -->
-        <path d="M65,148 L175,148 L175,152 L65,152 Z" fill="#b0bec5" opacity="0.3" rx="3"/>
-        <rect x="155" y="80" width="6" height="72" rx="2" fill="#b0bec5" opacity="0.25"/>
-        <rect x="70" y="152" width="4" height="40" rx="2" fill="#b0bec5" opacity="0.3"/>
-        <rect x="166" y="152" width="4" height="40" rx="2" fill="#b0bec5" opacity="0.3"/>
-        <!-- 筋肉ハイライト：僧帽筋上部 -->
-        <path d="M85,68 Q78,80 82,100 L100,100 L105,68 Z" fill="url(#muscleHL)" stroke="${M}" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.6"/>
-        ${badge(36,22,'1')}
-        <text x="52" y="26" font-size="10" fill="#3b82f6" font-weight="600">手を下に入れる</text>
-        <!-- 体幹 -->
-        <path d="M105,92 Q120,86 135,92 L133,146 L107,146 Z" fill="${S}" stroke="${K}" stroke-width="1.2"/>
-        <!-- 首 -->
-        <path d="M112,74 Q120,78 128,74 L128,92 L112,92 Z" fill="${S}" stroke="${K}" stroke-width="1"/>
-        <!-- 頭ゴースト（元位置） -->
-        <circle cx="120" cy="56" r="20" fill="${S}" stroke="${K}" stroke-width="0.8" opacity="0.2" stroke-dasharray="3,3"/>
-        <!-- 頭（傾いた位置） -->
-        <ellipse cx="100" cy="54" rx="20" ry="19" fill="${S}" stroke="${A}" stroke-width="1.8"/>
-        <path d="M83,42 C86,32 112,30 118,40" fill="${H}" opacity="0.45"/>
-        <!-- 左腕（お尻の下） -->
-        <path d="M105,96 Q90,106 85,118 Q82,132 86,148" stroke="${K}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-        <!-- 右手→頭を押す -->
-        <path d="M135,96 Q146,88 148,76 Q146,64 136,56 Q124,48 112,52" stroke="${K}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-        <circle cx="112" cy="50" r="5" fill="${S}" stroke="${K}" stroke-width="1"/>
-        <!-- 押す矢印 -->
-        <path d="M148,44 L116,52" stroke="${A}" stroke-width="3" fill="none" marker-end="url(#aB)" filter="url(#glow)"/>
-        ${badge(158,38,'2',A)}
-        <text x="172" y="42" font-size="10" fill="${A}" font-weight="600">頭を押す</text>
-        <!-- 伸びエリア + ラベル -->
-        <path d="M82,62 Q72,78 76,98" stroke="${M}" stroke-width="3" fill="none" stroke-dasharray="5,3"/>
-        ${muscleLabel(42,82,'僧帽筋の伸び')}
-        <!-- 脚 -->
-        <path d="M110,146 Q104,170 100,196" stroke="${K}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-        <path d="M130,146 Q136,170 140,196" stroke="${K}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-        <ellipse cx="98" cy="200" rx="10" ry="5" fill="${S}" stroke="${K}" stroke-width="0.8"/>
-        <ellipse cx="142" cy="200" rx="10" ry="5" fill="${S}" stroke="${K}" stroke-width="0.8"/>
-        <line x1="30" y1="206" x2="230" y2="206" stroke="#cbd5e1" stroke-width="1"/>
-        <!-- 秒数 -->
-        <rect x="70" y="216" width="120" height="20" rx="6" fill="#f0f9ff" stroke="#bfdbfe" stroke-width="1"/>
-        <text x="130" y="230" text-anchor="middle" font-size="11" fill="${A}" font-weight="600">20秒キープ × 3回</text>
-      </svg>`,
+      // ===== 首ストレッチ（椅子に座って頭を横に倒す） =====
+      neckStretch: svg(`
+        ${ch(70,120)}
+        ${fl()}
+        <!-- 体 --> ${rod(120,60,120,120,18)}
+        <!-- 脚 --> ${rod(110,120,100,168,L)} ${rod(130,120,140,168,L)}
+        <!-- 左腕（お尻の下） --> ${rod(120,72,95,90,W)} ${rod(95,90,95,120,W)}
+        <!-- 右腕（頭を押す） --> ${rod(120,72,145,65,W)} ${rod(145,65,108,38,W)}
+        <!-- 首ハイライト --> ${hlrod(120,55,120,68,10)}
+        <!-- 頭（傾き） --> ${hd(105,32,20)}
+        <!-- 頭ゴースト --> <circle cx="120" cy="38" r="18" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6,4"/>
+        <!-- 矢印 --> ${arrow(140,42,112,36)}
+        ${lbl(170,48,'ゆっくり倒す')}
+        ${lbl(60,95,'手はお尻の下',11,'#64748b')}
+        ${rep('20秒キープ × 3回')}
+      `),
 
-      shoulderShrug: `<svg viewBox="0 0 260 240" class="selfcare-illust">
-        ${defs}
-        <!-- 筋肉ハイライト：僧帽筋上部 左肩 -->
-        <ellipse cx="92" cy="72" rx="24" ry="16" fill="url(#muscleHL)" stroke="${M}" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.5"/>
-        <!-- 体幹 -->
-        <path d="M112,86 Q130,80 148,86 L146,158 L114,158 Z" fill="${S}" stroke="${K}" stroke-width="1.2"/>
-        <!-- 首 -->
-        <path d="M120,68 Q130,72 140,68 L140,86 L120,86 Z" fill="${S}" stroke="${K}" stroke-width="1"/>
-        <!-- 頭 -->
-        <circle cx="130" cy="50" r="20" fill="${S}" stroke="${K}" stroke-width="1.2"/>
-        <path d="M112,40 C114,28 146,28 148,40" fill="${H}" opacity="0.45"/>
-        <!-- 左肩（上がった） -->
-        <path d="M112,86 Q88,68 78,58" stroke="${K}" stroke-width="4.5" fill="none" stroke-linecap="round"/>
-        <path d="M78,58 Q74,74 72,96 Q70,114 74,130" stroke="${K}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-        <!-- 右肩（通常） -->
-        <path d="M148,86 Q168,82 178,88" stroke="${K}" stroke-width="4.5" fill="none" stroke-linecap="round"/>
-        <path d="M178,88 Q180,106 178,124 Q176,138 172,148" stroke="${K}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-        <!-- STEP1: 上げる -->
-        <path d="M62,74 L62,44" stroke="${A}" stroke-width="3" marker-end="url(#aU)" filter="url(#glow)"/>
-        ${badge(44,38,'1',A)}
-        <text x="20" y="52" font-size="11" fill="${A}" font-weight="700">上げる</text>
-        <!-- STEP2: 5秒キープ -->
-        ${badge(44,72,'2','#f59e0b')}
-        <text x="20" y="76" font-size="10" fill="#f59e0b" font-weight="600">5秒</text>
-        <!-- STEP3: 脱力 -->
-        <path d="M56,96 L56,120" stroke="${M}" stroke-width="3" marker-end="url(#aD)"/>
-        ${badge(44,108,'3',M)}
-        <text x="16" y="130" font-size="11" fill="${M}" font-weight="700">ストン！</text>
-        <!-- ゴースト：脱力後の腕 -->
-        <path d="M112,86 Q98,84 90,86" stroke="${K}" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.2" stroke-dasharray="4,3"/>
-        <path d="M90,86 Q86,100 84,118" stroke="${K}" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.2" stroke-dasharray="4,3"/>
-        <!-- 脚 -->
-        <path d="M118,158 Q112,180 108,206" stroke="${K}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-        <path d="M142,158 Q148,180 152,206" stroke="${K}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-        <line x1="50" y1="214" x2="210" y2="214" stroke="#cbd5e1" stroke-width="1"/>
-        <rect x="70" y="220" width="120" height="18" rx="6" fill="#fef3c7" stroke="#fcd34d" stroke-width="1"/>
-        <text x="130" y="233" text-anchor="middle" font-size="10" fill="#92400e" font-weight="600">10回 × 2セット</text>
-      </svg>`,
+      // ===== 肩すくめ→ストン =====
+      shoulderShrug: svg(`
+        ${fl()}
+        <!-- 体 --> ${rod(120,55,120,115,18)}
+        <!-- 脚 --> ${rod(108,115,100,168,L)} ${rod(132,115,140,168,L)}
+        <!-- 頭 --> ${hd(120,35)}
+        <!-- 左肩（上がった状態） --> ${rod(120,62,80,42,W)} ${rod(80,42,78,80,W)}
+        <!-- 右肩（通常） --> ${rod(120,65,162,72,W)} ${rod(162,72,160,105,W)}
+        <!-- 上げる矢印 --> ${arrow(65,60,65,30)}
+        ${lbl(50,22,'上げる!',16)}
+        <!-- 下げる矢印 --> ${arrow(65,90,65,110)}
+        ${lbl(50,125,'ストン!',16,'#ef4444')}
+        ${lbl(185,50,'5秒',18,'#f59e0b')}
+        ${lbl(185,70,'キープ',12,'#f59e0b')}
+        ${rep('10回 × 2セット')}
+      `),
 
-      armStretch: `<svg viewBox="0 0 260 240" class="selfcare-illust">
-        ${defs}
-        <!-- 壁 -->
-        <rect x="200" y="0" width="14" height="240" fill="#e2e8f0" opacity="0.5"/>
-        <line x1="200" y1="0" x2="200" y2="240" stroke="#94a3b8" stroke-width="1.2"/>
-        <!-- 筋肉ハイライト：三角筋・脇下 -->
-        <path d="M126,76 Q146,60 168,48 Q180,42 190,38 L192,50 Q176,56 158,66 L138,82 Z" fill="url(#muscleHL)" stroke="${M}" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.5"/>
-        <!-- 体幹 -->
-        <path d="M104,90 Q118,84 130,90 L128,156 L106,156 Z" fill="${S}" stroke="${K}" stroke-width="1.2"/>
-        <path d="M110,72 Q118,76 126,72 L126,90 L110,90 Z" fill="${S}" stroke="${K}" stroke-width="1"/>
-        <circle cx="118" cy="54" r="20" fill="${S}" stroke="${K}" stroke-width="1.2"/>
-        <path d="M100,44 C102,32 134,32 136,44" fill="${H}" opacity="0.45"/>
-        <!-- STEP1: 壁に腕 -->
-        <path d="M130,90 Q150,76 172,60 Q186,50 200,44" stroke="${K}" stroke-width="4" fill="none" stroke-linecap="round"/>
-        <circle cx="200" cy="44" r="6" fill="${S}" stroke="#fbbf24" stroke-width="2"/>
-        ${badge(212,28,'1',A)}
-        <text x="192" y="20" font-size="10" fill="${A}" font-weight="600">壁に手</text>
-        <!-- 反対の腕 -->
-        <path d="M104,94 Q88,106 82,120 Q78,134 82,146" stroke="${K}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-        <!-- STEP2: ひねる -->
-        <path d="M94,118 C80,112 76,126 84,138" stroke="${A}" stroke-width="3" fill="none" marker-end="url(#aB)"/>
-        ${badge(62,120,'2',A)}
-        <text x="34" y="124" font-size="11" fill="${A}" font-weight="700">ひねる</text>
-        <!-- 伸びライン -->
-        <path d="M140,78 Q164,62 188,48" stroke="${M}" stroke-width="3" stroke-dasharray="5,3" fill="none"/>
-        ${muscleLabel(130,68,'脇〜腕の伸び')}
-        <!-- 脚 -->
-        <path d="M108,156 Q104,182 100,212" stroke="${K}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-        <path d="M126,156 Q130,182 134,212" stroke="${K}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-        <line x1="50" y1="218" x2="205" y2="218" stroke="#cbd5e1" stroke-width="1"/>
-        <rect x="60" y="224" width="120" height="14" rx="5" fill="#f0f9ff" stroke="#bfdbfe" stroke-width="1"/>
-        <text x="120" y="234" text-anchor="middle" font-size="10" fill="${A}" font-weight="600">15秒キープ × 3回</text>
-      </svg>`,
+      // ===== 腕クロスストレッチ（座位） =====
+      armStretch: svg(`
+        ${ch(70,120)}
+        ${fl()}
+        <!-- 体 --> ${rod(120,55,120,120,18)}
+        <!-- 脚 --> ${rod(110,120,100,168,L)} ${rod(130,120,140,168,L)}
+        <!-- 頭 --> ${hd(120,35)}
+        <!-- 伸ばす腕（胸の前にクロス） --> ${hlrod(120,70,70,72,W)}
+        <!-- 反対の手で引き寄せ --> ${rod(120,75,95,82,W)} ${rod(95,82,85,70,12)}
+        <!-- 引き寄せ矢印 --> ${arrow(110,60,82,66)}
+        ${lbl(60,52,'引き寄せる',14)}
+        ${lbl(180,70,'肩の後ろが',12,'#ef4444')}
+        ${lbl(180,85,'伸びる',12,'#ef4444')}
+        ${rep('15秒キープ × 3回')}
+      `),
 
-      scapulaExercise: `<svg viewBox="0 0 260 240" class="selfcare-illust">
-        ${defs}
-        <!-- 床 -->
-        <line x1="20" y1="176" x2="240" y2="176" stroke="#cbd5e1" stroke-width="1.5"/>
-        <!-- 筋肉ハイライト：菱形筋・前鋸筋エリア -->
-        <ellipse cx="140" cy="82" rx="34" ry="16" fill="url(#muscleHL)" stroke="${M}" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.5"/>
-        <!-- 四つん這いの人物 -->
-        <ellipse cx="188" cy="72" rx="16" ry="18" fill="${S}" stroke="${K}" stroke-width="1.2"/>
-        <path d="M174,62 C176,50 200,50 202,62" fill="${H}" opacity="0.45"/>
-        <!-- 体 -->
-        <path d="M174,86 Q140,78 106,88 Q84,94 68,100" stroke="${K}" stroke-width="6" fill="none" stroke-linecap="round"/>
-        <path d="M176,82 Q140,74 106,84 Q84,90 68,96" stroke="${S}" stroke-width="14" fill="none" stroke-linecap="round" opacity="0.5"/>
-        <!-- 腕 -->
-        <path d="M174,90 Q182,118 186,172" stroke="${K}" stroke-width="4" fill="none" stroke-linecap="round"/>
-        <path d="M176,92 Q190,118 196,172" stroke="${K}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-        <!-- 脚 -->
-        <path d="M70,100 Q62,134 58,172" stroke="${K}" stroke-width="4" fill="none" stroke-linecap="round"/>
-        <path d="M74,100 Q70,134 68,172" stroke="${K}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-        <!-- STEP1: 肩甲骨を寄せる -->
-        <path d="M116,70 L134,76" stroke="${A}" stroke-width="3" marker-end="url(#aB)"/>
-        <path d="M164,70 L146,76" stroke="${A}" stroke-width="3" marker-end="url(#aB)"/>
-        ${badge(140,58,'1',A)}
-        <text x="118" y="52" font-size="11" fill="${A}" font-weight="700">寄せる</text>
-        <!-- ゴースト：背中丸め -->
-        <path d="M174,86 Q140,92 106,100 Q84,108 68,116" stroke="${K}" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.15" stroke-dasharray="4,3"/>
-        <!-- STEP2: 丸める -->
-        <path d="M120,104 Q140,120 160,104" stroke="${M}" stroke-width="2.5" fill="none"/>
-        ${badge(140,118,'2',M)}
-        <text x="118" y="140" font-size="11" fill="${M}" font-weight="700">背中を丸める</text>
-        <!-- 筋肉ラベル -->
-        ${muscleLabel(114,192,'肩甲骨周囲筋','start')}
-        <rect x="58" y="208" width="144" height="28" rx="6" fill="#f0f9ff" stroke="#bfdbfe" stroke-width="1"/>
-        <text x="130" y="220" text-anchor="middle" font-size="10" fill="${A}" font-weight="600">寄せる3秒 → 丸める3秒</text>
-        <text x="130" y="232" text-anchor="middle" font-size="9" fill="#64748b">× 10回 × 2セット</text>
-      </svg>`,
+      // ===== 肩甲骨寄せ（座位） =====
+      scapulaExercise: svg(`
+        ${ch(70,120)}
+        ${fl()}
+        <!-- 体 --> ${rod(120,55,120,120,18)}
+        <!-- 脚 --> ${rod(110,120,100,168,L)} ${rod(130,120,140,168,L)}
+        <!-- 頭 --> ${hd(120,35)}
+        <!-- 腕（膝の上） --> ${rod(120,70,90,95,W)} ${rod(90,95,95,118,W)}
+        ${rod(120,70,150,95,W)} ${rod(150,95,145,118,W)}
+        <!-- 肩甲骨の寄せ矢印 --> ${arrow(90,78,110,82)} ${arrow(150,78,130,82)}
+        ${lbl(120,16,'❶ 胸を張って寄せる',14)}
+        <!-- 開く矢印 -->
+        <line x1="110" y1="98" x2="92" y2="102" stroke="#ef4444" stroke-width="3" stroke-linecap="round"/>
+        <line x1="130" y1="98" x2="148" y2="102" stroke="#ef4444" stroke-width="3" stroke-linecap="round"/>
+        ${lbl(120,145,'❷ 背中を丸めて開く',13,'#ef4444')}
+        ${rep('各3秒 × 10回 × 2セット')}
+      `),
 
-      wristStretch: `<svg viewBox="0 0 260 240" class="selfcare-illust">
-        ${defs}
-        <!-- 筋肉ハイライト：前腕屈筋群 -->
-        <path d="M28,104 Q80,98 130,96 Q160,94 180,93 L180,108 Q160,109 130,110 Q80,112 28,118 Z" fill="url(#muscleHL)" stroke="${M}" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.5"/>
-        <!-- 腕 -->
-        <path d="M28,110 Q80,106 130,104 Q160,102 185,100" stroke="${S}" stroke-width="16" fill="none" stroke-linecap="round" opacity="0.6"/>
-        <path d="M28,110 Q80,106 130,104 Q160,102 185,100" stroke="${K}" stroke-width="6" fill="none" stroke-linecap="round"/>
-        <!-- 手首関節 -->
-        <circle cx="185" cy="100" r="5" fill="#fbbf24" stroke="#d97706" stroke-width="1.5"/>
-        <!-- 手（反り返り） -->
-        <path d="M185,100 Q196,86 204,72 Q208,64 210,56" stroke="${K}" stroke-width="5" fill="none" stroke-linecap="round"/>
-        <path d="M185,100 Q196,86 204,72 Q208,64 210,56" stroke="${S}" stroke-width="10" fill="none" stroke-linecap="round" opacity="0.5"/>
-        <!-- 指 -->
-        <line x1="210" y1="56" x2="214" y2="46" stroke="${K}" stroke-width="2.5" stroke-linecap="round"/>
-        <line x1="210" y1="56" x2="218" y2="48" stroke="${K}" stroke-width="2" stroke-linecap="round"/>
-        <line x1="210" y1="56" x2="220" y2="52" stroke="${K}" stroke-width="2" stroke-linecap="round"/>
-        <line x1="210" y1="56" x2="222" y2="56" stroke="${K}" stroke-width="1.5" stroke-linecap="round"/>
-        <!-- STEP1: 腕を前に -->
-        ${badge(28,88,'1',A)}
-        <text x="10" y="84" font-size="9" fill="${A}" font-weight="600">腕を前に</text>
-        <!-- 反対の手 -->
-        <path d="M160,78 Q168,74 176,72" stroke="${K}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-        <circle cx="178" cy="71" r="5" fill="${S}" stroke="${K}" stroke-width="1"/>
-        <!-- STEP2: 引く矢印 -->
-        <path d="M168,62 L196,64" stroke="${A}" stroke-width="3" fill="none" marker-end="url(#aB)" filter="url(#glow)"/>
-        ${badge(156,54,'2',A)}
-        <text x="140" y="46" font-size="11" fill="${A}" font-weight="700">手前に引く</text>
-        <!-- 伸びエリア -->
-        <path d="M70,108 Q120,124 170,108" stroke="${M}" stroke-width="3" stroke-dasharray="5,3" fill="none"/>
-        ${muscleLabel(80,142,'前腕屈筋群が伸びる','start')}
-        <!-- 内外ガイド -->
-        <rect x="40" y="168" width="180" height="52" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
-        <text x="130" y="186" text-anchor="middle" font-size="11" fill="#1e293b" font-weight="600">手のひら側 → 手の甲側</text>
-        <text x="130" y="202" text-anchor="middle" font-size="10" fill="#64748b">各15秒 × 3回 両方向</text>
-      </svg>`,
+      // ===== 手首ストレッチ =====
+      wristStretch: svg(`
+        <!-- 前腕 --> ${rod(20,100,150,95,20)}
+        <!-- 手首ハイライト --> <circle cx="155" cy="95" r="12" fill="${HL}" opacity="0.5"/>
+        <!-- 手（反らした状態） --> ${rod(150,95,170,65,14)} ${rod(170,65,185,50,10)}
+        <!-- 反対の手 --> ${rod(120,80,160,62,12)}
+        <!-- 引く矢印 --> ${arrow(175,55,155,68)}
+        ${lbl(195,50,'引く',16)}
+        ${lbl(30,85,'腕を前に伸ばす',12,'#64748b')}
+        ${lbl(120,140,'手のひら側と手の甲側',13,'#ef4444')}
+        ${lbl(120,158,'両方やる',14,'#ef4444')}
+        ${rep('各15秒 × 3回')}
+      `, '0 0 240 200'),
 
-      gripExercise: `<svg viewBox="0 0 260 240" class="selfcare-illust">
-        ${defs}
-        <!-- 前腕 -->
-        <path d="M30,120 Q70,116 110,114" stroke="${S}" stroke-width="16" fill="none" stroke-linecap="round" opacity="0.6"/>
-        <path d="M30,120 Q70,116 110,114" stroke="${K}" stroke-width="5.5" fill="none" stroke-linecap="round"/>
-        <!-- 筋肉ハイライト -->
-        <path d="M50,108 Q80,104 110,104 L110,126 Q80,128 50,130 Z" fill="url(#muscleHL)" stroke="${M}" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.4"/>
-        <!-- タオル -->
-        <ellipse cx="160" cy="108" rx="38" ry="26" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.8"/>
-        <path d="M132,96 Q160,82 188,96" fill="none" stroke="#94a3b8" stroke-width="0.8" opacity="0.5"/>
-        <path d="M132,120 Q160,134 188,120" fill="none" stroke="#94a3b8" stroke-width="0.8" opacity="0.5"/>
-        <text x="160" y="112" text-anchor="middle" font-size="12" fill="#64748b" font-weight="600">タオル</text>
-        <!-- 握る手 -->
-        <path d="M110,114 Q120,96 130,88 Q138,84 144,92 Q148,100 144,112" stroke="${K}" stroke-width="3" fill="${S}" stroke-linecap="round"/>
-        <path d="M130,88 Q134,80 140,82" stroke="${K}" stroke-width="2" fill="none" stroke-linecap="round"/>
-        <path d="M138,84 Q142,76 148,80" stroke="${K}" stroke-width="2" fill="none" stroke-linecap="round"/>
-        <path d="M144,86 Q150,80 154,84" stroke="${K}" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-        <!-- STEP1: 握る -->
-        <path d="M124,78 Q112,96 124,116" stroke="${A}" stroke-width="2.5" fill="none"/>
-        <path d="M198,78 Q210,96 198,116" stroke="${A}" stroke-width="2.5" fill="none"/>
-        ${badge(118,68,'1',A)}
-        <text x="160" y="152" text-anchor="middle" font-size="14" fill="${A}" font-weight="700">ギュッと握る</text>
-        <!-- STEP2: キープ -->
-        ${badge(118,150,'2','#f59e0b')}
-        <text x="100" y="154" font-size="10" fill="#f59e0b" font-weight="600">5秒</text>
-        <!-- STEP3: 離す -->
-        ${badge(118,174,'3','#22c55e')}
-        <text x="94" y="178" font-size="10" fill="#22c55e" font-weight="600">離す</text>
-        <!-- 力の波紋 -->
-        <ellipse cx="160" cy="108" rx="48" ry="34" fill="none" stroke="${A}" stroke-width="1.2" stroke-dasharray="4,4" opacity="0.3"/>
-        <ellipse cx="160" cy="108" rx="56" ry="40" fill="none" stroke="${A}" stroke-width="0.8" stroke-dasharray="4,4" opacity="0.15"/>
-        ${muscleLabel(50,140,'前腕伸筋群','start')}
-        <rect x="70" y="196" width="120" height="28" rx="6" fill="#f0f9ff" stroke="#bfdbfe" stroke-width="1"/>
-        <text x="130" y="208" text-anchor="middle" font-size="10" fill="${A}" font-weight="600">握る5秒 → 離す5秒</text>
-        <text x="130" y="220" text-anchor="middle" font-size="9" fill="#64748b">10回 × 2セット</text>
-      </svg>`,
+      // ===== タオル握り =====
+      gripExercise: svg(`
+        <!-- 前腕 --> ${rod(20,100,120,95,20)}
+        <!-- タオル --> <ellipse cx="155" cy="95" rx="35" ry="25" fill="#e2e8f0" stroke="#94a3b8" stroke-width="3"/>
+        ${lbl(155,100,'タオル',14,'#64748b')}
+        <!-- 握る手 --> ${rod(120,95,140,80,14)} ${rod(140,80,155,78,10)}
+        <!-- 握る矢印 -->
+        <path d="M130,68 Q145,58 160,68" stroke="${AR}" stroke-width="3" fill="none"/>
+        <path d="M130,120 Q145,130 160,120" stroke="${AR}" stroke-width="3" fill="none"/>
+        ${lbl(145,50,'ギュッ!',18)}
+        ${lbl(50,140,'❶ 握る 5秒',14)}
+        ${lbl(50,160,'❷ 離す 5秒',14,'#22c55e')}
+        ${lbl(170,145,'❸ 繰り返す',14,'#f59e0b')}
+        ${rep('10回 × 2セット')}
+      `),
 
-      hipFlexorStretch: `<svg viewBox="0 0 260 240" class="selfcare-illust">
-        ${defs}
-        <line x1="20" y1="212" x2="240" y2="212" stroke="#cbd5e1" stroke-width="1.5"/>
-        <!-- 筋肉ハイライト：腸腰筋 -->
-        <path d="M90,118 Q78,138 76,160 L92,164 Q90,142 98,122 Z" fill="url(#muscleHL)" stroke="${M}" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.6"/>
-        <!-- 体幹 -->
-        <path d="M112,64 Q124,58 132,64 L130,120 L114,120 Z" fill="${S}" stroke="${K}" stroke-width="1.2"/>
-        <path d="M116,50 Q122,54 128,50 L128,64 L116,64 Z" fill="${S}" stroke="${K}" stroke-width="1"/>
-        <circle cx="122" cy="34" r="18" fill="${S}" stroke="${K}" stroke-width="1.2"/>
-        <path d="M106,26 C108,16 136,16 138,26" fill="${H}" opacity="0.45"/>
-        <!-- 腕 -->
-        <path d="M112,70 Q98,82 92,96 Q88,108 92,116" stroke="${K}" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <path d="M132,70 Q144,82 148,96 Q150,108 146,116" stroke="${K}" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <!-- 前脚（膝90度） -->
-        <path d="M130,120 Q148,138 162,160" stroke="${K}" stroke-width="4.5" fill="none" stroke-linecap="round"/>
-        <circle cx="162" cy="160" r="6" fill="#fbbf24" stroke="#d97706" stroke-width="1.2" opacity="0.7"/>
-        <path d="M162,160 L162,210" stroke="${K}" stroke-width="4" fill="none" stroke-linecap="round"/>
-        <ellipse cx="164" cy="212" rx="10" ry="4" fill="${S}" stroke="${K}" stroke-width="0.8"/>
-        <!-- 後ろ脚（膝つき） -->
-        <path d="M114,120 Q92,142 78,166" stroke="${K}" stroke-width="4.5" fill="none" stroke-linecap="round"/>
-        <circle cx="78" cy="166" r="6" fill="#fbbf24" stroke="#d97706" stroke-width="1.2"/>
-        <path d="M78,166 Q68,186 62,210" stroke="${K}" stroke-width="4" fill="none" stroke-linecap="round"/>
-        <!-- STEP1: 片膝立ち -->
-        ${badge(42,164,'1',A)}
-        <text x="22" y="180" font-size="9" fill="${A}" font-weight="600">膝をつく</text>
-        <!-- STEP2: 前に押し出す -->
-        <path d="M102,114 L126,106" stroke="${A}" stroke-width="3" marker-end="url(#aB)" filter="url(#glow)"/>
-        ${badge(92,106,'2',A)}
-        <text x="70" y="100" font-size="11" fill="${A}" font-weight="700">前へ</text>
-        <!-- 伸びライン -->
-        <path d="M92,126 Q82,144 80,162" stroke="${M}" stroke-width="3" stroke-dasharray="5,3" fill="none"/>
-        ${muscleLabel(38,148,'腸腰筋の伸び')}
-        <rect x="60" y="222" width="140" height="14" rx="5" fill="#f0f9ff" stroke="#bfdbfe" stroke-width="1"/>
-        <text x="130" y="232" text-anchor="middle" font-size="10" fill="${A}" font-weight="600">20秒キープ × 3回（左右）</text>
-      </svg>`,
+      // ===== 股関節ストレッチ（座位） =====
+      hipFlexorStretch: svg(`
+        ${ch(65,115)}
+        ${fl(165)}
+        <!-- 体 --> ${rod(115,50,115,115,18)}
+        <!-- 頭 --> ${hd(115,30)}
+        <!-- 腕 --> ${rod(115,65,90,85,W)} ${rod(90,85,93,110,12)}
+        ${rod(115,65,140,85,W)} ${rod(140,85,137,110,12)}
+        <!-- 前脚 --> ${rod(125,115,140,163,L)}
+        <!-- 後ろ脚ハイライト --> ${hlrod(105,115,75,140,L)}
+        ${rod(75,140,60,163,14)}
+        <!-- 矢印 --> ${arrow(130,105,150,95)}
+        ${lbl(170,90,'おへそを前に',13)}
+        ${lbl(45,130,'足を引く',11,'#64748b')}
+        ${lbl(55,155,'ここが伸びる',11,'#ef4444')}
+        ${rep('15秒 × 3回（左右）',188)}
+      `),
 
-      pelvicStabilize: `<svg viewBox="0 0 260 240" class="selfcare-illust">
-        ${defs}
-        <!-- マット -->
-        <rect x="16" y="152" width="228" height="10" rx="4" fill="#e8f5e9" opacity="0.5"/>
-        <line x1="16" y1="162" x2="244" y2="162" stroke="#cbd5e1" stroke-width="1"/>
-        <!-- 筋肉ハイライト：内転筋 -->
-        <path d="M156,84 Q164,92 170,84 L170,100 Q164,108 156,100 Z" fill="url(#muscleHL)" stroke="${M}" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.5"/>
-        <!-- 仰向けの人物 -->
-        <ellipse cx="46" cy="128" rx="18" ry="16" fill="${S}" stroke="${K}" stroke-width="1.2"/>
-        <path d="M30,120 C30,110 62,110 62,120" fill="${H}" opacity="0.35"/>
-        <!-- 体 -->
-        <path d="M62,130 Q100,126 150,132" stroke="${S}" stroke-width="16" fill="none" stroke-linecap="round" opacity="0.6"/>
-        <path d="M62,130 Q100,126 150,132" stroke="${K}" stroke-width="5.5" fill="none" stroke-linecap="round"/>
-        <!-- 腕 -->
-        <path d="M80,130 Q82,140 84,152" stroke="${K}" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-        <path d="M104,128 Q106,140 108,152" stroke="${K}" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-        <!-- 左膝 -->
-        <path d="M150,132 Q160,110 170,82" stroke="${K}" stroke-width="4.5" fill="none" stroke-linecap="round"/>
-        <path d="M170,82 L170,152" stroke="${K}" stroke-width="4" fill="none" stroke-linecap="round"/>
-        <!-- 右膝 -->
-        <path d="M156,134 Q168,114 180,88" stroke="${K}" stroke-width="4" fill="none" stroke-linecap="round"/>
-        <path d="M180,88 L180,152" stroke="${K}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-        <!-- クッション -->
-        <ellipse cx="175" cy="86" rx="15" ry="9" fill="#fbbf24" stroke="#d97706" stroke-width="1.5"/>
-        <text x="175" y="90" text-anchor="middle" font-size="8" fill="#92400e" font-weight="600">クッション</text>
-        <!-- STEP1: 挟む -->
-        <path d="M154,74 L168,80" stroke="${A}" stroke-width="3" marker-end="url(#aB)"/>
-        <path d="M196,74 L182,80" stroke="${A}" stroke-width="3" marker-end="url(#aB)"/>
-        ${badge(175,60,'1',A)}
-        <text x="157" y="54" font-size="13" fill="${A}" font-weight="700">挟む！</text>
-        <!-- 力の波紋 -->
-        <ellipse cx="175" cy="86" rx="24" ry="16" fill="none" stroke="${A}" stroke-width="1.2" stroke-dasharray="4,4" opacity="0.3"/>
-        <!-- ${badge(175,128,'2','#f59e0b')} -->
-        ${muscleLabel(136,180,'内転筋を強化','start')}
-        <rect x="58" y="196" width="144" height="28" rx="6" fill="#f0f9ff" stroke="#bfdbfe" stroke-width="1"/>
-        <text x="130" y="208" text-anchor="middle" font-size="10" fill="${A}" font-weight="600">5秒キープ → 5秒休む</text>
-        <text x="130" y="220" text-anchor="middle" font-size="9" fill="#64748b">10回 × 3セット</text>
-      </svg>`,
+      // ===== 骨盤安定（仰向け・クッション挟み） =====
+      pelvicStabilize: svg(`
+        ${fl(158)}
+        <!-- マット --> <rect x="10" y="148" width="220" height="10" rx="4" fill="#d1fae5" opacity="0.6"/>
+        <!-- 体（仰向け） --> ${rod(40,132,155,132,18)}
+        <!-- 頭 --> ${hd(28,132)}
+        <!-- 腕 --> ${rod(65,132,70,150,10)} ${rod(100,132,105,150,10)}
+        <!-- 太もも --> ${rod(155,128,178,95,L)} ${rod(155,136,185,100,L)}
+        <!-- すね --> ${rod(178,95,174,148,14)} ${rod(185,100,182,148,14)}
+        <!-- クッション --> <ellipse cx="182" cy="98" rx="14" ry="10" fill="${HL}" stroke="#d97706" stroke-width="2"/>
+        ${lbl(182,102,'枕',11,'#92400e')}
+        <!-- 挟む矢印 --> ${arrow(165,82,176,92)} ${arrow(200,82,190,92)}
+        ${lbl(182,72,'挟む!',18)}
+        ${lbl(120,178,'5秒力を入れて5秒休む',12,'#64748b')}
+        ${rep('10回 × 3セット',195)}
+      `),
 
-      hamstringStretch: `<svg viewBox="0 0 260 240" class="selfcare-illust">
-        ${defs}
-        <!-- 椅子 -->
-        <rect x="30" y="132" width="80" height="8" rx="3" fill="#b0bec5" opacity="0.3"/>
-        <rect x="100" y="66" width="6" height="72" rx="2" fill="#b0bec5" opacity="0.25"/>
-        <rect x="35" y="140" width="4" height="42" rx="2" fill="#b0bec5" opacity="0.3"/>
-        <rect x="102" y="140" width="4" height="42" rx="2" fill="#b0bec5" opacity="0.3"/>
-        <!-- 筋肉ハイライト：ハムストリングス -->
-        <path d="M76,130 Q120,130 170,132 Q190,132 206,134 L206,142 Q190,140 170,140 Q120,140 76,138 Z" fill="url(#muscleHL)" stroke="${M}" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.5"/>
-        <!-- 体 -->
-        <path d="M60,92 Q72,86 80,92 L78,130 L62,130 Z" fill="${S}" stroke="${K}" stroke-width="1.2"/>
-        <path d="M64,78 Q70,82 76,78 L76,92 L64,92 Z" fill="${S}" stroke="${K}" stroke-width="1"/>
-        <circle cx="70" cy="62" r="18" fill="${S}" stroke="${K}" stroke-width="1.2"/>
-        <path d="M54,54 C56,44 84,44 86,54" fill="${H}" opacity="0.45"/>
-        <!-- 腕 -->
-        <path d="M60,96 Q50,108 46,124" stroke="${K}" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <path d="M80,96 Q88,108 92,124" stroke="${K}" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <!-- 曲げた脚 -->
-        <path d="M62,130 Q56,152 52,184" stroke="${K}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-        <!-- 伸ばした脚 -->
-        <path d="M78,130 Q120,132 162,134 Q186,136 206,136" stroke="${K}" stroke-width="4" fill="none" stroke-linecap="round"/>
-        <path d="M206,136 L214,126" stroke="${K}" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-        ${badge(220,122,'1',A)}
-        <text x="210" y="116" font-size="9" fill="${A}" font-weight="600">つま先↑</text>
-        <!-- STEP2: 前屈 -->
-        <path d="M84,76 Q102,70 110,86" stroke="${A}" stroke-width="3" fill="none" marker-end="url(#aB)" filter="url(#glow)"/>
-        ${badge(96,62,'2',A)}
-        <text x="106" y="58" font-size="12" fill="${A}" font-weight="700">前屈</text>
-        <!-- もも裏の伸び -->
-        <path d="M90,140 Q140,156 190,140" stroke="${M}" stroke-width="3" stroke-dasharray="5,3" fill="none"/>
-        ${muscleLabel(100,170,'ハムストリングスの伸び','start')}
-        <line x1="20" y1="192" x2="230" y2="192" stroke="#cbd5e1" stroke-width="1"/>
-        <rect x="60" y="200" width="140" height="28" rx="6" fill="#f0f9ff" stroke="#bfdbfe" stroke-width="1"/>
-        <text x="130" y="212" text-anchor="middle" font-size="10" fill="${A}" font-weight="600">20秒キープ × 3回</text>
-        <text x="130" y="224" text-anchor="middle" font-size="9" fill="#64748b">左右各3回ずつ</text>
-      </svg>`,
+      // ===== ハムストリングス（座位・足伸ばし前屈） =====
+      hamstringStretch: svg(`
+        ${ch(30,115,60)}
+        ${fl(165)}
+        <!-- 体（前傾） --> ${rod(85,55,90,115,18)}
+        <!-- 頭 --> ${hd(82,38)}
+        <!-- 腕 --> ${rod(88,68,70,95,12)} ${rod(88,72,105,95,12)}
+        <!-- 曲げた脚 --> ${rod(80,115,65,163,L)}
+        <!-- 伸ばした脚ハイライト --> ${hlrod(95,115,180,118,L)}
+        <!-- つま先 --> <line x1="185" y1="118" x2="192" y2="108" stroke="${B}" stroke-width="6" stroke-linecap="round"/>
+        <!-- 前屈矢印 --> ${arrow(105,42,115,60)}
+        ${lbl(140,40,'前に倒す',14)}
+        ${lbl(195,105,'つま先↑',11,'#f59e0b')}
+        ${lbl(155,148,'もも裏が伸びる',12,'#ef4444')}
+        ${rep('20秒 × 3回（左右）',188)}
+      `),
 
-      quadStretch: `<svg viewBox="0 0 260 240" class="selfcare-illust">
-        ${defs}
-        <!-- 壁 -->
-        <rect x="16" y="0" width="12" height="240" fill="#e2e8f0" opacity="0.5"/>
-        <line x1="28" y1="0" x2="28" y2="240" stroke="#94a3b8" stroke-width="1.2"/>
-        <!-- 筋肉ハイライト：大腿四頭筋 -->
-        <path d="M108,124 Q124,138 136,158 L124,164 Q114,144 102,130 Z" fill="url(#muscleHL)" stroke="${M}" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.6"/>
-        <!-- 体 -->
-        <path d="M92,68 Q104,62 112,68 L110,128 L94,128 Z" fill="${S}" stroke="${K}" stroke-width="1.2"/>
-        <path d="M96,54 Q102,58 108,54 L108,68 L96,68 Z" fill="${S}" stroke="${K}" stroke-width="1"/>
-        <circle cx="102" cy="38" r="18" fill="${S}" stroke="${K}" stroke-width="1.2"/>
-        <path d="M86,30 C88,18 116,18 118,30" fill="${H}" opacity="0.45"/>
-        <!-- STEP1: 壁に手 -->
-        <path d="M92,74 Q66,72 32,72" stroke="${K}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-        <circle cx="30" cy="72" r="5" fill="${S}" stroke="${K}" stroke-width="1"/>
-        ${badge(42,58,'1',A)}
-        <text x="34" y="54" font-size="9" fill="${A}" font-weight="600">壁に手</text>
-        <!-- 立脚 -->
-        <path d="M96,128 Q94,160 92,200" stroke="${K}" stroke-width="4" fill="none" stroke-linecap="round"/>
-        <ellipse cx="90" cy="206" rx="11" ry="5" fill="${S}" stroke="${K}" stroke-width="0.8"/>
-        <!-- 曲げた脚 -->
-        <path d="M110,128 Q132,146 142,168" stroke="${K}" stroke-width="4" fill="none" stroke-linecap="round"/>
-        <circle cx="142" cy="168" r="5" fill="#fbbf24" stroke="#d97706" stroke-width="1.2" opacity="0.7"/>
-        <path d="M142,168 Q134,150 124,126" stroke="${K}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-        <!-- STEP2: 手で足首を持つ -->
-        <path d="M112,74 Q126,88 132,108 Q134,118 130,126" stroke="${K}" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <circle cx="128" cy="126" r="4.5" fill="${S}" stroke="${K}" stroke-width="1"/>
-        ${badge(148,116,'2',A)}
-        <text x="152" y="112" font-size="9" fill="${A}" font-weight="600">足首を持つ</text>
-        <!-- 伸びライン -->
-        <path d="M112,128 Q128,140 138,162" stroke="${M}" stroke-width="3" stroke-dasharray="5,3" fill="none"/>
-        ${muscleLabel(150,146,'大腿四頭筋','start')}
-        ${muscleLabel(150,162,'の伸び','start')}
-        <line x1="50" y1="212" x2="210" y2="212" stroke="#cbd5e1" stroke-width="1.5"/>
-        <rect x="60" y="218" width="140" height="14" rx="5" fill="#f0f9ff" stroke="#bfdbfe" stroke-width="1"/>
-        <text x="130" y="228" text-anchor="middle" font-size="10" fill="${A}" font-weight="600">15秒 × 3回（左右）</text>
-      </svg>`,
+      // ===== 大腿四頭筋（うつ伏せ） =====
+      quadStretch: svg(`
+        ${fl(148)}
+        <!-- マット --> <rect x="10" y="138" width="220" height="10" rx="4" fill="#d1fae5" opacity="0.6"/>
+        <!-- 体（うつ伏せ） --> ${rod(35,122,150,122,18)}
+        <!-- 頭 --> ${hd(22,122)}
+        <!-- まっすぐな脚 --> ${rod(150,126,225,128,L)}
+        <!-- 曲げた脚ハイライト --> ${hlrod(150,118,195,115,L)}
+        ${rod(195,115,190,78,14)}
+        <!-- 手で足首を持つ --> ${rod(50,118,70,100,10)} ${rod(70,100,145,75,10)}
+        <!-- 膝曲げ矢印 --> ${arrow(198,90,195,70)}
+        ${lbl(215,75,'曲げる',13)}
+        ${lbl(125,50,'届く人は足首を持つ',11,'#64748b')}
+        ${lbl(170,155,'太もも前が伸びる',12,'#ef4444')}
+        ${rep('15秒 × 3回（左右）',185)}
+      `),
 
-      calfStretch: `<svg viewBox="0 0 260 240" class="selfcare-illust">
-        ${defs}
-        <!-- 壁 -->
-        <rect x="200" y="0" width="14" height="240" fill="#e2e8f0" opacity="0.5"/>
-        <line x1="200" y1="0" x2="200" y2="240" stroke="#94a3b8" stroke-width="1.2"/>
-        <!-- 筋肉ハイライト：腓腹筋 -->
-        <path d="M80,164 Q72,178 70,198 L86,200 Q84,182 90,168 Z" fill="url(#muscleHL)" stroke="${M}" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.6"/>
-        <!-- 体 -->
-        <path d="M138,66 Q150,60 158,66 L156,118 L140,118 Z" fill="${S}" stroke="${K}" stroke-width="1.2"/>
-        <path d="M142,52 Q148,56 154,52 L154,66 L142,66 Z" fill="${S}" stroke="${K}" stroke-width="1"/>
-        <circle cx="148" cy="36" r="18" fill="${S}" stroke="${K}" stroke-width="1.2"/>
-        <path d="M132,28 C134,16 162,16 164,28" fill="${H}" opacity="0.45"/>
-        <!-- 壁に手 -->
-        <path d="M158,70 Q176,62 198,54" stroke="${K}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-        <path d="M156,76 Q178,70 198,62" stroke="${K}" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <circle cx="198" cy="54" r="4" fill="${S}" stroke="${K}" stroke-width="1"/>
-        <circle cx="198" cy="62" r="4" fill="${S}" stroke="${K}" stroke-width="1"/>
-        <!-- 前脚 -->
-        <path d="M156,118 Q166,140 172,164" stroke="${K}" stroke-width="4" fill="none" stroke-linecap="round"/>
-        <path d="M172,164 L176,200" stroke="${K}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-        <ellipse cx="178" cy="204" rx="10" ry="4" fill="${S}" stroke="${K}" stroke-width="0.8"/>
-        <!-- 後ろ脚（伸ばす）STEP1 -->
-        <path d="M140,118 Q112,144 90,172" stroke="${K}" stroke-width="4.5" fill="none" stroke-linecap="round"/>
-        <path d="M90,172 L78,204" stroke="${K}" stroke-width="4" fill="none" stroke-linecap="round"/>
-        <!-- かかと -->
-        <circle cx="76" cy="206" r="5" fill="#fbbf24" stroke="#d97706" stroke-width="1.5"/>
-        ${badge(56,208,'1','#d97706')}
-        <text x="30" y="212" font-size="9" fill="#d97706" font-weight="600">かかと↓</text>
-        <!-- 伸びライン -->
-        <path d="M88,172 Q78,184 76,200" stroke="${M}" stroke-width="3" stroke-dasharray="5,3" fill="none"/>
-        ${muscleLabel(32,176,'腓腹筋の伸び','start')}
-        <!-- STEP2: 前膝曲げ -->
-        ${badge(182,150,'2',A)}
-        <text x="188" y="146" font-size="9" fill="${A}" font-weight="600">膝を曲げる</text>
-        <line x1="30" y1="212" x2="210" y2="212" stroke="#cbd5e1" stroke-width="1.5"/>
-        <rect x="56" y="220" width="148" height="14" rx="5" fill="#f0f9ff" stroke="#bfdbfe" stroke-width="1"/>
-        <text x="130" y="230" text-anchor="middle" font-size="10" fill="${A}" font-weight="600">20秒キープ × 3回（左右）</text>
-      </svg>`,
+      // ===== ふくらはぎ（座位・タオル） =====
+      calfStretch: svg(`
+        ${fl(165)}
+        <!-- 体（床に座る） --> ${rod(65,55,70,110,18)}
+        <!-- 頭 --> ${hd(62,35)}
+        <!-- 伸ばした脚ハイライト --> ${hlrod(75,110,195,108,L)}
+        <!-- 曲げた脚 --> ${rod(68,110,50,155,14)}
+        <!-- タオル --> <path d="M198,100 Q210,90 208,78 Q200,60 160,50 Q130,44 100,52" stroke="#f59e0b" stroke-width="5" fill="none" stroke-linecap="round"/>
+        ${lbl(165,42,'タオル',12,'#d97706')}
+        <!-- 両手でタオル --> ${rod(65,65,80,62,12)} ${rod(80,62,105,55,10)}
+        <!-- 引く矢印 --> ${arrow(115,48,90,56)}
+        ${lbl(130,38,'手前に引く',13)}
+        ${lbl(170,135,'ふくらはぎが伸びる',12,'#ef4444')}
+        ${rep('20秒 × 3回（左右）',188)}
+      `),
 
-      footRoll: `<svg viewBox="0 0 260 240" class="selfcare-illust">
-        ${defs}
-        <!-- 床 -->
-        <line x1="20" y1="192" x2="240" y2="192" stroke="#cbd5e1" stroke-width="1.5"/>
-        <!-- すね -->
-        <path d="M110,20 L106,80" stroke="${S}" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.5"/>
-        <path d="M110,20 L106,80" stroke="${K}" stroke-width="5" fill="none" stroke-linecap="round"/>
-        <!-- 足首関節 -->
-        <circle cx="106" cy="82" r="6" fill="#fbbf24" stroke="#d97706" stroke-width="1.2" opacity="0.7"/>
-        <!-- 足（ボールの上に乗っている） -->
-        <path d="M68,82 Q64,92 62,104 Q60,118 64,128 Q72,136 92,138 Q108,138 122,134 Q132,128 132,118 Q132,108 128,96 Q124,86 118,82"
-          fill="${S}" stroke="${K}" stroke-width="1.8"/>
-        <!-- テニスボール -->
-        <circle cx="96" cy="148" r="18" fill="#c4f17e" stroke="#84cc16" stroke-width="2"/>
-        <path d="M80,140 Q96,132 112,140" fill="none" stroke="#84cc16" stroke-width="1.2" opacity="0.5"/>
-        <path d="M82,156 Q96,164 110,156" fill="none" stroke="#84cc16" stroke-width="1.2" opacity="0.5"/>
-        <!-- ボールラベル -->
-        <text x="96" y="152" text-anchor="middle" font-size="8" fill="#4d7c0f" font-weight="600">ボール</text>
-        <!-- 圧の矢印 -->
-        <path d="M96,128 L96,136" stroke="${M}" stroke-width="3" marker-end="url(#aD)"/>
-        ${badge(60,130,'1',A)}
-        <text x="24" y="134" font-size="10" fill="${A}" font-weight="600">乗せる</text>
-        <!-- 転がす矢印 -->
-        <path d="M68,160 L124,160" stroke="${A}" stroke-width="2.5" fill="none" marker-end="url(#aB)" filter="url(#glow)"/>
-        ${badge(96,174,'2',A)}
-        <text x="76" y="180" font-size="11" fill="${A}" font-weight="700">転がす</text>
-        <!-- サランラップ芯（右側に代替表示） -->
-        <rect x="160" y="58" width="80" height="130" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.2"/>
-        <text x="200" y="76" text-anchor="middle" font-size="10" fill="#1e293b" font-weight="600">代わりに</text>
-        <!-- サランラップ芯イラスト -->
-        <rect x="185" y="88" width="30" height="80" rx="15" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5"/>
-        <rect x="192" y="88" width="16" height="80" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="0.8"/>
-        <text x="200" y="182" text-anchor="middle" font-size="10" fill="#64748b" font-weight="600">ラップの芯</text>
-        <!-- 足裏エリア表示 -->
-        <rect x="40" y="200" width="180" height="34" rx="6" fill="#f0f9ff" stroke="#bfdbfe" stroke-width="1"/>
-        <text x="130" y="214" text-anchor="middle" font-size="10" fill="${A}" font-weight="600">かかと → 土踏まず → 指の付け根</text>
-        <text x="130" y="228" text-anchor="middle" font-size="9" fill="#64748b">各30秒 × 合計2〜3分</text>
-      </svg>`,
+      // ===== 足裏ボールコロコロ（座位） =====
+      footRoll: svg(`
+        ${ch(55,110)}
+        ${fl(160)}
+        <!-- 体 --> ${rod(105,48,105,110,16)}
+        <!-- 頭 --> ${hd(105,30)}
+        <!-- 腕 --> ${rod(105,60,82,82,12)} ${rod(82,82,85,105,10)}
+        ${rod(105,60,128,82,12)} ${rod(128,82,125,105,10)}
+        <!-- 普通の脚 --> ${rod(98,110,82,158,L)}
+        <!-- ボール脚 --> ${rod(112,110,140,142,L)}
+        <!-- ボール --> <circle cx="148" cy="152" r="10" fill="#c4f17e" stroke="#84cc16" stroke-width="2.5"/>
+        <!-- 転がす矢印 --> <path d="M132,162 L164,162" stroke="${AR}" stroke-width="4" stroke-linecap="round"/>
+        <polygon points="164,162 156,156 156,168" fill="${AR}"/>
+        ${lbl(148,180,'コロコロ',14)}
+        ${lbl(200,90,'テニスボール',11,'#64748b')}
+        ${lbl(200,105,'またはラップ芯',11,'#64748b')}
+        ${rep('各30秒 × 2〜3分',195)}
+      `),
 
-      trunkStretch: `<svg viewBox="0 0 260 240" class="selfcare-illust">
-        ${defs}
-        <line x1="20" y1="212" x2="240" y2="212" stroke="#cbd5e1" stroke-width="1.5"/>
-        <!-- 筋肉ハイライト：脇腹 -->
-        <path d="M100,78 Q88,96 86,118 L98,120 Q96,100 106,82 Z" fill="url(#muscleHL)" stroke="${M}" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.6"/>
-        <!-- 体（側屈） -->
-        <path d="M112,80 Q106,78 100,82 L86,140 L106,144 Z" fill="${S}" stroke="${K}" stroke-width="1.2"/>
-        <!-- 首 -->
-        <path d="M102,66 Q108,70 114,66 L112,80 L104,80 Z" fill="${S}" stroke="${K}" stroke-width="1"/>
-        <!-- 頭（傾いた） -->
-        <ellipse cx="96" cy="52" rx="18" ry="17" fill="${S}" stroke="${K}" stroke-width="1.2"/>
-        <path d="M80,44 C82,32 110,32 112,44" fill="${H}" opacity="0.45"/>
-        <!-- 伸ばす腕（頭の上） -->
-        <path d="M112,84 Q118,64 104,44 Q96,36 86,32" stroke="${K}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-        ${badge(72,28,'2',A)}
-        <text x="50" y="24" font-size="10" fill="${A}" font-weight="600">腕を伸ばす</text>
-        <!-- 反対の腕 -->
-        <path d="M100,86 Q88,94 82,108 Q78,118 80,130" stroke="${K}" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <!-- STEP1: 側屈方向 -->
-        <path d="M128,80 Q112,94 98,116" stroke="${A}" stroke-width="3" fill="none" marker-end="url(#aB)" filter="url(#glow)"/>
-        ${badge(138,72,'1',A)}
-        <text x="144" y="68" font-size="11" fill="${A}" font-weight="700">倒す</text>
-        <!-- 伸びライン -->
-        <path d="M104,82 Q94,100 90,120" stroke="${M}" stroke-width="3" stroke-dasharray="5,3" fill="none"/>
-        ${muscleLabel(48,110,'脇腹の伸び')}
-        <!-- 脚 -->
-        <path d="M90,140 Q84,172 80,210" stroke="${K}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-        <path d="M104,142 Q108,172 112,210" stroke="${K}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-        <ellipse cx="78" cy="212" rx="10" ry="4" fill="${S}" stroke="${K}" stroke-width="0.8"/>
-        <ellipse cx="114" cy="212" rx="10" ry="4" fill="${S}" stroke="${K}" stroke-width="0.8"/>
-        <rect x="60" y="220" width="140" height="14" rx="5" fill="#f0f9ff" stroke="#bfdbfe" stroke-width="1"/>
-        <text x="130" y="230" text-anchor="middle" font-size="10" fill="${A}" font-weight="600">15秒キープ × 3回</text>
-      </svg>`,
+      // ===== 体幹側屈（座位） =====
+      trunkStretch: svg(`
+        ${ch(60,118)}
+        ${fl(168)}
+        <!-- 体（側屈） --> ${rod(110,55,100,118,18)}
+        <!-- 脚 --> ${rod(95,118,82,166,L)} ${rod(108,118,120,166,L)}
+        <!-- 頭 --> ${hd(100,35)}
+        <!-- 上腕（伸ばす） --> ${rod(108,62,95,42,W)} ${rod(95,42,78,25,12)}
+        <!-- 下腕 --> ${rod(104,68,80,85,12)} ${rod(80,85,82,110,10)}
+        <!-- ハイライト（脇腹） --> <ellipse cx="96" cy="88" rx="14" ry="22" fill="${HL}" opacity="0.4"/>
+        <!-- 倒す矢印 --> ${arrow(135,55,108,68)}
+        ${lbl(160,48,'倒す',16)}
+        ${lbl(55,95,'脇腹が',12,'#ef4444')}
+        ${lbl(55,110,'伸びる',12,'#ef4444')}
+        ${rep('15秒キープ × 3回',188)}
+      `),
 
-      trunkStabilize: `<svg viewBox="0 0 260 240" class="selfcare-illust">
-        ${defs}
-        <!-- マット -->
-        <rect x="16" y="148" width="228" height="10" rx="4" fill="#e8f5e9" opacity="0.5"/>
-        <line x1="16" y1="158" x2="244" y2="158" stroke="#cbd5e1" stroke-width="1"/>
-        <!-- 仰向けの人物 -->
-        <ellipse cx="46" cy="122" rx="18" ry="16" fill="${S}" stroke="${K}" stroke-width="1.2"/>
-        <path d="M30,114 C30,104 62,104 62,114" fill="${H}" opacity="0.35"/>
-        <!-- 体 -->
-        <path d="M62,124 Q100,120 150,126" stroke="${S}" stroke-width="16" fill="none" stroke-linecap="round" opacity="0.6"/>
-        <path d="M62,124 Q100,120 150,126" stroke="${K}" stroke-width="5.5" fill="none" stroke-linecap="round"/>
-        <!-- 筋肉ハイライト：腹横筋 -->
-        <ellipse cx="106" cy="122" rx="30" ry="10" fill="url(#muscleHL)" stroke="${M}" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.5"/>
-        <!-- 腕 -->
-        <path d="M80,124 Q82,136 84,148" stroke="${K}" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-        <path d="M104,122 Q106,136 108,148" stroke="${K}" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-        <!-- 膝（立てた状態） -->
-        <path d="M150,126 Q160,104 170,80" stroke="${K}" stroke-width="4.5" fill="none" stroke-linecap="round"/>
-        <path d="M170,80 L170,148" stroke="${K}" stroke-width="4" fill="none" stroke-linecap="round"/>
-        <path d="M156,128 Q168,108 180,86" stroke="${K}" stroke-width="4" fill="none" stroke-linecap="round"/>
-        <path d="M180,86 L180,148" stroke="${K}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-        <!-- STEP1: おへそを凹ます -->
-        <path d="M106,108 L106,118" stroke="${A}" stroke-width="3" marker-end="url(#aD)"/>
-        ${badge(106,96,'1',A)}
-        <text x="80" y="88" font-size="11" fill="${A}" font-weight="700">お腹を凹ます</text>
-        <!-- 呼吸マーク -->
-        <text x="46" y="98" font-size="16">💨</text>
-        ${badge(62,88,'2','#22c55e')}
-        <text x="26" y="76" font-size="9" fill="#22c55e" font-weight="600">呼吸を続ける</text>
-        ${muscleLabel(76,174,'腹横筋を活性化','start')}
-        <rect x="58" y="188" width="144" height="28" rx="6" fill="#f0f9ff" stroke="#bfdbfe" stroke-width="1"/>
-        <text x="130" y="200" text-anchor="middle" font-size="10" fill="${A}" font-weight="600">10秒キープ × 10回</text>
-        <text x="130" y="212" text-anchor="middle" font-size="9" fill="#64748b">朝・夜の1日2回</text>
-      </svg>`,
+      // ===== ドローイン（仰向け） =====
+      trunkStabilize: svg(`
+        ${fl(158)}
+        <rect x="10" y="148" width="220" height="10" rx="4" fill="#d1fae5" opacity="0.6"/>
+        <!-- 体（仰向け） --> ${rod(40,130,155,130,18)}
+        <!-- 頭 --> ${hd(28,130)}
+        <!-- 腕 --> ${rod(65,130,70,150,10)} ${rod(100,130,105,150,10)}
+        <!-- 太もも --> ${rod(155,126,175,100,L)} ${rod(155,134,182,106,L)}
+        <!-- すね --> ${rod(175,100,172,148,14)} ${rod(182,106,180,148,14)}
+        <!-- お腹の凹み表現 --> <path d="M80,124 Q100,118 120,124" stroke="${AR}" stroke-width="3" fill="none"/>
+        ${arrow(100,118,100,128)}
+        ${lbl(100,108,'凹ます!',16)}
+        <text x="40" y="100" font-size="22">💨</text>
+        ${lbl(155,80,'息は止めない',12,'#22c55e')}
+        ${rep('10秒キープ × 10回',180)}
+        ${lbl(120,198,'朝・夜の1日2回',11,'#64748b')}
+      `),
 
-      ankleExercise: `<svg viewBox="0 0 260 240" class="selfcare-illust">
-        ${defs}
-        <!-- 椅子ヒント -->
-        <rect x="40" y="30" width="180" height="8" rx="3" fill="#b0bec5" opacity="0.2"/>
-        <!-- すね -->
-        <path d="M100,34 L96,90" stroke="${S}" stroke-width="10" fill="none" stroke-linecap="round" opacity="0.5"/>
-        <path d="M100,34 L96,90" stroke="${K}" stroke-width="4.5" fill="none" stroke-linecap="round"/>
-        <path d="M160,34 L164,90" stroke="${S}" stroke-width="10" fill="none" stroke-linecap="round" opacity="0.5"/>
-        <path d="M160,34 L164,90" stroke="${K}" stroke-width="4.5" fill="none" stroke-linecap="round"/>
-        <!-- 足首関節 -->
-        <circle cx="96" cy="92" r="6" fill="#fbbf24" stroke="#d97706" stroke-width="1.2" opacity="0.7"/>
-        <circle cx="164" cy="92" r="6" fill="#fbbf24" stroke="#d97706" stroke-width="1.2" opacity="0.7"/>
-        <!-- 足（大きく詳細に） -->
-        <path d="M78,92 Q72,102 68,114 Q64,128 66,138 Q74,156 130,158 Q156,158 170,150 Q180,142 180,130 Q180,112 172,100 Q168,94 164,92"
-          fill="${S}" stroke="${K}" stroke-width="1.8"/>
-        <!-- 足裏アーチ線 -->
-        <path d="M78,148 Q110,164 150,152" stroke="${K}" stroke-width="1.2" fill="none" opacity="0.3"/>
-        <!-- 筋肉ハイライト：足底筋 -->
-        <path d="M82,142 Q110,158 148,146 L148,154 Q110,166 82,152 Z" fill="url(#muscleHL)" stroke="${M}" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.4"/>
-        <!-- つま先・かかと固定 -->
-        <circle cx="168" cy="146" r="5" fill="#fbbf24" stroke="#d97706" stroke-width="1.2"/>
-        <circle cx="72" cy="140" r="5" fill="#fbbf24" stroke="#d97706" stroke-width="1.2"/>
-        <text x="176" y="150" font-size="10" fill="#d97706" font-weight="600">固定</text>
-        <text x="42" y="144" font-size="10" fill="#d97706" font-weight="600">固定</text>
-        <!-- STEP1: アーチ上げ -->
-        <path d="M120,148 L120,116" stroke="${A}" stroke-width="3.5" marker-end="url(#aU)" filter="url(#glow)"/>
-        ${badge(138,102,'1',A)}
-        <text x="146" y="98" font-size="13" fill="${A}" font-weight="700">アーチ↑</text>
-        <!-- STEP2: タオルギャザー -->
-        <rect x="40" y="174" width="180" height="50" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.2"/>
-        ${badge(56,188,'2','#22c55e')}
-        <text x="72" y="192" font-size="12" fill="#22c55e" font-weight="700">タオルギャザー</text>
-        <text x="130" y="210" text-anchor="middle" font-size="10" fill="#64748b">足指でタオルをたぐり寄せる</text>
-        <!-- 指の動きイメージ -->
-        <path d="M100,192 Q108,196 116,192 Q124,188 132,192" stroke="#22c55e" stroke-width="1.5" fill="none"/>
-        <path d="M140,192 Q148,196 156,192" stroke="#22c55e" stroke-width="1.5" fill="none"/>
-      </svg>`
+      // ===== 足首・足裏トレ =====
+      ankleExercise: svg(`
+        <!-- すね --> ${rod(80,15,76,75,18)} ${rod(160,15,164,75,18)}
+        <!-- 足（大きく表示） -->
+        <path d="M58,78 Q50,92 46,108 Q42,126 46,140 Q56,162 120,164 Q152,164 172,154 Q184,144 184,130 Q184,108 174,92 Q170,82 164,78" fill="${B}" stroke="none"/>
+        <!-- 足裏アーチ表示 -->
+        <path d="M60,150 Q120,130 172,150" stroke="${HL}" stroke-width="6" fill="none"/>
+        ${arrow(120,145,120,118)}
+        ${lbl(120,108,'アーチ上げ!',16)}
+        ${lbl(120,178,'足指でタオルをたぐり寄せる',12,'#64748b')}
+        ${rep('20回 × 2セット',195)}
+      `)
     };
 
     return illustrations[key] || '';
@@ -915,18 +618,18 @@ const SelfcareDatabase = {
     const tips = {
       neckStretch: '呼吸を止めずにゆっくり伸ばしましょう。お風呂上がりが効果的です。',
       shoulderShrug: '肩を上げるときは「ぎゅっ」と力を入れ、ストンと一気に脱力するのがコツです。',
-      armStretch: '肩が上がらないように注意。胸を開くイメージで伸ばしましょう。',
-      scapulaExercise: '肩甲骨が動いているのを意識してください。鏡で確認するとわかりやすいです。',
+      armStretch: '引き寄せる時に肩が上がらないように。胸の前で腕が水平になるイメージで。',
+      scapulaExercise: '胸を張る時に腰を反らないように。肩甲骨が動く感覚を意識してください。',
       wristStretch: 'デスクワークの合間に行うと効果的です。強く引きすぎないように。',
       gripExercise: 'タオルがなければペットボトルでもOK。握る→脱力のリズムが大切です。',
-      hipFlexorStretch: '腰が反らないように、おへそを引き込む意識を持ちましょう。',
+      hipFlexorStretch: '椅子に浅く座るのがポイント。背中が丸まらないように注意しましょう。',
       pelvicStabilize: 'クッションがなければ丸めたバスタオルでもOK。内ももに力を入れる感覚を覚えましょう。',
       hamstringStretch: 'つま先を天井に向け、背中を丸めずに股関節から前屈しましょう。',
-      quadStretch: 'バランスが不安な方は壁に手をついて行ってください。膝が痛い場合は中止を。',
-      calfStretch: 'かかとが床から離れないように。アキレス腱まで伸びを感じましょう。',
+      quadStretch: 'うつ伏せがつらい方はベッドの端で行ってもOK。膝が痛い場合は無理せず。',
+      calfStretch: 'タオルを足の裏にしっかりかけ、膝が曲がらないように伸ばしましょう。',
       ankleExercise: '足指を意識的に動かすことで足裏の筋肉が活性化します。毎日続けるのがコツです。',
       footRoll: '硬いボールよりテニスボールくらいの柔らかさがベスト。お風呂上がりにやると効果的です。',
-      trunkStretch: '呼吸を止めずに、息を吐きながら倒すとより深く伸びます。',
+      trunkStretch: '椅子の座面をしっかり持ち、息を吐きながらゆっくり倒しましょう。',
       trunkStabilize: 'ドローインは「おへそを背骨に近づける」イメージ。最初は手をお腹に当てて確認しましょう。'
     };
     return tips[illustrationKey] || '';
