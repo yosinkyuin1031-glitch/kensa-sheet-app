@@ -1687,6 +1687,13 @@ body[data-view="patient"] .patient-treatment-hint p {
   height: auto;
 }
 
+.selfcare-illust-wrapper img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 14px;
+}
+
 .selfcare-steps {
   padding-left: 24px;
   margin-bottom: 16px;

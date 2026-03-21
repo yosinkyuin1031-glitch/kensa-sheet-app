@@ -284,29 +284,263 @@ const SelfcareDatabase = {
     }
   },
 
-  // ===== イラスト画像（いらすとや素材） =====
+  // ===== イラスト＋注釈オーバーレイ =====
   getIllustration(key) {
-    const imageMap = {
-      neckStretch: 'neck_stretch.png',
-      shoulderShrug: 'shoulder_rotate.png',
-      armStretch: 'shoulder_back.png',
-      scapulaExercise: 'shoulder_front.png',
-      wristStretch: 'wrist_stretch.png',
-      gripExercise: 'grip_test.png',
-      hipFlexorStretch: 'leg_stretch.png',
-      pelvicStabilize: 'fukkin_woman.png',
-      hamstringStretch: 'hamstring.png',
-      quadStretch: 'yoga_cobra.png',
-      calfStretch: 'achilles.png',
-      ankleExercise: 'toe_stand.png',
-      footRoll: 'foam_roller.png',
-      trunkStretch: 'taisou_woman.png',
-      trunkStabilize: 'fukkin_woman.png'
-    };
+    const data = this._illustData()[key];
+    if (!data) return '';
 
-    const file = imageMap[key];
-    if (!file) return '';
-    return `<img src="img/selfcare/${file}" alt="${key}" style="max-width:200px;height:auto;display:block;margin:0 auto;border-radius:12px">`;
+    const W = 300, H = 300;
+    // ハイライト円
+    const circles = (data.highlights || []).map(h =>
+      `<circle cx="${h.x}" cy="${h.y}" r="${h.r||30}" fill="${h.color||'#ef4444'}" opacity="0.18"/>
+       <circle cx="${h.x}" cy="${h.y}" r="${h.r||30}" fill="none" stroke="${h.color||'#ef4444'}" stroke-width="2.5" stroke-dasharray="6,3" opacity="0.7"/>`
+    ).join('');
+    // 矢印
+    const arrows = (data.arrows || []).map(a => {
+      const ang = Math.atan2(a.y2-a.y1, a.x2-a.x1), s=10, c=a.color||'#2563eb';
+      return `<line x1="${a.x1}" y1="${a.y1}" x2="${a.x2}" y2="${a.y2}" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
+              <polygon points="${a.x2},${a.y2} ${a.x2-s*Math.cos(ang-.4)},${a.y2-s*Math.sin(ang-.4)} ${a.x2-s*Math.cos(ang+.4)},${a.y2-s*Math.sin(ang+.4)}" fill="${c}"/>`;
+    }).join('');
+    // テキストラベル
+    const labels = (data.labels || []).map(l => {
+      const bg = l.bg || '#ffffff';
+      const c = l.color || '#1e293b';
+      const fs = l.size || 13;
+      const tw = l.text.length * fs * 0.6 + 16;
+      return `<rect x="${l.x - tw/2}" y="${l.y - fs/2 - 4}" width="${tw}" height="${fs + 8}" rx="${(fs+8)/2}" fill="${bg}" opacity="0.92" stroke="${c}" stroke-width="0.5"/>
+              <text x="${l.x}" y="${l.y + fs/2 - 1}" text-anchor="middle" font-size="${fs}" fill="${c}" font-weight="700">${l.text}</text>`;
+    }).join('');
+    // 回数バッジ
+    const badge = data.badge ? `<rect x="20" y="${H-32}" width="${W-40}" height="26" rx="13" fill="#f0f9ff" stroke="#93c5fd" stroke-width="1"/>
+      <text x="${W/2}" y="${H-15}" text-anchor="middle" font-size="12" fill="#1d4ed8" font-weight="600">${data.badge}</text>` : '';
+
+    return `<div style="position:relative;max-width:${W}px;margin:0 auto">
+      <img src="img/selfcare/${data.img}" alt="${key}" style="width:100%;height:auto;display:block;border-radius:14px">
+      <svg viewBox="0 0 ${W} ${H}" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none">
+        ${circles}${arrows}${labels}${badge}
+      </svg>
+    </div>`;
+  },
+
+  _illustData() {
+    return {
+      neckStretch: {
+        img: 'neck_stretch.png',
+        highlights: [
+          { x:130, y:80, r:35, color:'#ef4444' }
+        ],
+        arrows: [
+          { x1:170, y1:50, x2:130, y2:40, color:'#2563eb' }
+        ],
+        labels: [
+          { x:130, y:120, text:'首〜肩が伸びる', color:'#dc2626', bg:'#fef2f2' },
+          { x:200, y:50, text:'押す', color:'#2563eb', bg:'#eff6ff' }
+        ],
+        badge: '20秒キープ × 3回'
+      },
+      shoulderShrug: {
+        img: 'shoulder_rotate.png',
+        highlights: [
+          { x:120, y:90, r:32, color:'#7c3aed' },
+          { x:180, y:90, r:32, color:'#7c3aed' }
+        ],
+        arrows: [
+          { x1:120, y1:120, x2:120, y2:70, color:'#2563eb' },
+          { x1:120, y1:70, x2:120, y2:120, color:'#ef4444' }
+        ],
+        labels: [
+          { x:60, y:70, text:'上げる!', color:'#2563eb', bg:'#eff6ff' },
+          { x:60, y:120, text:'ストン!', color:'#dc2626', bg:'#fef2f2' },
+          { x:240, y:90, text:'5秒', color:'#d97706', bg:'#fef3c7', size:16 }
+        ],
+        badge: '10回 × 2セット'
+      },
+      armStretch: {
+        img: 'shoulder_back.png',
+        highlights: [
+          { x:150, y:100, r:40, color:'#ef4444' }
+        ],
+        arrows: [
+          { x1:200, y1:130, x2:150, y2:120, color:'#2563eb' }
+        ],
+        labels: [
+          { x:150, y:155, text:'肩の後ろが伸びる', color:'#dc2626', bg:'#fef2f2' },
+          { x:230, y:120, text:'引き寄せ', color:'#2563eb', bg:'#eff6ff' }
+        ],
+        badge: '15秒キープ × 3回'
+      },
+      scapulaExercise: {
+        img: 'shoulder_front.png',
+        highlights: [
+          { x:120, y:110, r:28, color:'#7c3aed' },
+          { x:180, y:110, r:28, color:'#7c3aed' }
+        ],
+        arrows: [
+          { x1:100, y1:110, x2:135, y2:110, color:'#2563eb' },
+          { x1:200, y1:110, x2:165, y2:110, color:'#2563eb' }
+        ],
+        labels: [
+          { x:150, y:70, text:'胸を張る↔背中を丸める', color:'#1e293b', bg:'#f0fdf4', size:11 },
+          { x:150, y:155, text:'肩甲骨を意識', color:'#7c3aed', bg:'#f5f3ff' }
+        ],
+        badge: '各3秒 × 10回'
+      },
+      wristStretch: {
+        img: 'wrist_stretch.png',
+        highlights: [
+          { x:150, y:130, r:35, color:'#ef4444' }
+        ],
+        arrows: [
+          { x1:170, y1:100, x2:150, y2:80, color:'#2563eb' }
+        ],
+        labels: [
+          { x:150, y:170, text:'前腕が伸びる', color:'#dc2626', bg:'#fef2f2' },
+          { x:200, y:70, text:'手前に引く', color:'#2563eb', bg:'#eff6ff' },
+          { x:150, y:250, text:'表・裏 両方やる', color:'#64748b', bg:'#f8fafc', size:11 }
+        ],
+        badge: '各15秒 × 3回'
+      },
+      gripExercise: {
+        img: 'grip_test.png',
+        highlights: [
+          { x:150, y:140, r:35, color:'#2563eb' }
+        ],
+        arrows: [],
+        labels: [
+          { x:150, y:60, text:'ギュッと握る!', color:'#2563eb', bg:'#eff6ff', size:16 },
+          { x:80, y:240, text:'❶握る5秒', color:'#2563eb', bg:'#dbeafe', size:12 },
+          { x:220, y:240, text:'❷離す5秒', color:'#16a34a', bg:'#dcfce7', size:12 }
+        ],
+        badge: '10回 × 2セット'
+      },
+      hipFlexorStretch: {
+        img: 'leg_stretch.png',
+        highlights: [
+          { x:140, y:130, r:38, color:'#ef4444' }
+        ],
+        arrows: [
+          { x1:180, y1:160, x2:200, y2:130, color:'#2563eb' }
+        ],
+        labels: [
+          { x:140, y:175, text:'股関節の前面が伸びる', color:'#dc2626', bg:'#fef2f2', size:11 },
+          { x:230, y:120, text:'おへそを前に', color:'#2563eb', bg:'#eff6ff', size:11 }
+        ],
+        badge: '15秒 × 3回（左右）'
+      },
+      pelvicStabilize: {
+        img: 'fukkin_woman.png',
+        highlights: [
+          { x:150, y:150, r:32, color:'#f59e0b' }
+        ],
+        arrows: [
+          { x1:120, y1:130, x2:140, y2:145, color:'#2563eb' },
+          { x1:180, y1:130, x2:160, y2:145, color:'#2563eb' }
+        ],
+        labels: [
+          { x:150, y:100, text:'膝にクッションを挟む', color:'#d97706', bg:'#fef3c7' },
+          { x:150, y:195, text:'内ももに力を入れる', color:'#2563eb', bg:'#eff6ff', size:12 }
+        ],
+        badge: '5秒キープ × 10回'
+      },
+      hamstringStretch: {
+        img: 'hamstring.png',
+        highlights: [
+          { x:150, y:150, r:40, color:'#ef4444' }
+        ],
+        arrows: [
+          { x1:150, y1:80, x2:150, y2:110, color:'#2563eb' }
+        ],
+        labels: [
+          { x:150, y:195, text:'もも裏が伸びる', color:'#dc2626', bg:'#fef2f2' },
+          { x:220, y:80, text:'前に倒す', color:'#2563eb', bg:'#eff6ff' }
+        ],
+        badge: '20秒 × 3回（左右）'
+      },
+      quadStretch: {
+        img: 'yoga_cobra.png',
+        highlights: [
+          { x:150, y:130, r:40, color:'#ef4444' }
+        ],
+        arrows: [
+          { x1:200, y1:160, x2:200, y2:120, color:'#2563eb' }
+        ],
+        labels: [
+          { x:150, y:80, text:'太もも前面が伸びる', color:'#dc2626', bg:'#fef2f2' },
+          { x:230, y:100, text:'膝を曲げる', color:'#2563eb', bg:'#eff6ff', size:12 }
+        ],
+        badge: '15秒 × 3回（左右）'
+      },
+      calfStretch: {
+        img: 'achilles.png',
+        highlights: [
+          { x:130, y:180, r:35, color:'#ef4444' }
+        ],
+        arrows: [
+          { x1:130, y1:140, x2:130, y2:170, color:'#ef4444' }
+        ],
+        labels: [
+          { x:130, y:225, text:'ふくらはぎが伸びる', color:'#dc2626', bg:'#fef2f2' },
+          { x:220, y:130, text:'タオルで引く', color:'#2563eb', bg:'#eff6ff', size:12 }
+        ],
+        badge: '20秒 × 3回（左右）'
+      },
+      ankleExercise: {
+        img: 'toe_stand.png',
+        highlights: [
+          { x:150, y:200, r:35, color:'#f59e0b' }
+        ],
+        arrows: [
+          { x1:150, y1:200, x2:150, y2:160, color:'#2563eb' }
+        ],
+        labels: [
+          { x:150, y:245, text:'足裏のアーチを上げる', color:'#d97706', bg:'#fef3c7', size:12 },
+          { x:150, y:100, text:'つま先立ち+タオルギャザー', color:'#1e293b', bg:'#f0f9ff', size:11 }
+        ],
+        badge: '10回 + タオルギャザー10回'
+      },
+      footRoll: {
+        img: 'foam_roller.png',
+        highlights: [
+          { x:150, y:180, r:35, color:'#84cc16' }
+        ],
+        arrows: [
+          { x1:110, y1:200, x2:190, y2:200, color:'#2563eb' }
+        ],
+        labels: [
+          { x:150, y:80, text:'足裏をコロコロ', color:'#1e293b', bg:'#f0fdf4', size:14 },
+          { x:150, y:240, text:'痛気持ちいい程度で', color:'#64748b', bg:'#f8fafc', size:11 }
+        ],
+        badge: '各30秒 × 合計2〜3分'
+      },
+      trunkStretch: {
+        img: 'taisou_woman.png',
+        highlights: [
+          { x:120, y:130, r:35, color:'#ef4444' }
+        ],
+        arrows: [
+          { x1:180, y1:100, x2:140, y2:110, color:'#2563eb' }
+        ],
+        labels: [
+          { x:120, y:175, text:'脇腹が伸びる', color:'#dc2626', bg:'#fef2f2' },
+          { x:220, y:90, text:'横に倒す', color:'#2563eb', bg:'#eff6ff' }
+        ],
+        badge: '15秒キープ × 3回'
+      },
+      trunkStabilize: {
+        img: 'fukkin_woman.png',
+        highlights: [
+          { x:150, y:140, r:35, color:'#22c55e' }
+        ],
+        arrows: [
+          { x1:150, y1:140, x2:150, y2:115, color:'#22c55e' }
+        ],
+        labels: [
+          { x:150, y:80, text:'お腹を凹ます（ドローイン）', color:'#1e293b', bg:'#dcfce7', size:12 },
+          { x:150, y:200, text:'息は止めずにゆっくり', color:'#22c55e', bg:'#f0fdf4', size:12 }
+        ],
+        badge: '10秒 × 10回（朝・夜）'
+      }
+    };
   },
 
   // ===== 問題箇所からセルフケアを取得 =====
