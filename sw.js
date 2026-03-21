@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bodycheck-v6-irasutoya';
+const CACHE_NAME = 'bodycheck-v7-fitness';
 const urlsToCache = [
   '/',
   '/index.html',
