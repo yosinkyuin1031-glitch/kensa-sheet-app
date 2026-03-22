@@ -600,8 +600,8 @@
       BodyDiagram.update(cfg.id, cfg.type, cfg.data);
     }
 
-    // 詳細検査入力時は全身統合ダイアグラムをリアルタイム更新
-    if (position === 'upperDetail' || position === 'lowerDetail') {
+    // 立位検査の入力時は全身統合ダイアグラムをリアルタイム更新
+    if (position === 'upperDetail' || position === 'lowerDetail' || position === 'standing') {
       BodyDiagram.updateUnified('diagram-detailUnified', detailData.upperDetail, detailData.lowerDetail, examData.standing);
     }
   }
