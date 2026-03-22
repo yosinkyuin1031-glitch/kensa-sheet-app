@@ -730,7 +730,48 @@ const BodyDiagram = {
     // === 身体パーツの動的シフト（全身版） ===
     this._applyUnifiedShifts(svg, allData);
 
-    // === 全6ランドマークのドット描画（接続線なし） ===
+    // === 立位基本3点（乳様突起・肩甲下角・腸骨稜）のドット描画 ===
+    const standingPosMap = this.positions.firstStage;
+    for (const [key, pos] of Object.entries(standingPosMap)) {
+      const val = standingData ? standingData[key] : null;
+      if (val === null || val === undefined) continue;
+
+      const leftY  = pos.baseY + this._lShift(val);
+      const rightY = pos.baseY + this._rShift(val);
+
+      landmarkLayer.appendChild(this._createSVGEl('circle', {
+        cx: pos.leftX, cy: leftY, r: 5,
+        fill: val === -1 ? '#3b82f6' : val === 1 ? '#f97316' : '#22c55e',
+        stroke: 'white', 'stroke-width': 1.5
+      }));
+      landmarkLayer.appendChild(this._createSVGEl('circle', {
+        cx: pos.rightX, cy: rightY, r: 5,
+        fill: val === 1 ? '#3b82f6' : val === -1 ? '#f97316' : '#22c55e',
+        stroke: 'white', 'stroke-width': 1.5
+      }));
+
+      if (val !== 0) {
+        const lArrow = val === -1 ? '↑' : '↓';
+        const lColor = val === -1 ? '#3b82f6' : '#f97316';
+        landmarkLayer.appendChild(this._createSVGEl('text', {
+          x: pos.leftX - 12, y: leftY + 4, 'text-anchor': 'end',
+          'font-size': 9, fill: lColor, 'font-weight': 700
+        }, lArrow));
+        const rArrow = val === 1 ? '↑' : '↓';
+        const rColor = val === 1 ? '#3b82f6' : '#f97316';
+        landmarkLayer.appendChild(this._createSVGEl('text', {
+          x: pos.rightX + 12, y: rightY + 4, 'text-anchor': 'start',
+          'font-size': 9, fill: rColor, 'font-weight': 700
+        }, rArrow));
+      }
+
+      landmarkLayer.appendChild(this._createSVGEl('text', {
+        x: 150, y: pos.baseY - 12, 'text-anchor': 'middle',
+        'font-size': 8, fill: '#94a3b8', 'font-weight': 600
+      }, pos.label));
+    }
+
+    // === 詳細6ランドマークのドット描画（接続線なし） ===
     const posMap = this.unifiedPositions;
     for (const [key, pos] of Object.entries(posMap)) {
       const val = allData[key];
@@ -1021,25 +1062,25 @@ const BodyDiagram = {
       const compX = leftCompressed ? seg.leftX : seg.rightX;
       const stretchX = leftCompressed ? seg.rightX : seg.leftX;
 
-      // 詰まり = ×（赤）
-      indicatorLayer.appendChild(this._createSVGEl('circle', {
-        cx: compX, cy: midY, r: 13,
-        fill: '#ef4444', opacity: 0.9
+      // 詰まりラベル（赤）
+      indicatorLayer.appendChild(this._createSVGEl('rect', {
+        x: compX - 20, y: midY - 9, width: 40, height: 18,
+        rx: 6, fill: '#ef4444', opacity: 0.9
       }));
       indicatorLayer.appendChild(this._createSVGEl('text', {
-        x: compX, y: midY + 6, 'text-anchor': 'middle',
-        'font-size': 16, fill: 'white', 'font-weight': 900
-      }, '×'));
+        x: compX, y: midY + 4, 'text-anchor': 'middle',
+        'font-size': 9, fill: 'white', 'font-weight': 800
+      }, '縮み'));
 
-      // 伸び = ○（青紫）
-      indicatorLayer.appendChild(this._createSVGEl('circle', {
-        cx: stretchX, cy: midY, r: 13,
-        fill: 'white', stroke: '#8b5cf6', 'stroke-width': 2.5, opacity: 0.9
+      // 伸びラベル（紫）
+      indicatorLayer.appendChild(this._createSVGEl('rect', {
+        x: stretchX - 20, y: midY - 9, width: 40, height: 18,
+        rx: 6, fill: '#8b5cf6', opacity: 0.85
       }));
       indicatorLayer.appendChild(this._createSVGEl('text', {
-        x: stretchX, y: midY + 6, 'text-anchor': 'middle',
-        'font-size': 16, fill: '#8b5cf6', 'font-weight': 900
-      }, '○'));
+        x: stretchX, y: midY + 4, 'text-anchor': 'middle',
+        'font-size': 9, fill: 'white', 'font-weight': 800
+      }, '伸び'));
     }
 
     // ===== 茎状突起・外果のマーカー（手先・足先に○×） =====
@@ -1070,32 +1111,18 @@ const BodyDiagram = {
       const val = detailData[ep.key];
       if (val == null || val === 0) continue;
 
-      // val=-1: 左が高い → 左○ 右×
-      // val=1: 右が高い → 左× 右○
-      const leftMark = val === -1 ? '○' : '×';
-      const rightMark = val === 1 ? '○' : '×';
-      const leftColor = val === -1 ? '#22c55e' : '#ef4444';
-      const rightColor = val === 1 ? '#22c55e' : '#ef4444';
+      // val=-1: 左が高い → 右が下がっている → 右に×
+      // val=1: 右が高い → 左が下がっている → 左に×
+      const downX = val === 1 ? ep.leftX : ep.rightX;
 
-      // 左側マーカー
       indicatorLayer.appendChild(this._createSVGEl('circle', {
-        cx: ep.leftX, cy: ep.y, r: 12,
-        fill: 'white', stroke: leftColor, 'stroke-width': 2, opacity: 0.95
+        cx: downX, cy: ep.y, r: 12,
+        fill: 'white', stroke: '#ef4444', 'stroke-width': 2, opacity: 0.95
       }));
       indicatorLayer.appendChild(this._createSVGEl('text', {
-        x: ep.leftX, y: ep.y + 5, 'text-anchor': 'middle',
-        'font-size': 14, fill: leftColor, 'font-weight': 900
-      }, leftMark));
-
-      // 右側マーカー
-      indicatorLayer.appendChild(this._createSVGEl('circle', {
-        cx: ep.rightX, cy: ep.y, r: 12,
-        fill: 'white', stroke: rightColor, 'stroke-width': 2, opacity: 0.95
-      }));
-      indicatorLayer.appendChild(this._createSVGEl('text', {
-        x: ep.rightX, y: ep.y + 5, 'text-anchor': 'middle',
-        'font-size': 14, fill: rightColor, 'font-weight': 900
-      }, rightMark));
+        x: downX, y: ep.y + 5, 'text-anchor': 'middle',
+        'font-size': 14, fill: '#ef4444', 'font-weight': 900
+      }, '×'));
     }
   },
 

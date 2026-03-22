@@ -1685,7 +1685,7 @@
         area: `${seg.area}（${seg.desc}）`,
         compSide,
         stretchSide,
-        desc: `${seg.area}の間で${compSide}側 ×（詰まり）、${stretchSide}側 ○（伸び）`
+        desc: `${seg.area}の間で${compSide}側が縮み、${stretchSide}側が伸びている状態`
       });
     }
 
@@ -1696,8 +1696,8 @@
           <span class="problem-icon">📐</span>
           <p><strong>${a.area}</strong><br>${a.desc}</p>
           <div style="display:flex;gap:8px;margin-top:6px;">
-            <span style="background:#fef2f2;color:#dc2626;padding:2px 10px;border-radius:6px;font-size:12px;font-weight:700;">${a.compSide}側 ×</span>
-            <span style="background:#f5f3ff;color:#7c3aed;padding:2px 10px;border-radius:6px;font-size:12px;font-weight:700;">${a.stretchSide}側 ○</span>
+            <span style="background:#fef2f2;color:#dc2626;padding:2px 10px;border-radius:6px;font-size:12px;font-weight:700;">${a.compSide}側 縮み</span>
+            <span style="background:#f5f3ff;color:#7c3aed;padding:2px 10px;border-radius:6px;font-size:12px;font-weight:700;">${a.stretchSide}側 伸び</span>
           </div>
         </div>`;
       }
