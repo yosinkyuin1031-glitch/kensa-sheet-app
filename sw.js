@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bodycheck-v12-markers';
+const CACHE_NAME = 'bodycheck-v13-symbols';
 const urlsToCache = [
   '/',
   '/index.html',

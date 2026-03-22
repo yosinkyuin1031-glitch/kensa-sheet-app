@@ -1021,25 +1021,25 @@ const BodyDiagram = {
       const compX = leftCompressed ? seg.leftX : seg.rightX;
       const stretchX = leftCompressed ? seg.rightX : seg.leftX;
 
-      // 詰まりラベル
-      indicatorLayer.appendChild(this._createSVGEl('rect', {
-        x: compX - 26, y: midY - 10, width: 52, height: 20,
-        rx: 6, fill: '#ef4444', opacity: 0.9
+      // 詰まり = ×（赤）
+      indicatorLayer.appendChild(this._createSVGEl('circle', {
+        cx: compX, cy: midY, r: 13,
+        fill: '#ef4444', opacity: 0.9
       }));
       indicatorLayer.appendChild(this._createSVGEl('text', {
-        x: compX, y: midY + 4, 'text-anchor': 'middle',
-        'font-size': 9, fill: 'white', 'font-weight': 800
-      }, `${compSide}詰まり`));
+        x: compX, y: midY + 6, 'text-anchor': 'middle',
+        'font-size': 16, fill: 'white', 'font-weight': 900
+      }, '×'));
 
-      // 伸びラベル
-      indicatorLayer.appendChild(this._createSVGEl('rect', {
-        x: stretchX - 22, y: midY - 10, width: 44, height: 20,
-        rx: 6, fill: '#8b5cf6', opacity: 0.85
+      // 伸び = ○（青紫）
+      indicatorLayer.appendChild(this._createSVGEl('circle', {
+        cx: stretchX, cy: midY, r: 13,
+        fill: 'white', stroke: '#8b5cf6', 'stroke-width': 2.5, opacity: 0.9
       }));
       indicatorLayer.appendChild(this._createSVGEl('text', {
-        x: stretchX, y: midY + 4, 'text-anchor': 'middle',
-        'font-size': 9, fill: 'white', 'font-weight': 800
-      }, `${stretchSide}伸び`));
+        x: stretchX, y: midY + 6, 'text-anchor': 'middle',
+        'font-size': 16, fill: '#8b5cf6', 'font-weight': 900
+      }, '○'));
     }
 
     // ===== 茎状突起・外果のマーカー（手先・足先に○×） =====
