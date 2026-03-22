@@ -127,6 +127,17 @@ const BodyDiagram = {
             fill="url(#skinGrad)" stroke="#c4956e" stroke-width="1.1"/>
           <path d="M72,88 C66,104 62,124 58,144" stroke="#d4a882" stroke-width="0.7" fill="none" opacity="0.3"/>
           <ellipse class="joint" cx="52" cy="150" rx="7" ry="5" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
+          <path class="body-part" data-part="forearm-l"
+            d="M50,156 L46,222 L38,222 L44,156 Z"
+            fill="url(#skinGrad)" stroke="#c4956e" stroke-width="1.1"/>
+          <ellipse class="joint" cx="42" cy="226" rx="6" ry="4" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
+          <path class="body-part" data-part="hand-l"
+            d="M38,230 L36,260 C35,268 34,280 33,290 C32,296 30,304 32,308 C34,314 42,314 44,308 C46,302 46,290 46,280 L48,260 L48,230 Z"
+            fill="url(#skinGradDark)" stroke="#c4956e" stroke-width="1"/>
+          <line x1="34" y1="296" x2="32" y2="308" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
+          <line x1="37" y1="296" x2="36" y2="310" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
+          <line x1="40" y1="296" x2="40" y2="312" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
+          <line x1="43" y1="296" x2="43" y2="310" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
         </g>
 
         <!-- ===== 右腕 ===== -->
@@ -137,6 +148,17 @@ const BodyDiagram = {
             fill="url(#skinGrad)" stroke="#c4956e" stroke-width="1.1"/>
           <path d="M228,88 C234,104 238,124 242,144" stroke="#d4a882" stroke-width="0.7" fill="none" opacity="0.3"/>
           <ellipse class="joint" cx="248" cy="150" rx="7" ry="5" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
+          <path class="body-part" data-part="forearm-r"
+            d="M250,156 L254,222 L262,222 L256,156 Z"
+            fill="url(#skinGrad)" stroke="#c4956e" stroke-width="1.1"/>
+          <ellipse class="joint" cx="258" cy="226" rx="6" ry="4" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
+          <path class="body-part" data-part="hand-r"
+            d="M262,230 L264,260 C265,268 266,280 267,290 C268,296 270,304 268,308 C266,314 258,314 256,308 C254,302 254,290 254,280 L252,260 L252,230 Z"
+            fill="url(#skinGradDark)" stroke="#c4956e" stroke-width="1"/>
+          <line x1="266" y1="296" x2="268" y2="308" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
+          <line x1="263" y1="296" x2="264" y2="310" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
+          <line x1="260" y1="296" x2="260" y2="312" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
+          <line x1="257" y1="296" x2="257" y2="310" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
         </g>
 
         <!-- ===== 左脚（iliacCrestで上下）===== -->
