@@ -29,15 +29,20 @@
 </head>
 <body>
   <h1>セルフケア イラスト・説明 一覧</h1>
+  <div style="text-align:center;margin-bottom:16px;">
+    <button id="btnMale" onclick="renderAll('male')" style="padding:8px 24px;border-radius:8px;border:2px solid #3b82f6;background:#eff6ff;color:#3b82f6;font-weight:700;font-size:14px;cursor:pointer;margin-right:8px;">男性</button>
+    <button id="btnFemale" onclick="renderAll('female')" style="padding:8px 24px;border-radius:8px;border:2px solid #ec4899;background:#fdf2f8;color:#ec4899;font-weight:700;font-size:14px;cursor:pointer;">女性</button>
+  </div>
   <div class="grid" id="container"></div>
 
-  <script src="js/selfcare.js?v=20260322a"></script>
+  <script src="js/selfcare.js?v=20260322f"></script>
   <script>
+    function renderAll(gender) {
     const container = document.getElementById('container');
+    container.innerHTML = '';
     const areas = Object.keys(SelfcareDatabase.exercises);
 
     areas.forEach(area => {
-      // セクション見出し
       const sectionEl = document.createElement('div');
       sectionEl.innerHTML = `<div class="section-title">${area}</div>`;
       container.appendChild(sectionEl);
@@ -48,7 +53,7 @@
         const ex = data[type];
         const typeLabel = type === 'contraction' ? '縮こまり' : '引っ張り';
         const typeClass = type === 'contraction' ? 'type-contraction' : 'type-tension';
-        const illust = SelfcareDatabase.getIllustration(ex.illustration);
+        const illust = SelfcareDatabase.getIllustration(ex.illustration, gender);
         const tip = SelfcareDatabase._getTip(ex.illustration);
 
         const card = document.createElement('div');
@@ -70,6 +75,8 @@
         container.appendChild(card);
       });
     });
+    }
+    renderAll('female');
   </script>
 </body>
 </html>

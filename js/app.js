@@ -755,8 +755,37 @@
   function validateCurrentStep() {
     if (currentStep === 0) return true;
 
-    const positions = ['standing', 'seated', 'upperBody'];
+    // Step 1（立位検査）: 詳細6ランドマーク + 基本3ランドマーク
+    if (currentStep === 1) {
+      // 詳細検査（上半身）
+      for (const lm of InspectionLogic.upperDetailLandmarks) {
+        if (detailData.upperDetail[lm.key] === null) {
+          alert(`「${lm.name}」を入力してください`);
+          return false;
+        }
+      }
+      // 詳細検査（下半身）
+      for (const lm of InspectionLogic.lowerDetailLandmarks) {
+        if (detailData.lowerDetail[lm.key] === null) {
+          alert(`「${lm.name}」を入力してください`);
+          return false;
+        }
+      }
+      // 基本3ランドマーク
+      for (const landmark of Object.keys(InspectionLogic.landmarks)) {
+        if (examData.standing[landmark] === null) {
+          const landmarkName = InspectionLogic.landmarks[landmark].name;
+          alert(`基本検査の「${landmarkName}」を入力してください`);
+          return false;
+        }
+      }
+      return true;
+    }
+
+    // Step 2, 3: 座位・上半身
+    const positions = ['', 'seated', 'upperBody'];
     const position = positions[currentStep - 1];
+    if (!position) return true;
     const data = examData[position];
 
     for (const landmark of Object.keys(InspectionLogic.landmarks)) {
@@ -912,9 +941,8 @@
     if (protocolBtn) protocolBtn.style.display = '';
     // Auto-generate report
     await renderReport();
-    // Show summary step
-    renderExamSummary();
-    goToStep(4);
+    // サマリーステップを飛ばして直接診断結果タブへ
+    switchTab('diagnosis');
   }
 
   // ===== 比較ボタンの表示制御 =====
@@ -1519,11 +1547,10 @@
     container.innerHTML = html;
     container.style.display = 'block';
 
-    // 全身統合ダイアグラムを描画（DOMが存在してから）
-    const unifiedContainer = document.getElementById('diagram-unified');
-    if (unifiedContainer) {
-      BodyDiagram.init('diagram-unified');
-      BodyDiagram.updateUnified('diagram-unified', detailData.upperDetail, detailData.lowerDetail, examData.standing);
+    // 診断結果上部のダイアグラムを更新
+    const diagBodyEl = document.getElementById('diagram-diagnosis-body');
+    if (diagBodyEl) {
+      BodyDiagram.updateUnified('diagram-diagnosis-body', detailData.upperDetail, detailData.lowerDetail, examData.standing);
     }
 
     container.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1588,12 +1615,13 @@
 
     html += '</div>'; // .contraction-diagram
 
-    // === 全身統合ダイアグラム（SVG 1枚で全身表示） ===
-    html += '<h3 style="margin-top:20px;">全身統合ダイアグラム</h3>';
-    html += '<p class="unified-diagram-desc">肩峰〜外果まで全6ランドマークを1つの人体図で表示。体幹（肩峰↔大転子）のズレも可視化しています。</p>';
-    html += '<div class="body-diagram-wrapper unified-diagram-wrapper">';
-    html += '<div class="body-diagram-container" id="diagram-unified"></div>';
-    html += '</div>';
+    // （全身統合ダイアグラムは診断結果上部に統合済みのため省略）
+
+    // === 立位検査データからの体幹分析 ===
+    html += renderStandingBodyAnalysis();
+
+    // === 茎状突起・外果の注記 ===
+    html += renderLowerLandmarkNotes();
 
     // 検出された問題一覧
     if (allIssues.length > 0) {
@@ -1620,6 +1648,92 @@
     }
 
     html += '</div>'; // .contraction-section
+
+    return html;
+  }
+
+  // ===== 立位検査データからの体幹4区間 詰まり/伸び分析 =====
+  function renderStandingBodyAnalysis() {
+    const mastVal = examData.standing.mastoid;
+    const scapVal = examData.standing.scapulaInferior;
+    const iliacVal = examData.standing.iliacCrest;
+    const acromVal = detailData.upperDetail.acromion;
+    const gtVal = detailData.lowerDetail.greaterTrochanter;
+
+    let html = '';
+    const analyses = [];
+
+    const segments = [
+      { valA: mastVal, valB: acromVal, area: '乳様突起〜肩峰', desc: '頸部' },
+      { valA: acromVal, valB: scapVal, area: '肩峰〜肩甲下角', desc: '肩甲帯' },
+      { valA: scapVal, valB: iliacVal, area: '肩甲下角〜腸骨稜', desc: '体幹' },
+      { valA: iliacVal, valB: gtVal, area: '腸骨稜〜大転子', desc: '骨盤帯' }
+    ];
+
+    for (const seg of segments) {
+      if (seg.valA == null || seg.valB == null) continue;
+      if (seg.valA === 0 || seg.valB === 0) continue;
+      if (seg.valA === seg.valB) continue;
+
+      const leftCompressed = (seg.valA === 1 && seg.valB === -1);
+      const rightCompressed = (seg.valA === -1 && seg.valB === 1);
+      if (!leftCompressed && !rightCompressed) continue;
+
+      const compSide = leftCompressed ? '左' : '右';
+      const stretchSide = leftCompressed ? '右' : '左';
+      analyses.push({
+        area: `${seg.area}（${seg.desc}）`,
+        compSide,
+        stretchSide,
+        desc: `${seg.area}の間で${compSide}側が詰まり、${stretchSide}側が伸びている状態`
+      });
+    }
+
+    if (analyses.length > 0) {
+      html += '<div class="problem-areas"><h4>立位検査からの体幹分析</h4>';
+      for (const a of analyses) {
+        html += `<div class="problem-area-card">
+          <span class="problem-icon">📐</span>
+          <p><strong>${a.area}</strong><br>${a.desc}</p>
+          <div style="display:flex;gap:8px;margin-top:6px;">
+            <span style="background:#fef2f2;color:#dc2626;padding:2px 10px;border-radius:6px;font-size:12px;font-weight:700;">${a.compSide}側 詰まり</span>
+            <span style="background:#f5f3ff;color:#7c3aed;padding:2px 10px;border-radius:6px;font-size:12px;font-weight:700;">${a.stretchSide}側 伸び</span>
+          </div>
+        </div>`;
+      }
+      html += '</div>';
+    }
+
+    return html;
+  }
+
+  // ===== 茎状突起・外果：下がっている方の施術注記 =====
+  function renderLowerLandmarkNotes() {
+    let html = '';
+    const notes = [];
+
+    const radialVal = detailData.upperDetail.radialStyloid;
+    if (radialVal != null && radialVal !== 0) {
+      const downSide = radialVal === 1 ? '左' : '右';
+      notes.push(`${downSide}側の茎状突起が下がっています → ${downSide}側の前腕〜手首も施術が必要です`);
+    }
+
+    const lateralVal = detailData.lowerDetail.lateralMalleolus;
+    if (lateralVal != null && lateralVal !== 0) {
+      const downSide = lateralVal === 1 ? '左' : '右';
+      notes.push(`${downSide}側の外果が下がっています → ${downSide}側のすね〜足首も施術が必要です`);
+    }
+
+    if (notes.length > 0) {
+      html += '<div class="problem-areas"><h4>施術の追加ポイント</h4>';
+      for (const note of notes) {
+        html += `<div class="problem-area-card" style="border-left:3px solid #f59e0b;">
+          <span class="problem-icon">⚠️</span>
+          <p>${note}</p>
+        </div>`;
+      }
+      html += '</div>';
+    }
 
     return html;
   }
@@ -1703,10 +1817,7 @@
       }
     }
 
-    // 全身統合ダイアグラム（患者モードでも表示）
-    html += '<div class="body-diagram-wrapper unified-diagram-wrapper">';
-    html += '<div class="body-diagram-container" id="diagram-unified"></div>';
-    html += '</div>';
+    // （全身統合ダイアグラムは診断結果上部に統合済みのため省略）
 
     return html;
   }
@@ -1759,7 +1870,7 @@
 
       const exercise = SelfcareDatabase.getSelfcareForArea(areaKey, issueType);
       if (exercise) {
-        html += SelfcareDatabase.renderSelfcareCard(exercise, issue.side);
+        html += SelfcareDatabase.renderSelfcareCard(exercise, issue.side, patientGender);
       }
     }
 
@@ -1767,7 +1878,7 @@
     if (footRollSide) {
       const footExercise = SelfcareDatabase.getSelfcareForArea('足裏', 'contraction');
       if (footExercise) {
-        html += SelfcareDatabase.renderSelfcareCard(footExercise, footRollSide);
+        html += SelfcareDatabase.renderSelfcareCard(footExercise, footRollSide, patientGender);
       }
     }
 
@@ -2208,7 +2319,7 @@
     for (let i = 0; i < selfcareItems.length; i++) {
       const { exercise, side } = selfcareItems[i];
       const sideLabel = side === 'both' ? '両側' : side === 'right' ? '右側' : '左側';
-      const illustSvg = typeof SelfcareDatabase !== 'undefined' ? SelfcareDatabase.getIllustration(exercise.illustration) : '';
+      const illustSvg = typeof SelfcareDatabase !== 'undefined' ? SelfcareDatabase.getIllustration(exercise.illustration, patientGender) : '';
 
       cardsHtml += `
       <div class="print-selfcare-card">
