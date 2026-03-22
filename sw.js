@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bodycheck-v20-both';
+const CACHE_NAME = 'bodycheck-v21-color';
 const urlsToCache = [
   '/',
   '/index.html',

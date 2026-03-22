@@ -730,89 +730,19 @@ const BodyDiagram = {
     // === 身体パーツの動的シフト（全身版） ===
     this._applyUnifiedShifts(svg, allData);
 
-    // === 立位基本3点（乳様突起・肩甲下角・腸骨稜）のドット描画 ===
+    // === ランドマーク名ラベルのみ描画（ドット・矢印は色分けで代替） ===
+    // 立位基本3点
     const standingPosMap = this.positions.firstStage;
     for (const [key, pos] of Object.entries(standingPosMap)) {
-      const val = standingData ? standingData[key] : null;
-      if (val === null || val === undefined) continue;
-
-      const leftY  = pos.baseY + this._lShift(val);
-      const rightY = pos.baseY + this._rShift(val);
-
-      landmarkLayer.appendChild(this._createSVGEl('circle', {
-        cx: pos.leftX, cy: leftY, r: 5,
-        fill: val === -1 ? '#3b82f6' : val === 1 ? '#f97316' : '#22c55e',
-        stroke: 'white', 'stroke-width': 1.5
-      }));
-      landmarkLayer.appendChild(this._createSVGEl('circle', {
-        cx: pos.rightX, cy: rightY, r: 5,
-        fill: val === 1 ? '#3b82f6' : val === -1 ? '#f97316' : '#22c55e',
-        stroke: 'white', 'stroke-width': 1.5
-      }));
-
-      if (val !== 0) {
-        const lArrow = val === -1 ? '↑' : '↓';
-        const lColor = val === -1 ? '#3b82f6' : '#f97316';
-        landmarkLayer.appendChild(this._createSVGEl('text', {
-          x: pos.leftX - 12, y: leftY + 4, 'text-anchor': 'end',
-          'font-size': 9, fill: lColor, 'font-weight': 700
-        }, lArrow));
-        const rArrow = val === 1 ? '↑' : '↓';
-        const rColor = val === 1 ? '#3b82f6' : '#f97316';
-        landmarkLayer.appendChild(this._createSVGEl('text', {
-          x: pos.rightX + 12, y: rightY + 4, 'text-anchor': 'start',
-          'font-size': 9, fill: rColor, 'font-weight': 700
-        }, rArrow));
-      }
-
-      // 立位ラベル（体幹中央に小さく）
       landmarkLayer.appendChild(this._createSVGEl('text', {
         x: 150, y: pos.baseY + 3, 'text-anchor': 'middle',
         'font-size': 7, fill: '#94a3b8', 'font-weight': 600
       }, pos.label));
     }
 
-    // === 詳細6ランドマークのドット描画（接続線なし） ===
+    // 詳細6点（左右両方に表示）
     const posMap = this.unifiedPositions;
     for (const [key, pos] of Object.entries(posMap)) {
-      const val = allData[key];
-      if (val === null || val === undefined) continue;
-
-      const leftY  = pos.baseY + this._lShift(val);
-      const rightY = pos.baseY + this._rShift(val);
-
-      // 左ドット
-      landmarkLayer.appendChild(this._createSVGEl('circle', {
-        cx: pos.leftX, cy: leftY, r: 6,
-        fill: val === -1 ? '#3b82f6' : val === 1 ? '#f97316' : '#22c55e',
-        stroke: 'white', 'stroke-width': 2
-      }));
-
-      // 右ドット
-      landmarkLayer.appendChild(this._createSVGEl('circle', {
-        cx: pos.rightX, cy: rightY, r: 6,
-        fill: val === 1 ? '#3b82f6' : val === -1 ? '#f97316' : '#22c55e',
-        stroke: 'white', 'stroke-width': 2
-      }));
-
-      // 矢印
-      if (val !== 0) {
-        const lArrow = val === -1 ? '↑' : '↓';
-        const lColor = val === -1 ? '#3b82f6' : '#f97316';
-        landmarkLayer.appendChild(this._createSVGEl('text', {
-          x: pos.leftX - 14, y: leftY + 4, 'text-anchor': 'end',
-          'font-size': 10, fill: lColor, 'font-weight': 700
-        }, lArrow));
-
-        const rArrow = val === 1 ? '↑' : '↓';
-        const rColor = val === 1 ? '#3b82f6' : '#f97316';
-        landmarkLayer.appendChild(this._createSVGEl('text', {
-          x: pos.rightX + 14, y: rightY + 4, 'text-anchor': 'start',
-          'font-size': 10, fill: rColor, 'font-weight': 700
-        }, rArrow));
-      }
-
-      // ラベル（左右両方に表示）
       landmarkLayer.appendChild(this._createSVGEl('text', {
         x: pos.leftX - 14, y: pos.baseY - 8, 'text-anchor': 'end',
         'font-size': 7, fill: '#64748b', 'font-weight': 600
@@ -823,13 +753,16 @@ const BodyDiagram = {
       }, pos.label));
     }
 
-    // === 立位検査データ（乳様突起・肩甲下角・腸骨稜）の詰まり/伸び可視化 ===
-    this._drawStandingAnalysis(svg, standingData || {}, allData);
+    // === 体幹の色分け（立位検査の3区間） ===
+    this._colorTrunkSegments(svg, standingData || {}, allData);
 
-    // === 詰まり・伸びインジケーター（全身連続版） ===
+    // === 腕脚の色分け + ラベル ===
     this._drawUnifiedCompressionIndicators(svg, allData);
 
-    // === 体幹への影響（腕脚の詰まり＋骨盤傾斜の結果） ===
+    // === 立位検査の4区間ラベル（体の外側に） ===
+    this._drawStandingAnalysis(svg, standingData || {}, allData);
+
+    // === 体幹回旋 ===
     this._drawTrunkImpact(svg, allData, standingData || {});
   },
 
@@ -858,6 +791,51 @@ const BodyDiagram = {
     const headG = svg.querySelector('.seg-head');
     if (headG && headRot !== 0) {
       headG.setAttribute('transform', `rotate(${headRot}, 150, 28)`);
+    }
+  },
+
+  // ===== 体幹の色分け（立位3区間 + 肩峰↔肩甲下角） =====
+  // 縮み側 = 赤、伸び側 = 紫で体幹を左右に色分け
+  _colorTrunkSegments(svg, standingData, detailData) {
+    const zoneLayer = svg.querySelector('.zone-layer');
+    if (!zoneLayer) return;
+
+    const acromVal = detailData.acromion;
+    const scapVal = standingData.scapulaInferior;
+    const iliacVal = standingData.iliacCrest;
+    const gtVal = detailData.greaterTrochanter;
+
+    // 体幹3区間の定義（Y範囲 + 左右X範囲）
+    const cx = 150;
+    const trunkSegments = [
+      { valA: acromVal, valB: scapVal, yTop: 78, yBottom: 152, name: '肩峰〜肩甲下角' },
+      { valA: scapVal, valB: iliacVal, yTop: 152, yBottom: 232, name: '肩甲下角〜腸骨稜' },
+      { valA: iliacVal, valB: gtVal, yTop: 232, yBottom: 258, name: '腸骨稜〜大転子' }
+    ];
+
+    for (const seg of trunkSegments) {
+      if (seg.valA == null || seg.valB == null) continue;
+      if (seg.valA === 0 || seg.valB === 0) continue;
+      if (seg.valA === seg.valB) continue;
+
+      const leftCompressed = (seg.valA === 1 && seg.valB === -1);
+      const rightCompressed = (seg.valA === -1 && seg.valB === 1);
+      if (!leftCompressed && !rightCompressed) continue;
+
+      // 縮み側 = 赤、伸び側 = 紫
+      const leftColor = leftCompressed ? 'rgba(239,68,68,0.25)' : 'rgba(139,92,246,0.18)';
+      const rightColor = rightCompressed ? 'rgba(239,68,68,0.25)' : 'rgba(139,92,246,0.18)';
+
+      // 左半分
+      zoneLayer.appendChild(this._createSVGEl('rect', {
+        x: 82, y: seg.yTop, width: cx - 82, height: seg.yBottom - seg.yTop,
+        fill: leftColor, rx: 4
+      }));
+      // 右半分
+      zoneLayer.appendChild(this._createSVGEl('rect', {
+        x: cx, y: seg.yTop, width: 218 - cx, height: seg.yBottom - seg.yTop,
+        fill: rightColor, rx: 4
+      }));
     }
   },
 
