@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>人体図プレビュー</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif; background: #f1f5f9; min-height: 100vh; }
+    .header { background: linear-gradient(135deg, #1e293b, #334155); color: white; padding: 14px 16px; text-align: center; }
+    .header h1 { font-size: 17px; font-weight: 700; }
+    .header p { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+
+    .content { max-width: 480px; margin: 0 auto; padding: 12px; }
+
+    /* 入力セクション */
+    .input-section { background: white; border-radius: 14px; padding: 14px; margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+    .section-title { font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid #e2e8f0; }
+    .landmark-row { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+    .landmark-name { font-size: 12px; font-weight: 600; color: #475569; width: 80px; flex-shrink: 0; }
+    .btn-group { display: flex; gap: 4px; flex: 1; }
+    .btn-val { flex: 1; padding: 7px 0; border: 2px solid #e2e8f0; border-radius: 8px; background: white; font-size: 11px; font-weight: 600; color: #64748b; cursor: pointer; text-align: center; transition: all 0.15s; }
+    .btn-val:active { transform: scale(0.96); }
+    .btn-val.selected-left { background: #dbeafe; border-color: #3b82f6; color: #1d4ed8; }
+    .btn-val.selected-even { background: #dcfce7; border-color: #22c55e; color: #15803d; }
+    .btn-val.selected-right { background: #ffedd5; border-color: #f97316; color: #c2410c; }
+
+    /* 図 */
+    .diagram-wrap { background: white; border-radius: 14px; padding: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+    .diagram-wrap h3 { font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 8px; text-align: center; }
+    #diagram-container { min-height: 300px; }
+    #diagram-container svg { width: 100%; height: auto; }
+
+    /* リセット */
+    .reset-btn { display: block; margin: 12px auto; padding: 8px 24px; background: #f1f5f9; border: 2px solid #cbd5e1; border-radius: 10px; font-size: 13px; font-weight: 600; color: #64748b; cursor: pointer; }
+    .reset-btn:active { background: #e2e8f0; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>人体図クイックプレビュー</h1>
+    <p>ランドマークを入力 → 即座に図に反映</p>
+  </div>
+
+  <div class="content">
+    <!-- 立位基本3点 -->
+    <div class="input-section">
+      <div class="section-title">立位検査（基本3点）</div>
+      <div class="landmark-row">
+        <span class="landmark-name">乳様突起</span>
+        <div class="btn-group" data-group="standing" data-key="mastoid">
+          <button class="btn-val" data-val="-1">左が高い</button>
+          <button class="btn-val" data-val="0">同じ</button>
+          <button class="btn-val" data-val="1">右が高い</button>
+        </div>
+      </div>
+      <div class="landmark-row">
+        <span class="landmark-name">肩甲下角</span>
+        <div class="btn-group" data-group="standing" data-key="scapulaInferior">
+          <button class="btn-val" data-val="-1">左が高い</button>
+          <button class="btn-val" data-val="0">同じ</button>
+          <button class="btn-val" data-val="1">右が高い</button>
+        </div>
+      </div>
+      <div class="landmark-row">
+        <span class="landmark-name">腸骨稜</span>
+        <div class="btn-group" data-group="standing" data-key="iliacCrest">
+          <button class="btn-val" data-val="-1">左が高い</button>
+          <button class="btn-val" data-val="0">同じ</button>
+          <button class="btn-val" data-val="1">右が高い</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 上肢詳細 -->
+    <div class="input-section">
+      <div class="section-title">上肢詳細（3点）</div>
+      <div class="landmark-row">
+        <span class="landmark-name">肩峰</span>
+        <div class="btn-group" data-group="upper" data-key="acromion">
+          <button class="btn-val" data-val="-1">左が高い</button>
+          <button class="btn-val" data-val="0">同じ</button>
+          <button class="btn-val" data-val="1">右が高い</button>
+        </div>
+      </div>
+      <div class="landmark-row">
+        <span class="landmark-name">肘頭</span>
+        <div class="btn-group" data-group="upper" data-key="mastoidDetail">
+          <button class="btn-val" data-val="-1">左が高い</button>
+          <button class="btn-val" data-val="0">同じ</button>
+          <button class="btn-val" data-val="1">右が高い</button>
+        </div>
+      </div>
+      <div class="landmark-row">
+        <span class="landmark-name">茎状突起</span>
+        <div class="btn-group" data-group="upper" data-key="radialStyloid">
+          <button class="btn-val" data-val="-1">左が高い</button>
+          <button class="btn-val" data-val="0">同じ</button>
+          <button class="btn-val" data-val="1">右が高い</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 下肢詳細 -->
+    <div class="input-section">
+      <div class="section-title">下肢詳細（3点）</div>
+      <div class="landmark-row">
+        <span class="landmark-name">大転子</span>
+        <div class="btn-group" data-group="lower" data-key="greaterTrochanter">
+          <button class="btn-val" data-val="-1">左が高い</button>
+          <button class="btn-val" data-val="0">同じ</button>
+          <button class="btn-val" data-val="1">右が高い</button>
+        </div>
+      </div>
+      <div class="landmark-row">
+        <span class="landmark-name">膝蓋骨上端</span>
+        <div class="btn-group" data-group="lower" data-key="patellaUpper">
+          <button class="btn-val" data-val="-1">左が高い</button>
+          <button class="btn-val" data-val="0">同じ</button>
+          <button class="btn-val" data-val="1">右が高い</button>
+        </div>
+      </div>
+      <div class="landmark-row">
+        <span class="landmark-name">外果</span>
+        <div class="btn-group" data-group="lower" data-key="lateralMalleolus">
+          <button class="btn-val" data-val="-1">左が高い</button>
+          <button class="btn-val" data-val="0">同じ</button>
+          <button class="btn-val" data-val="1">右が高い</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 図 -->
+    <div class="diagram-wrap">
+      <h3>全身統合ダイアグラム</h3>
+      <div id="diagram-container"></div>
+    </div>
+
+    <button class="reset-btn" onclick="resetAll()">リセット</button>
+  </div>
+
+  <script src="js/bodyDiagram.js?v=20260322f"></script>
+  <script>
+    // データ
+    const data = {
+      standing: { mastoid: null, scapulaInferior: null, iliacCrest: null },
+      upper: { acromion: null, mastoidDetail: null, radialStyloid: null },
+      lower: { greaterTrochanter: null, patellaUpper: null, lateralMalleolus: null }
+    };
+
+    // 初期化
+    BodyDiagram.init('diagram-container');
+
+    // ボタンクリック
+    document.querySelectorAll('.btn-group').forEach(group => {
+      const gKey = group.dataset.group;
+      const dKey = group.dataset.key;
+      group.querySelectorAll('.btn-val').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const val = parseInt(btn.dataset.val);
+          data[gKey][dKey] = val;
+
+          // ボタンUI更新
+          group.querySelectorAll('.btn-val').forEach(b => {
+            b.className = 'btn-val';
+          });
+          if (val === -1) btn.classList.add('selected-left');
+          else if (val === 0) btn.classList.add('selected-even');
+          else btn.classList.add('selected-right');
+
+          updateDiagram();
+        });
+      });
+    });
+
+    function updateDiagram() {
+      BodyDiagram.updateUnified(
+        'diagram-container',
+        data.upper,
+        data.lower,
+        data.standing
+      );
+    }
+
+    function resetAll() {
+      data.standing = { mastoid: null, scapulaInferior: null, iliacCrest: null };
+      data.upper = { acromion: null, mastoidDetail: null, radialStyloid: null };
+      data.lower = { greaterTrochanter: null, patellaUpper: null, lateralMalleolus: null };
+      document.querySelectorAll('.btn-val').forEach(b => b.className = 'btn-val');
+      BodyDiagram.init('diagram-container');
+    }
+  </script>
+</body>
+</html>
