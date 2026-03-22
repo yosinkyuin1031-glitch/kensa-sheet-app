@@ -921,25 +921,25 @@ const BodyDiagram = {
       contractedParts.forEach(p => this._highlightPart(svg, p, 'rgba(239,68,68,0.30)'));
       tensionedParts.forEach(p => this._highlightPart(svg, p, 'rgba(168,85,247,0.22)'));
 
-      // 詰まりインジケーター（小型ラベル）
+      // 縮みインジケーター
       indicatorLayer.appendChild(this._createSVGEl('rect', {
-        x: compX - 16, y: midY - 10, width: 32, height: 20,
+        x: compX - 22, y: midY - 10, width: 44, height: 20,
         rx: 6, fill: '#ef4444', opacity: 0.9
       }));
       indicatorLayer.appendChild(this._createSVGEl('text', {
         x: compX, y: midY + 4, 'text-anchor': 'middle',
-        'font-size': 10, fill: 'white', 'font-weight': 800
-      }, `${compLabel}詰`));
+        'font-size': 9, fill: 'white', 'font-weight': 800
+      }, `${compLabel}縮み`));
 
-      // 伸びインジケーター（小型ラベル）
+      // 伸びインジケーター
       indicatorLayer.appendChild(this._createSVGEl('rect', {
-        x: stretchX - 16, y: midY - 10, width: 32, height: 20,
+        x: stretchX - 22, y: midY - 10, width: 44, height: 20,
         rx: 6, fill: '#8b5cf6', opacity: 0.85
       }));
       indicatorLayer.appendChild(this._createSVGEl('text', {
         x: stretchX, y: midY + 4, 'text-anchor': 'middle',
-        'font-size': 10, fill: 'white', 'font-weight': 800
-      }, `${stretchLabel}伸`));
+        'font-size': 9, fill: 'white', 'font-weight': 800
+      }, `${stretchLabel}伸び`));
 
       // 部位名ラベル（中央に小さく表示）
       const centerX = 150;
@@ -1062,25 +1062,25 @@ const BodyDiagram = {
       const compX = leftCompressed ? seg.leftX : seg.rightX;
       const stretchX = leftCompressed ? seg.rightX : seg.leftX;
 
-      // 詰まりラベル（赤）
+      // 詰まりラベル（赤）「右縮み」「左縮み」
       indicatorLayer.appendChild(this._createSVGEl('rect', {
-        x: compX - 20, y: midY - 9, width: 40, height: 18,
+        x: compX - 22, y: midY - 9, width: 44, height: 18,
         rx: 6, fill: '#ef4444', opacity: 0.9
       }));
       indicatorLayer.appendChild(this._createSVGEl('text', {
         x: compX, y: midY + 4, 'text-anchor': 'middle',
         'font-size': 9, fill: 'white', 'font-weight': 800
-      }, '縮み'));
+      }, `${compSide}縮み`));
 
-      // 伸びラベル（紫）
+      // 伸びラベル（紫）「左伸び」「右伸び」
       indicatorLayer.appendChild(this._createSVGEl('rect', {
-        x: stretchX - 20, y: midY - 9, width: 40, height: 18,
+        x: stretchX - 22, y: midY - 9, width: 44, height: 18,
         rx: 6, fill: '#8b5cf6', opacity: 0.85
       }));
       indicatorLayer.appendChild(this._createSVGEl('text', {
         x: stretchX, y: midY + 4, 'text-anchor': 'middle',
         'font-size': 9, fill: 'white', 'font-weight': 800
-      }, '伸び'));
+      }, `${stretchSide}伸び`));
     }
 
     // ===== 茎状突起・外果のマーカー（手先・足先に○×） =====
