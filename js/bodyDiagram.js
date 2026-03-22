@@ -765,9 +765,10 @@ const BodyDiagram = {
         }, rArrow));
       }
 
+      // 立位ラベル（体幹中央に小さく）
       landmarkLayer.appendChild(this._createSVGEl('text', {
-        x: 150, y: pos.baseY - 12, 'text-anchor': 'middle',
-        'font-size': 8, fill: '#94a3b8', 'font-weight': 600
+        x: 150, y: pos.baseY + 3, 'text-anchor': 'middle',
+        'font-size': 7, fill: '#94a3b8', 'font-weight': 600
       }, pos.label));
     }
 
@@ -811,11 +812,20 @@ const BodyDiagram = {
         }, rArrow));
       }
 
-      // ラベル
-      landmarkLayer.appendChild(this._createSVGEl('text', {
-        x: 150, y: pos.baseY - 14, 'text-anchor': 'middle',
-        'font-size': 9, fill: '#64748b', 'font-weight': 600
-      }, pos.label));
+      // ラベル（腕系は左外側、脚系は右外側に配置して重なり回避）
+      const isArm = (key === 'acromion' || key === 'mastoidDetail' || key === 'radialStyloid');
+      const isLeg = (key === 'greaterTrochanter' || key === 'patellaUpper' || key === 'lateralMalleolus');
+      if (isArm) {
+        landmarkLayer.appendChild(this._createSVGEl('text', {
+          x: pos.leftX - 16, y: pos.baseY + 4, 'text-anchor': 'end',
+          'font-size': 8, fill: '#64748b', 'font-weight': 600
+        }, pos.label));
+      } else if (isLeg) {
+        landmarkLayer.appendChild(this._createSVGEl('text', {
+          x: pos.rightX + 16, y: pos.baseY + 4, 'text-anchor': 'start',
+          'font-size': 8, fill: '#64748b', 'font-weight': 600
+        }, pos.label));
+      }
     }
 
     // === 立位検査データ（乳様突起・肩甲下角・腸骨稜）の詰まり/伸び可視化 ===
