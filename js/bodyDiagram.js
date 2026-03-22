@@ -812,14 +812,15 @@ const BodyDiagram = {
         }, rArrow));
       }
 
-      // ラベル（左右両方に表示、大転子は体の外に出す）
-      const offset = (key === 'greaterTrochanter') ? 30 : 14;
+      // ラベル（左右両方、ドットの下に配置して被り回避）
+      const labelY = pos.baseY + 20;
+      const xOff = (key === 'greaterTrochanter') ? 30 : 14;
       landmarkLayer.appendChild(this._createSVGEl('text', {
-        x: pos.leftX - offset, y: pos.baseY + 4, 'text-anchor': 'end',
+        x: pos.leftX - xOff, y: labelY, 'text-anchor': 'end',
         'font-size': 7, fill: '#64748b', 'font-weight': 600
       }, pos.label));
       landmarkLayer.appendChild(this._createSVGEl('text', {
-        x: pos.rightX + offset, y: pos.baseY + 4, 'text-anchor': 'start',
+        x: pos.rightX + xOff, y: labelY, 'text-anchor': 'start',
         'font-size': 7, fill: '#64748b', 'font-weight': 600
       }, pos.label));
     }
