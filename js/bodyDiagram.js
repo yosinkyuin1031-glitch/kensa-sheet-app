@@ -873,23 +873,23 @@ const BodyDiagram = {
     // 各区間のインジケーター位置と対応パーツ
     const segmentConfig = {
       0: { // 肩峰→肘頭 = 上腕
-        leftX: 65, rightX: 235, areaName: '上腕',
+        leftX: 65, rightX: 235,
         parts: { left: ['upperArm-l'], right: ['upperArm-r'] }
       },
       1: { // 肘頭→茎状突起 = 前腕
-        leftX: 48, rightX: 252, areaName: '前腕',
+        leftX: 48, rightX: 252,
         parts: { left: ['forearm-l', 'hand-l'], right: ['forearm-r', 'hand-r'] }
       },
       2: { // 茎状突起→大転子 = 体幹
-        leftX: 115, rightX: 185, areaName: '体幹',
+        leftX: 115, rightX: 185,
         parts: { left: [], right: [] }
       },
       3: { // 大転子→膝蓋骨 = 太もも
-        leftX: 126, rightX: 174, areaName: '太もも',
+        leftX: 80, rightX: 220,
         parts: { left: ['thigh-l'], right: ['thigh-r'] }
       },
       4: { // 膝蓋骨→外果 = すね
-        leftX: 124, rightX: 176, areaName: 'すね',
+        leftX: 78, rightX: 222,
         parts: { left: ['shin-l'], right: ['shin-r'] }
       }
     };
@@ -946,13 +946,7 @@ const BodyDiagram = {
         'font-size': 9, fill: 'white', 'font-weight': 800
       }, `${stretchLabel}伸`));
 
-      // 部位名ラベル（体幹区間は体幹回旋と被るので省略）
-      if (i !== 2) {
-        indicatorLayer.appendChild(this._createSVGEl('text', {
-          x: 150, y: midY + 4, 'text-anchor': 'middle',
-          'font-size': 8, fill: '#94a3b8', 'font-weight': 600
-        }, cfg.areaName));
-      }
+      // エリア名ラベルは省略（被り防止）
     }
   },
 
@@ -1060,13 +1054,16 @@ const BodyDiagram = {
       const rightCompressed = (seg.valA === -1 && seg.valB === 1);
       if (!leftCompressed && !rightCompressed) continue;
 
-      const midY = (posY[seg.upper] + posY[seg.lower]) / 2;
+      let midY = (posY[seg.upper] + posY[seg.lower]) / 2;
+      // 腕脚ラベルとの被り回避（上腕midY≈112, 前腕midY≈185, 体幹midY≈238）
+      if (midY > 110 && midY < 120) midY = 130;     // 肩峰↔肩甲下角
+      if (midY > 180 && midY < 200) midY = 200;     // 肩甲下角↔腸骨稜
       const compSide = leftCompressed ? '左' : '右';
       const stretchSide = leftCompressed ? '右' : '左';
       const compX = leftCompressed ? seg.leftX : seg.rightX;
       const stretchX = leftCompressed ? seg.rightX : seg.leftX;
 
-      // 詰まりラベル（赤）「右縮み」「左縮み」
+      // 詰まりラベル（赤）「右縮」「左縮」
       indicatorLayer.appendChild(this._createSVGEl('rect', {
         x: compX - 16, y: midY - 9, width: 32, height: 18,
         rx: 6, fill: '#ef4444', opacity: 0.9
