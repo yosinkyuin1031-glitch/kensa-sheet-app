@@ -33,7 +33,7 @@ const BodyDiagram = {
   // ===== 背面図SVG（セグメントをグループ化） =====
   createBodySVG() {
     return `
-    <svg viewBox="0 0 300 580" xmlns="http://www.w3.org/2000/svg" class="body-svg">
+    <svg viewBox="-20 0 340 580" xmlns="http://www.w3.org/2000/svg" class="body-svg">
       <defs>
         <radialGradient id="jointGrad">
           <stop offset="0%" stop-color="#fbbf24"/>
@@ -812,23 +812,15 @@ const BodyDiagram = {
         }, rArrow));
       }
 
-      // ラベル（腕系は左外側、脚系は右外側に配置して重なり回避）
-      const isArm = (key === 'acromion' || key === 'mastoidDetail' || key === 'radialStyloid');
-      const isLeg = (key === 'greaterTrochanter' || key === 'patellaUpper' || key === 'lateralMalleolus');
-      if (isArm) {
-        landmarkLayer.appendChild(this._createSVGEl('text', {
-          x: pos.leftX - 16, y: pos.baseY + 4, 'text-anchor': 'end',
-          'font-size': 8, fill: '#64748b', 'font-weight': 600
-        }, pos.label));
-      } else if (isLeg) {
-        // 大転子は体に近いので左外側に出す、他の脚は右外側
-        const labelX = (key === 'greaterTrochanter') ? pos.leftX - 16 : pos.rightX + 16;
-        const anchor = (key === 'greaterTrochanter') ? 'end' : 'start';
-        landmarkLayer.appendChild(this._createSVGEl('text', {
-          x: labelX, y: pos.baseY + 4, 'text-anchor': anchor,
-          'font-size': 8, fill: '#64748b', 'font-weight': 600
-        }, pos.label));
-      }
+      // ラベル（左右両方に表示）
+      landmarkLayer.appendChild(this._createSVGEl('text', {
+        x: pos.leftX - 14, y: pos.baseY - 8, 'text-anchor': 'end',
+        'font-size': 7, fill: '#64748b', 'font-weight': 600
+      }, pos.label));
+      landmarkLayer.appendChild(this._createSVGEl('text', {
+        x: pos.rightX + 14, y: pos.baseY - 8, 'text-anchor': 'start',
+        'font-size': 7, fill: '#64748b', 'font-weight': 600
+      }, pos.label));
     }
 
     // === 立位検査データ（乳様突起・肩甲下角・腸骨稜）の詰まり/伸び可視化 ===
@@ -881,23 +873,23 @@ const BodyDiagram = {
     // 各区間のインジケーター位置と対応パーツ
     const segmentConfig = {
       0: { // 肩峰→肘頭 = 上腕
-        leftX: 65, rightX: 235, areaName: '上腕',
+        leftX: 30, rightX: 270,
         parts: { left: ['upperArm-l'], right: ['upperArm-r'] }
       },
       1: { // 肘頭→茎状突起 = 前腕
-        leftX: 48, rightX: 252, areaName: '前腕',
+        leftX: 18, rightX: 282,
         parts: { left: ['forearm-l', 'hand-l'], right: ['forearm-r', 'hand-r'] }
       },
       2: { // 茎状突起→大転子 = 体幹
-        leftX: 115, rightX: 185, areaName: '体幹',
+        leftX: 40, rightX: 260,
         parts: { left: [], right: [] }
       },
       3: { // 大転子→膝蓋骨 = 太もも
-        leftX: 126, rightX: 174, areaName: '太もも',
+        leftX: 80, rightX: 220,
         parts: { left: ['thigh-l'], right: ['thigh-r'] }
       },
       4: { // 膝蓋骨→外果 = すね
-        leftX: 124, rightX: 176, areaName: 'すね',
+        leftX: 78, rightX: 222,
         parts: { left: ['shin-l'], right: ['shin-r'] }
       }
     };
@@ -954,12 +946,7 @@ const BodyDiagram = {
         'font-size': 9, fill: 'white', 'font-weight': 800
       }, `${stretchLabel}伸`));
 
-      // 部位名ラベル（中央に小さく表示）
-      const centerX = 150;
-      indicatorLayer.appendChild(this._createSVGEl('text', {
-        x: centerX, y: midY + 4, 'text-anchor': 'middle',
-        'font-size': 8, fill: '#94a3b8', 'font-weight': 600
-      }, cfg.areaName));
+      // 部位名ラベルは体に被るため省略
     }
   },
 
@@ -1050,10 +1037,10 @@ const BodyDiagram = {
 
     // 4区間の定義
     const segments = [
-      { upper: 'mastoid', lower: 'acromion', valA: mastVal, valB: acromVal, area: '乳様突起〜肩峰', leftX: 110, rightX: 190 },
-      { upper: 'acromion', lower: 'scapulaInferior', valA: acromVal, valB: scapVal, area: '肩峰〜肩甲下角', leftX: 95, rightX: 205 },
-      { upper: 'scapulaInferior', lower: 'iliacCrest', valA: scapVal, valB: iliacVal, area: '肩甲下角〜腸骨稜', leftX: 100, rightX: 200 },
-      { upper: 'iliacCrest', lower: 'greaterTrochanter', valA: iliacVal, valB: gtVal, area: '腸骨稜〜大転子', leftX: 110, rightX: 190 }
+      { upper: 'mastoid', lower: 'acromion', valA: mastVal, valB: acromVal, area: '乳様突起〜肩峰', leftX: 48, rightX: 252 },
+      { upper: 'acromion', lower: 'scapulaInferior', valA: acromVal, valB: scapVal, area: '肩峰〜肩甲下角', leftX: 40, rightX: 260 },
+      { upper: 'scapulaInferior', lower: 'iliacCrest', valA: scapVal, valB: iliacVal, area: '肩甲下角〜腸骨稜', leftX: 40, rightX: 260 },
+      { upper: 'iliacCrest', lower: 'greaterTrochanter', valA: iliacVal, valB: gtVal, area: '腸骨稜〜大転子', leftX: 48, rightX: 252 }
     ];
 
     for (const seg of segments) {

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bodycheck-v19-arms';
+const CACHE_NAME = 'bodycheck-v20-both';
 const urlsToCache = [
   '/',
   '/index.html',
