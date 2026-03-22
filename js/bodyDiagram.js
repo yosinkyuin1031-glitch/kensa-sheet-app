@@ -812,13 +812,14 @@ const BodyDiagram = {
         }, rArrow));
       }
 
-      // ラベル（左右両方に表示）
+      // ラベル（左右両方に表示、大転子は体の外に出す）
+      const offset = (key === 'greaterTrochanter') ? 30 : 14;
       landmarkLayer.appendChild(this._createSVGEl('text', {
-        x: pos.leftX - 14, y: pos.baseY + 4, 'text-anchor': 'end',
+        x: pos.leftX - offset, y: pos.baseY + 4, 'text-anchor': 'end',
         'font-size': 7, fill: '#64748b', 'font-weight': 600
       }, pos.label));
       landmarkLayer.appendChild(this._createSVGEl('text', {
-        x: pos.rightX + 14, y: pos.baseY + 4, 'text-anchor': 'start',
+        x: pos.rightX + offset, y: pos.baseY + 4, 'text-anchor': 'start',
         'font-size': 7, fill: '#64748b', 'font-weight': 600
       }, pos.label));
     }
