@@ -10,7 +10,7 @@ const BodyDiagram = {
   positions: {
     firstStage: {
       mastoid:         { leftX: 132, rightX: 168, baseY: 38, label: '乳様突起' },
-      scapulaInferior: { leftX: 106, rightX: 194, baseY: 168, label: '肩甲下角' },
+      scapulaInferior: { leftX: 106, rightX: 194, baseY: 155, label: '肩甲下角' },
       iliacCrest:      { leftX: 102, rightX: 198, baseY: 232, label: '腸骨稜' }
     },
     upperDetail: {
@@ -812,20 +812,15 @@ const BodyDiagram = {
         }, rArrow));
       }
 
-      // ラベル（腕系は左外側、脚系は右外側に配置して重なり回避）
-      const isArm = (key === 'acromion' || key === 'mastoidDetail' || key === 'radialStyloid');
-      const isLeg = (key === 'greaterTrochanter' || key === 'patellaUpper' || key === 'lateralMalleolus');
-      if (isArm) {
-        landmarkLayer.appendChild(this._createSVGEl('text', {
-          x: pos.leftX - 16, y: pos.baseY + 4, 'text-anchor': 'end',
-          'font-size': 8, fill: '#64748b', 'font-weight': 600
-        }, pos.label));
-      } else if (isLeg) {
-        landmarkLayer.appendChild(this._createSVGEl('text', {
-          x: pos.rightX + 16, y: pos.baseY + 4, 'text-anchor': 'start',
-          'font-size': 8, fill: '#64748b', 'font-weight': 600
-        }, pos.label));
-      }
+      // ラベル（左右両方に表示）
+      landmarkLayer.appendChild(this._createSVGEl('text', {
+        x: pos.leftX - 14, y: pos.baseY + 4, 'text-anchor': 'end',
+        'font-size': 7, fill: '#64748b', 'font-weight': 600
+      }, pos.label));
+      landmarkLayer.appendChild(this._createSVGEl('text', {
+        x: pos.rightX + 14, y: pos.baseY + 4, 'text-anchor': 'start',
+        'font-size': 7, fill: '#64748b', 'font-weight': 600
+      }, pos.label));
     }
 
     // === 立位検査データ（乳様突起・肩甲下角・腸骨稜）の詰まり/伸び可視化 ===
@@ -951,12 +946,13 @@ const BodyDiagram = {
         'font-size': 9, fill: 'white', 'font-weight': 800
       }, `${stretchLabel}伸`));
 
-      // 部位名ラベル（中央に小さく表示）
-      const centerX = 150;
-      indicatorLayer.appendChild(this._createSVGEl('text', {
-        x: centerX, y: midY + 4, 'text-anchor': 'middle',
-        'font-size': 8, fill: '#94a3b8', 'font-weight': 600
-      }, cfg.areaName));
+      // 部位名ラベル（体幹区間は体幹回旋と被るので省略）
+      if (i !== 2) {
+        indicatorLayer.appendChild(this._createSVGEl('text', {
+          x: 150, y: midY + 4, 'text-anchor': 'middle',
+          'font-size': 8, fill: '#94a3b8', 'font-weight': 600
+        }, cfg.areaName));
+      }
     }
   },
 
@@ -971,10 +967,8 @@ const BodyDiagram = {
     const iliacVal = standingData.iliacCrest;
     const scapVal = standingData.scapulaInferior;
 
-    // 体幹エリアのY範囲（茎状突起baseY=224 → 大転子baseY=252の間）
-    const trunkTopY = 100;
-    const trunkBottomY = 248;
-    const trunkMidY = (trunkTopY + trunkBottomY) / 2;
+    // 体幹回旋ラベル位置（肩甲下角・前腕と被らないよう下寄り）
+    const trunkMidY = 210;
 
     // 4. 肩峰↔大転子の回旋判定
     let rotationLabel = '';
@@ -1042,7 +1036,7 @@ const BodyDiagram = {
     const posY = {
       mastoid: 38,    // 乳様突起（頭頂付近）
       acromion: 78,   // 肩峰
-      scapulaInferior: 168, // 肩甲下角
+      scapulaInferior: 155, // 肩甲下角
       iliacCrest: 232,     // 腸骨稜
       greaterTrochanter: 252 // 大転子
     };

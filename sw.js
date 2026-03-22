@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bodycheck-v22-revert';
+const CACHE_NAME = 'bodycheck-v23-labels';
 const urlsToCache = [
   '/',
   '/index.html',
