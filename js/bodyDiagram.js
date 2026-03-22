@@ -929,7 +929,7 @@ const BodyDiagram = {
       indicatorLayer.appendChild(this._createSVGEl('text', {
         x: compX, y: midY + 4, 'text-anchor': 'middle',
         'font-size': 9, fill: 'white', 'font-weight': 800
-      }, `${compLabel}縮み`));
+      }, `${compLabel}縮`));
 
       // 伸びインジケーター
       indicatorLayer.appendChild(this._createSVGEl('rect', {
@@ -939,7 +939,7 @@ const BodyDiagram = {
       indicatorLayer.appendChild(this._createSVGEl('text', {
         x: stretchX, y: midY + 4, 'text-anchor': 'middle',
         'font-size': 9, fill: 'white', 'font-weight': 800
-      }, `${stretchLabel}伸び`));
+      }, `${stretchLabel}伸`));
 
       // 部位名ラベル（中央に小さく表示）
       const centerX = 150;
@@ -1064,23 +1064,23 @@ const BodyDiagram = {
 
       // 詰まりラベル（赤）「右縮み」「左縮み」
       indicatorLayer.appendChild(this._createSVGEl('rect', {
-        x: compX - 22, y: midY - 9, width: 44, height: 18,
+        x: compX - 16, y: midY - 9, width: 32, height: 18,
         rx: 6, fill: '#ef4444', opacity: 0.9
       }));
       indicatorLayer.appendChild(this._createSVGEl('text', {
         x: compX, y: midY + 4, 'text-anchor': 'middle',
         'font-size': 9, fill: 'white', 'font-weight': 800
-      }, `${compSide}縮み`));
+      }, `${compSide}縮`));
 
       // 伸びラベル（紫）「左伸び」「右伸び」
       indicatorLayer.appendChild(this._createSVGEl('rect', {
-        x: stretchX - 22, y: midY - 9, width: 44, height: 18,
+        x: stretchX - 16, y: midY - 9, width: 32, height: 18,
         rx: 6, fill: '#8b5cf6', opacity: 0.85
       }));
       indicatorLayer.appendChild(this._createSVGEl('text', {
         x: stretchX, y: midY + 4, 'text-anchor': 'middle',
         'font-size': 9, fill: 'white', 'font-weight': 800
-      }, `${stretchSide}伸び`));
+      }, `${stretchSide}伸`));
     }
 
     // ===== 茎状突起・外果のマーカー（手先・足先に○×） =====
