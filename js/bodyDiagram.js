@@ -2,7 +2,7 @@
 // 重要: 画面の左＝患者の左、画面の右＝患者の右（患者目線で統一）
 // val=-1: 左が高い → 画面左が上がる
 // val= 1: 右が高い → 画面右が上がる
-// 下側にいっている方 = 詰まっている（縮こまり）
+// 下側にいっている方 = 詰まっている（収縮）
 
 const BodyDiagram = {
   TILT: 14,
@@ -525,7 +525,7 @@ const BodyDiagram = {
         'stroke-width': 1.2, 'stroke-dasharray': '4,2'
       }));
 
-      // 牽引矢印 ↑↓（上は上へ、下は下へ引っ張られる）
+      // 牽引矢印 ↑↓（上は上へ、下は下へ伸長される）
       indicatorLayer.appendChild(this._createSVGEl('text', {
         x: stretchX, y: midY - 10, 'text-anchor': 'middle',
         'font-size': 14, fill: '#8b5cf6', 'font-weight': 700
@@ -558,7 +558,7 @@ const BodyDiagram = {
     }
   },
 
-  // ===== 縮こまり・引っ張りゾーン描画（showZones） =====
+  // ===== 収縮・伸長ゾーン描画（showZones） =====
   showZones(containerId, type, data) {
     const el = document.getElementById(containerId);
     if (!el) return;
@@ -756,6 +756,22 @@ const BodyDiagram = {
         stroke: 'white', 'stroke-width': 1.5
       }));
 
+      // 立位ドットの↑↓矢印
+      if (val !== 0) {
+        const lArrow = val === -1 ? '↑' : '↓';
+        const lColor = val === -1 ? '#3b82f6' : '#f97316';
+        landmarkLayer.appendChild(this._createSVGEl('text', {
+          x: pos.leftX, y: leftY - 10, 'text-anchor': 'middle',
+          'font-size': 9, fill: lColor, 'font-weight': 700
+        }, lArrow));
+        const rArrow = val === 1 ? '↑' : '↓';
+        const rColor = val === 1 ? '#3b82f6' : '#f97316';
+        landmarkLayer.appendChild(this._createSVGEl('text', {
+          x: pos.rightX, y: rightY - 10, 'text-anchor': 'middle',
+          'font-size': 9, fill: rColor, 'font-weight': 700
+        }, rArrow));
+      }
+
       // 立位ラベル（ドットの左右外側に小さく配置）
       landmarkLayer.appendChild(this._createSVGEl('text', {
         x: 150, y: pos.baseY - 10, 'text-anchor': 'middle',
@@ -785,6 +801,22 @@ const BodyDiagram = {
         fill: val === 1 ? '#3b82f6' : val === -1 ? '#f97316' : '#22c55e',
         stroke: 'white', 'stroke-width': 2
       }));
+
+      // 詳細ドットの↑↓矢印
+      if (val !== 0) {
+        const lArrow = val === -1 ? '↑' : '↓';
+        const lColor = val === -1 ? '#3b82f6' : '#f97316';
+        landmarkLayer.appendChild(this._createSVGEl('text', {
+          x: pos.leftX, y: leftY - 10, 'text-anchor': 'middle',
+          'font-size': 9, fill: lColor, 'font-weight': 700
+        }, lArrow));
+        const rArrow = val === 1 ? '↑' : '↓';
+        const rColor = val === 1 ? '#3b82f6' : '#f97316';
+        landmarkLayer.appendChild(this._createSVGEl('text', {
+          x: pos.rightX, y: rightY - 10, 'text-anchor': 'middle',
+          'font-size': 9, fill: rColor, 'font-weight': 700
+        }, rArrow));
+      }
 
       // ラベル（左右両方、ドットの下に配置して被り回避）
       const labelY = pos.baseY + 20;

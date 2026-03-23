@@ -1095,7 +1095,7 @@
 
       html += '</div>';
 
-      // 縮こまり・引っ張りの変化
+      // 収縮・伸長の変化
       html += renderContractionComparison(prevDetail, contractionResult);
     }
 
@@ -1124,7 +1124,7 @@
 
   function renderContractionComparison(prevDetail, currDetail) {
     let html = '<div class="comparison-position-block">';
-    html += '<h4 class="comparison-position-title">縮こまり・引っ張りの変化</h4>';
+    html += '<h4 class="comparison-position-title">収縮・伸長の変化</h4>';
 
     // 前回の問題箇所
     const prevIssues = [];
@@ -1165,15 +1165,15 @@
 
         if (prev && !curr) {
           cls = 'comparison-improved';
-          const typeLabel = prev.type === 'contraction' ? '縮こまり' : '引っ張り';
+          const typeLabel = prev.type === 'contraction' ? '収縮' : '伸長';
           text = `${area}: ${typeLabel}が解消`;
         } else if (!prev && curr) {
           cls = 'comparison-worsened';
-          const typeLabel = curr.type === 'contraction' ? '縮こまり' : '引っ張り';
+          const typeLabel = curr.type === 'contraction' ? '収縮' : '伸長';
           text = `${area}: 新たに${typeLabel}が発生`;
         } else if (prev && curr) {
           if (prev.type === curr.type && prev.side === curr.side) {
-            const typeLabel = curr.type === 'contraction' ? '縮こまり' : '引っ張り';
+            const typeLabel = curr.type === 'contraction' ? '収縮' : '伸長';
             text = `${area}: ${typeLabel}が継続`;
           } else {
             text = `${area}: 状態が変化`;
@@ -1283,7 +1283,7 @@
 
     // 詳細検査への案内
     html += `<div class="detail-exam-guide practitioner-only">
-      <p>続いて<strong>全身の詳細検査</strong>を行い、縮こまり・引っ張りの具体的な箇所を特定します。</p>
+      <p>続いて<strong>全身の詳細検査</strong>を行い、収縮・伸長の具体的な箇所を特定します。</p>
     </div>`;
 
     container.innerHTML = html;
@@ -1621,7 +1621,7 @@
     if (allIssues.length > 0) {
       html += '<div class="problem-areas"><h4>検出された問題</h4>';
       for (const issue of allIssues) {
-        const typeLabel = issue.type === 'contraction' ? '縮こまり' : '引っ張り';
+        const typeLabel = issue.type === 'contraction' ? '収縮' : '伸長';
         const typeIcon = issue.type === 'contraction' ? '✕' : '↕';
         const typeClass = issue.type === 'contraction' ? '' : 'tension-card';
         const sideLabel = issue.side === 'both' ? '両側' : issue.side === 'right' ? '右側' : '左側';
@@ -1636,7 +1636,7 @@
       html += `<div class="problem-areas">
         <div class="problem-area-card normal-card">
           <span class="problem-icon">✅</span>
-          <p>明確な縮こまり・引っ張りは検出されませんでした。</p>
+          <p>明確な収縮・伸長は検出されませんでした。</p>
         </div>
       </div>`;
     }
@@ -1756,11 +1756,11 @@
       const sideText = contraction.side === 'both' ? '両側'
         : contraction.side === 'right' ? '右側' : '左側';
       const tensionInfo = contraction.tensionSide
-        ? `（反対側：${contraction.tensionSide === 'right' ? '右側' : '左側'}引っ張り）`
+        ? `（反対側：${contraction.tensionSide === 'right' ? '右側' : '左側'}伸長）`
         : '';
       return `
       <div class="diagram-between contracted">
-        <span class="contraction-mark">✕ 縮こまり（${sideText}）${tensionInfo}</span>
+        <span class="contraction-mark">✕ 収縮（${sideText}）${tensionInfo}</span>
         <span class="contraction-area">${contraction.area}</span>
       </div>`;
     } else if (tension) {
@@ -1768,7 +1768,7 @@
         : tension.side === 'right' ? '右側' : '左側';
       return `
       <div class="diagram-between tensioned">
-        <span class="tension-mark">↕ 引っ張り（${sideText}）</span>
+        <span class="tension-mark">↕ 伸長（${sideText}）</span>
         <span class="contraction-area">${tension.area}</span>
       </div>`;
     } else {
@@ -1787,7 +1787,7 @@
       html += `<div class="patient-result-card good">
         <div class="patient-result-icon">✅</div>
         <h3>良好な状態です</h3>
-        <p>身体に大きな縮こまりや引っ張りは見られません。</p>
+        <p>身体に大きな収縮や伸長は見られません。</p>
       </div>`;
     } else {
       html += `<div class="patient-result-card">
@@ -1796,7 +1796,7 @@
       </div>`;
 
       for (const issue of allIssues) {
-        const typeLabel = issue.type === 'contraction' ? '硬くなっている' : '引っ張られている';
+        const typeLabel = issue.type === 'contraction' ? '硬くなっている' : '伸長している';
         const sideLabel = issue.side === 'both' ? '両側' : issue.side === 'right' ? '右側' : '左側';
         const color = issue.type === 'contraction' ? 'var(--severe)' : 'var(--purple)';
         const icon = issue.type === 'contraction' ? '🔴' : '🟣';
@@ -2168,7 +2168,7 @@
       ];
       if (allIssues.length > 0) {
         for (const issue of allIssues) {
-          const typeLabel = issue.type === 'contraction' ? '縮こまり' : '引っ張り';
+          const typeLabel = issue.type === 'contraction' ? '収縮' : '伸長';
           const sideLabel = issue.side === 'both' ? '両側' : issue.side === 'right' ? '右側' : '左側';
           const borderColor = issue.type === 'contraction' ? '#ef4444' : '#8b5cf6';
           const dotSvg = `<svg width="10" height="10" viewBox="0 0 10 10" style="flex-shrink:0;margin-top:3px;"><circle cx="5" cy="5" r="5" fill="${borderColor}"/></svg>`;
@@ -2405,7 +2405,7 @@
     if (plan.areaProtocols.length > 0) {
       html += '<h3 class="protocol-sub-title">部位別プロトコル</h3>';
       for (const ap of plan.areaProtocols) {
-        const typeLabel = ap.issueType === 'contraction' ? '縮こまり' : '引っ張り';
+        const typeLabel = ap.issueType === 'contraction' ? '収縮' : '伸長';
         const sideLabel = ap.side === 'both' ? '両側' : ap.side === 'right' ? '右側' : '左側';
         html += `<div class="protocol-card protocol-area">`;
         html += `<div class="protocol-card-header"><h3>${ap.title}</h3><span class="protocol-badge-small">${sideLabel} / ${typeLabel}</span></div>`;
@@ -2649,7 +2649,7 @@
         html += '<h3>検出された問題箇所</h3>';
         html += '<div class="report-issues-grid">';
         for (const issue of allIssues) {
-          const typeLabel = issue.type === 'contraction' ? '縮こまり' : '引っ張り';
+          const typeLabel = issue.type === 'contraction' ? '収縮' : '伸長';
           const sideLabel = issue.side === 'both' ? '両側' : issue.side === 'right' ? '右側' : '左側';
           const typeClass = issue.type === 'contraction' ? 'contraction' : 'tension';
           html += `<div class="report-issue-item ${typeClass}">
@@ -2974,7 +2974,7 @@
     await renderDiagnosis(diagnosisResult);
     showDetailedExam();
 
-    // 縮こまり分析結果があれば復元
+    // 収縮分析結果があれば復元
     if (entry.contractionResult && entry.contractionResult.upper && entry.contractionResult.lower) {
       contractionResult = entry.contractionResult;
       renderUnifiedAnalysis(contractionResult.upper, contractionResult.lower);

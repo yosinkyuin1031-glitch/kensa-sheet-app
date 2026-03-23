@@ -240,15 +240,15 @@ const InspectionLogic = {
     return labels[cause] || '';
   },
 
-  // ===== 縮こまり＋引っ張り分析（拡張版） =====
+  // ===== 収縮＋伸長分析（拡張版） =====
   //
-  // 縮こまり（Contraction）:
+  // 収縮（Contraction）:
   //   隣り合うランドマークが互いに近づく方向 → その間が縮んでいる
   //   右側: 上が右下(-1) かつ 下が右上(1)
   //   左側: 上が左下(1) かつ 下が左上(-1)
   //
-  // 引っ張り（Tension）:
-  //   隣り合うランドマークが互いに離れる方向 → その間が引っ張られている
+  // 伸長（Tension）:
+  //   隣り合うランドマークが互いに離れる方向 → その間が伸長している
   //   右側: 上が右上(1) かつ 下が右下(-1)
   //   左側: 上が左上(-1) かつ 下が左下(1)
   //
@@ -257,8 +257,8 @@ const InspectionLogic = {
   analyzeContraction(landmarkDefs, data) {
     const results = {
       landmarks: [],
-      contractions: [],   // 縮こまり箇所
-      tensions: [],       // 引っ張り箇所
+      contractions: [],   // 収縮箇所
+      tensions: [],       // 伸長箇所
       problemAreas: []    // 統合された問題箇所
     };
 
@@ -282,10 +282,10 @@ const InspectionLogic = {
       const lower = results.landmarks[i + 1];
       const betweenArea = `${upper.name}〜${lower.name}`;
 
-      // --- 縮こまり検出 ---
-      // 右側: 上が右下(-1) かつ 下が右上(1) → 右が縮こまり
+      // --- 収縮検出 ---
+      // 右側: 上が右下(-1) かつ 下が右上(1) → 右が収縮
       const rightContracted = (upper.value === -1 && lower.value === 1);
-      // 左側: 上が左下(1) かつ 下が左上(-1) → 左が縮こまり
+      // 左側: 上が左下(1) かつ 下が左上(-1) → 左が収縮
       const leftContracted = (upper.value === 1 && lower.value === -1);
 
       if (rightContracted || leftContracted) {
@@ -301,21 +301,21 @@ const InspectionLogic = {
         });
       }
 
-      // --- 引っ張り検出 ---
-      // 右側: 上が右上(1) かつ 下が右下(-1) → 右が引っ張り
+      // --- 伸長検出 ---
+      // 右側: 上が右上(1) かつ 下が右下(-1) → 右が伸長
       const rightTensioned = (upper.value === 1 && lower.value === -1);
-      // 左側: 上が左上(-1) かつ 下が左下(1) → 左が引っ張り
+      // 左側: 上が左上(-1) かつ 下が左下(1) → 左が伸長
       const leftTensioned = (upper.value === -1 && lower.value === 1);
 
       if (rightTensioned || leftTensioned) {
-        // 縮こまりと同じインデックスの場合、反対側なので別エントリ
+        // 収縮と同じインデックスの場合、反対側なので別エントリ
         // ただし contraction で rightContracted かつ leftTensioned の場合は
-        // 右が縮こまり＋左が引っ張り → これは同じ現象の表裏
-        // 重複しないよう、引っ張り側のみ記録
+        // 右が収縮＋左が伸長 → これは同じ現象の表裏
+        // 重複しないよう、伸長側のみ記録
         const tensionSide = rightTensioned && leftTensioned ? 'both' :
                             rightTensioned ? 'right' : 'left';
 
-        // 縮こまりと同じインデックスで反対側なら、引っ張り情報を追加
+        // 収縮と同じインデックスで反対側なら、伸長情報を追加
         const existingContraction = results.contractions.find(c => c.index === i);
         if (existingContraction) {
           existingContraction.tensionSide = tensionSide;
@@ -333,15 +333,15 @@ const InspectionLogic = {
       }
     }
 
-    // 問題箇所の統合（縮こまり＋引っ張り）
+    // 問題箇所の統合（収縮＋伸長）
     const allIssues = [...results.contractions, ...results.tensions].sort((a, b) => a.index - b.index);
 
     if (allIssues.length >= 2) {
       for (let i = 0; i < allIssues.length - 1; i++) {
         const c1 = allIssues[i];
         const c2 = allIssues[i + 1];
-        const type1 = c1.type === 'contraction' ? '縮こまり' : '引っ張り';
-        const type2 = c2.type === 'contraction' ? '縮こまり' : '引っ張り';
+        const type1 = c1.type === 'contraction' ? '収縮' : '伸長';
+        const type2 = c2.type === 'contraction' ? '収縮' : '伸長';
         results.problemAreas.push({
           from: c1.area,
           to: c2.area,
@@ -352,7 +352,7 @@ const InspectionLogic = {
     }
 
     for (const issue of allIssues) {
-      const typeLabel = issue.type === 'contraction' ? '縮こまり' : '引っ張り';
+      const typeLabel = issue.type === 'contraction' ? '収縮' : '伸長';
       const sideLabel = issue.side === 'both' ? '両側' : issue.side === 'right' ? '右側' : '左側';
       results.problemAreas.push({
         from: issue.area,
@@ -409,21 +409,21 @@ const TreatmentProtocol = {
     },
     contraction: {
       '首〜肩': {
-        title: '首〜肩の縮こまり施術',
+        title: '首〜肩の収縮施術',
         techniques: [
           { name: '僧帽筋上部リリース', target: '僧帽筋上部', description: 'トリガーポイントを見つけ圧迫リリース', duration: '3-5分' },
           { name: '肩甲挙筋ストレッチ', target: '肩甲挙筋', description: '受動的ストレッチで伸張', duration: '2-3分' }
         ]
       },
       '肩〜腕': {
-        title: '肩〜腕の縮こまり施術',
+        title: '肩〜腕の収縮施術',
         techniques: [
           { name: '三角筋リリース', target: '三角筋', description: '三角筋前部・中部の緊張を緩める', duration: '3-5分' },
           { name: '上腕二頭筋リリース', target: '上腕二頭筋', description: '長頭腱の滑走を改善', duration: '3分' }
         ]
       },
       '前腕〜手首': {
-        title: '前腕〜手首の縮こまり施術',
+        title: '前腕〜手首の収縮施術',
         techniques: [
           { name: '前腕屈筋群リリース', target: '前腕屈筋群', description: '屈筋群のトリガーポイント解放', duration: '3-5分' },
           { name: '手根骨モビライゼーション', target: '手根骨', description: '手根骨の配列を整える', duration: '3分' }

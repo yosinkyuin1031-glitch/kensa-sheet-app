@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>検査アプリ - 段階的原因特定システム</title>
-  <link rel="stylesheet" href="css/style.css?v=20260323h">
+  <link rel="stylesheet" href="css/style.css?v=20260324a">
   <script>
     // Service Worker強制リセット（古いキャッシュを自動削除）
     if ('serviceWorker' in navigator) {
@@ -23,7 +23,7 @@
   <link rel="apple-touch-icon" href="icons/icon.svg">
   <meta name="theme-color" content="#2563eb">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
-  <script src="js/supabase-cdn.min.js?v=20260323h"></script>
+  <script src="js/supabase-cdn.min.js?v=20260324a"></script>
 </head>
 <body data-view="practitioner">
   <!-- ===== ログイン画面 ===== -->
@@ -233,14 +233,50 @@
           <p>患者さんに<strong>立った状態</strong>で、上から順にランドマークの左右差を確認してください。</p>
         </div>
 
-        <!-- 全身詳細ランドマーク（上半身） -->
+        <!-- 基本3ランドマーク -->
         <div class="detail-section-header">
+          <span class="detail-section-icon">📐</span>
+          <h3>基本検査</h3>
+        </div>
+
+        <div class="form-card">
+          <h3 class="card-title">① 乳様突起</h3>
+          <p class="landmark-desc">耳の後ろの骨の突起の高さを左右で比較</p>
+          <div class="landmark-input" data-position="standing" data-landmark="mastoid">
+            <button type="button" class="landmark-btn" data-value="-1">← 左が高い</button>
+            <button type="button" class="landmark-btn" data-value="0">同じ高さ</button>
+            <button type="button" class="landmark-btn" data-value="1">右が高い →</button>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <h3 class="card-title">② 肩甲下角</h3>
+          <p class="landmark-desc">肩甲骨の下端の高さを左右で比較</p>
+          <div class="landmark-input" data-position="standing" data-landmark="scapulaInferior">
+            <button type="button" class="landmark-btn" data-value="-1">← 左が高い</button>
+            <button type="button" class="landmark-btn" data-value="0">同じ高さ</button>
+            <button type="button" class="landmark-btn" data-value="1">右が高い →</button>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <h3 class="card-title">③ 腸骨稜</h3>
+          <p class="landmark-desc">骨盤の上端の高さを左右で比較</p>
+          <div class="landmark-input" data-position="standing" data-landmark="iliacCrest">
+            <button type="button" class="landmark-btn" data-value="-1">← 左が高い</button>
+            <button type="button" class="landmark-btn" data-value="0">同じ高さ</button>
+            <button type="button" class="landmark-btn" data-value="1">右が高い →</button>
+          </div>
+        </div>
+
+        <!-- 全身詳細ランドマーク（上半身） -->
+        <div class="detail-section-header" style="margin-top:20px;">
           <span class="detail-section-icon">💪</span>
           <h3>上半身</h3>
         </div>
 
         <div class="form-card">
-          <h3 class="card-title">① 肩峰</h3>
+          <h3 class="card-title">④ 肩峰</h3>
           <p class="landmark-desc">肩の外側の一番高い骨</p>
           <div class="landmark-input" data-position="upperDetail" data-landmark="acromion">
             <button type="button" class="landmark-btn" data-value="-1">← 左が高い</button>
@@ -250,7 +286,7 @@
         </div>
 
         <div class="form-card">
-          <h3 class="card-title">② 肘頭</h3>
+          <h3 class="card-title">⑤ 肘頭</h3>
           <p class="landmark-desc">肘の後ろの骨の突起</p>
           <div class="landmark-input" data-position="upperDetail" data-landmark="mastoidDetail">
             <button type="button" class="landmark-btn" data-value="-1">← 左が高い</button>
@@ -260,7 +296,7 @@
         </div>
 
         <div class="form-card">
-          <h3 class="card-title">③ 橈骨茎状突起</h3>
+          <h3 class="card-title">⑥ 橈骨茎状突起</h3>
           <p class="landmark-desc">手首の外側の骨の突起</p>
           <div class="landmark-input" data-position="upperDetail" data-landmark="radialStyloid">
             <button type="button" class="landmark-btn" data-value="-1">← 左が高い</button>
@@ -276,7 +312,7 @@
         </div>
 
         <div class="form-card">
-          <h3 class="card-title">④ 大転子</h3>
+          <h3 class="card-title">⑦ 大転子</h3>
           <p class="landmark-desc">太ももの外側の骨の出っ張り</p>
           <div class="landmark-input" data-position="lowerDetail" data-landmark="greaterTrochanter">
             <button type="button" class="landmark-btn" data-value="-1">← 左が高い</button>
@@ -286,7 +322,7 @@
         </div>
 
         <div class="form-card">
-          <h3 class="card-title">⑤ 膝蓋骨上端</h3>
+          <h3 class="card-title">⑧ 膝蓋骨上端</h3>
           <p class="landmark-desc">膝のお皿の上端</p>
           <div class="landmark-input" data-position="lowerDetail" data-landmark="patellaUpper">
             <button type="button" class="landmark-btn" data-value="-1">← 左が高い</button>
@@ -296,45 +332,9 @@
         </div>
 
         <div class="form-card">
-          <h3 class="card-title">⑥ 外果（外くるぶし）</h3>
+          <h3 class="card-title">⑨ 外果（外くるぶし）</h3>
           <p class="landmark-desc">足首の外側の骨の出っ張り</p>
           <div class="landmark-input" data-position="lowerDetail" data-landmark="lateralMalleolus">
-            <button type="button" class="landmark-btn" data-value="-1">← 左が高い</button>
-            <button type="button" class="landmark-btn" data-value="0">同じ高さ</button>
-            <button type="button" class="landmark-btn" data-value="1">右が高い →</button>
-          </div>
-        </div>
-
-        <!-- 基本3ランドマーク -->
-        <div class="detail-section-header" style="margin-top:20px;">
-          <span class="detail-section-icon">📐</span>
-          <h3>基本検査</h3>
-        </div>
-
-        <div class="form-card">
-          <h3 class="card-title">乳様突起</h3>
-          <p class="landmark-desc">耳の後ろの骨の突起の高さを左右で比較</p>
-          <div class="landmark-input" data-position="standing" data-landmark="mastoid">
-            <button type="button" class="landmark-btn" data-value="-1">← 左が高い</button>
-            <button type="button" class="landmark-btn" data-value="0">同じ高さ</button>
-            <button type="button" class="landmark-btn" data-value="1">右が高い →</button>
-          </div>
-        </div>
-
-        <div class="form-card">
-          <h3 class="card-title">肩甲下角</h3>
-          <p class="landmark-desc">肩甲骨の下端の高さを左右で比較</p>
-          <div class="landmark-input" data-position="standing" data-landmark="scapulaInferior">
-            <button type="button" class="landmark-btn" data-value="-1">← 左が高い</button>
-            <button type="button" class="landmark-btn" data-value="0">同じ高さ</button>
-            <button type="button" class="landmark-btn" data-value="1">右が高い →</button>
-          </div>
-        </div>
-
-        <div class="form-card">
-          <h3 class="card-title">腸骨稜</h3>
-          <p class="landmark-desc">骨盤の上端の高さを左右で比較</p>
-          <div class="landmark-input" data-position="standing" data-landmark="iliacCrest">
             <button type="button" class="landmark-btn" data-value="-1">← 左が高い</button>
             <button type="button" class="landmark-btn" data-value="0">同じ高さ</button>
             <button type="button" class="landmark-btn" data-value="1">右が高い →</button>
@@ -601,7 +601,7 @@
         <div class="tutorial-icon">📊</div>
         <h2>結果の活用</h2>
         <ul class="tutorial-list">
-          <li><strong>詳細検査</strong>で縮こまり箇所を特定</li>
+          <li><strong>詳細検査</strong>で収縮箇所を特定</li>
           <li><strong>施術プロトコル</strong>で治療手順を確認</li>
           <li><strong>PDF出力</strong>で患者に説明</li>
           <li><strong>履歴保存</strong>でビフォーアフター比較</li>
@@ -628,13 +628,13 @@
   <!-- 印刷用コンテナ（通常は非表示、印刷時のみ表示） -->
   <div id="printContainer" class="print-container"></div>
 
-  <script src="js/supabase.js?v=20260323h"></script>
-  <script src="js/inspection.js?v=20260323h"></script>
-  <script src="js/bodyDiagram.js?v=20260323h"></script>
-  <script src="js/selfcare.js?v=20260323h"></script>
-  <script src="js/storage.js?v=20260323h"></script>
-  <script src="js/pdf.js?v=20260323h"></script>
-  <script src="js/app.js?v=20260323h"></script>
+  <script src="js/supabase.js?v=20260324a"></script>
+  <script src="js/inspection.js?v=20260324a"></script>
+  <script src="js/bodyDiagram.js?v=20260324a"></script>
+  <script src="js/selfcare.js?v=20260324a"></script>
+  <script src="js/storage.js?v=20260324a"></script>
+  <script src="js/pdf.js?v=20260324a"></script>
+  <script src="js/app.js?v=20260324a"></script>
   <script>
     // フォールバック：app.jsでエラーが出た場合のログイン処理
     window.addEventListener('load', function() {
