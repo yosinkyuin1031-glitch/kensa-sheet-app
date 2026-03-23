@@ -630,6 +630,19 @@ const BodyDiagram = {
         'stroke-width': 1.2, 'stroke-dasharray': '4,2'
       }));
 
+      // パーツハイライト（腕・脚を赤/紫で色付け）
+      const mapping = partMapping[type]?.[i];
+      if (mapping) {
+        const contractedSide = pattern1 ? 'right' : 'left';
+        const tensionedSide = pattern1 ? 'left' : 'right';
+        if (mapping[contractedSide]) {
+          mapping[contractedSide].forEach(p => this._highlightPart(svg, p, 'rgba(239,68,68,0.28)'));
+        }
+        if (mapping[tensionedSide]) {
+          mapping[tensionedSide].forEach(p => this._highlightPart(svg, p, 'rgba(168,85,247,0.2)'));
+        }
+      }
+
       // ラベル
       const midY = (posA.baseY + posB.baseY) / 2;
 
@@ -876,6 +889,12 @@ const BodyDiagram = {
       const stretchX = compSide === 'left' ? cfg.rightX : cfg.leftX;
       const compLabel = compSide === 'left' ? '左' : '右';
       const stretchLabel = compSide === 'left' ? '右' : '左';
+
+      // パーツハイライト（腕・脚を赤/紫で色付け）
+      const contractedParts = cfg.parts[compSide] || [];
+      const tensionedParts = cfg.parts[compSide === 'left' ? 'right' : 'left'] || [];
+      contractedParts.forEach(p => this._highlightPart(svg, p, 'rgba(239,68,68,0.30)'));
+      tensionedParts.forEach(p => this._highlightPart(svg, p, 'rgba(168,85,247,0.22)'));
 
       // 縮みインジケーター
       indicatorLayer.appendChild(this._createSVGEl('rect', {
