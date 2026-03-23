@@ -630,19 +630,6 @@ const BodyDiagram = {
         'stroke-width': 1.2, 'stroke-dasharray': '4,2'
       }));
 
-      // パーツハイライト
-      const mapping = partMapping[type]?.[i];
-      if (mapping) {
-        const contractedSide = pattern1 ? 'right' : 'left';
-        const tensionedSide = pattern1 ? 'left' : 'right';
-        if (mapping[contractedSide]) {
-          mapping[contractedSide].forEach(p => this._highlightPart(svg, p, 'rgba(239,68,68,0.28)'));
-        }
-        if (mapping[tensionedSide]) {
-          mapping[tensionedSide].forEach(p => this._highlightPart(svg, p, 'rgba(168,85,247,0.2)'));
-        }
-      }
-
       // ラベル
       const midY = (posA.baseY + posB.baseY) / 2;
 
@@ -750,24 +737,9 @@ const BodyDiagram = {
         stroke: 'white', 'stroke-width': 1.5
       }));
 
-      if (val !== 0) {
-        const lArrow = val === -1 ? '↑' : '↓';
-        const lColor = val === -1 ? '#3b82f6' : '#f97316';
-        landmarkLayer.appendChild(this._createSVGEl('text', {
-          x: pos.leftX - 12, y: leftY + 4, 'text-anchor': 'end',
-          'font-size': 9, fill: lColor, 'font-weight': 700
-        }, lArrow));
-        const rArrow = val === 1 ? '↑' : '↓';
-        const rColor = val === 1 ? '#3b82f6' : '#f97316';
-        landmarkLayer.appendChild(this._createSVGEl('text', {
-          x: pos.rightX + 12, y: rightY + 4, 'text-anchor': 'start',
-          'font-size': 9, fill: rColor, 'font-weight': 700
-        }, rArrow));
-      }
-
-      // 立位ラベル（体幹中央に小さく）
+      // 立位ラベル（ドットの左右外側に小さく配置）
       landmarkLayer.appendChild(this._createSVGEl('text', {
-        x: 150, y: pos.baseY + 3, 'text-anchor': 'middle',
+        x: 150, y: pos.baseY - 10, 'text-anchor': 'middle',
         'font-size': 7, fill: '#94a3b8', 'font-weight': 600
       }, pos.label));
     }
@@ -794,23 +766,6 @@ const BodyDiagram = {
         fill: val === 1 ? '#3b82f6' : val === -1 ? '#f97316' : '#22c55e',
         stroke: 'white', 'stroke-width': 2
       }));
-
-      // 矢印
-      if (val !== 0) {
-        const lArrow = val === -1 ? '↑' : '↓';
-        const lColor = val === -1 ? '#3b82f6' : '#f97316';
-        landmarkLayer.appendChild(this._createSVGEl('text', {
-          x: pos.leftX - 14, y: leftY + 4, 'text-anchor': 'end',
-          'font-size': 10, fill: lColor, 'font-weight': 700
-        }, lArrow));
-
-        const rArrow = val === 1 ? '↑' : '↓';
-        const rColor = val === 1 ? '#3b82f6' : '#f97316';
-        landmarkLayer.appendChild(this._createSVGEl('text', {
-          x: pos.rightX + 14, y: rightY + 4, 'text-anchor': 'start',
-          'font-size': 10, fill: rColor, 'font-weight': 700
-        }, rArrow));
-      }
 
       // ラベル（左右両方、ドットの下に配置して被り回避）
       const labelY = pos.baseY + 20;
@@ -921,12 +876,6 @@ const BodyDiagram = {
       const stretchX = compSide === 'left' ? cfg.rightX : cfg.leftX;
       const compLabel = compSide === 'left' ? '左' : '右';
       const stretchLabel = compSide === 'left' ? '右' : '左';
-
-      // パーツハイライト（腕・脚を色付け）
-      const contractedParts = cfg.parts[compSide] || [];
-      const tensionedParts = cfg.parts[compSide === 'left' ? 'right' : 'left'] || [];
-      contractedParts.forEach(p => this._highlightPart(svg, p, 'rgba(239,68,68,0.30)'));
-      tensionedParts.forEach(p => this._highlightPart(svg, p, 'rgba(168,85,247,0.22)'));
 
       // 縮みインジケーター
       indicatorLayer.appendChild(this._createSVGEl('rect', {
@@ -1057,9 +1006,11 @@ const BodyDiagram = {
       if (!leftCompressed && !rightCompressed) continue;
 
       let midY = (posY[seg.upper] + posY[seg.lower]) / 2;
-      // 腕脚ラベルとの被り回避（上腕midY≈112, 前腕midY≈185, 体幹midY≈238）
-      if (midY > 110 && midY < 120) midY = 130;     // 肩峰↔肩甲下角
-      if (midY > 180 && midY < 200) midY = 200;     // 肩甲下角↔腸骨稜
+      // 腕脚ラベルとの被り回避
+      if (midY > 50 && midY < 65) midY = 58;        // 乳様突起↔肩峰
+      if (midY > 110 && midY < 125) midY = 135;     // 肩峰↔肩甲下角
+      if (midY > 185 && midY < 200) midY = 205;     // 肩甲下角↔腸骨稜
+      if (midY > 235 && midY < 250) midY = 248;     // 腸骨稜↔大転子
       const compSide = leftCompressed ? '左' : '右';
       const stretchSide = leftCompressed ? '右' : '左';
       const compX = leftCompressed ? seg.leftX : seg.rightX;
