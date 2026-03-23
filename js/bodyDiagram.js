@@ -31,47 +31,48 @@ const BodyDiagram = {
   _rShift(val) { return -(val || 0) * this.TILT; },
 
   // ===== 背面図SVG（セグメントをグループ化） =====
-  createBodySVG() {
+  createBodySVG(prefix) {
+    const p = prefix || '';
     return `
-    <svg viewBox="0 0 300 580" xmlns="http://www.w3.org/2000/svg" class="body-svg">
+    <svg viewBox="0 0 300 580" xmlns="http://www.w3.org/2000/svg" class="body-svg" data-prefix="${p}">
       <defs>
-        <radialGradient id="jointGrad">
+        <radialGradient id="${p}jointGrad">
           <stop offset="0%" stop-color="#fbbf24"/>
           <stop offset="100%" stop-color="#f59e0b"/>
         </radialGradient>
-        <linearGradient id="skinGrad" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id="${p}skinGrad" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stop-color="#fde8d0"/>
           <stop offset="50%" stop-color="#f5d5b8"/>
           <stop offset="100%" stop-color="#e8c4a0"/>
         </linearGradient>
-        <linearGradient id="skinGradDark" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id="${p}skinGradDark" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stop-color="#f0c8a0"/>
           <stop offset="100%" stop-color="#ddb08a"/>
         </linearGradient>
-        <radialGradient id="headGrad" cx="50%" cy="40%">
+        <radialGradient id="${p}headGrad" cx="50%" cy="40%">
           <stop offset="0%" stop-color="#fde8d0"/>
           <stop offset="80%" stop-color="#f0c8a0"/>
           <stop offset="100%" stop-color="#ddb08a"/>
         </radialGradient>
-        <filter id="softShadow" x="-5%" y="-5%" width="110%" height="110%">
+        <filter id="${p}softShadow" x="-5%" y="-5%" width="110%" height="110%">
           <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
           <feOffset dx="1" dy="2" result="shadow"/>
           <feFlood flood-color="#00000020"/>
           <feComposite in2="shadow" operator="in"/>
           <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
         </filter>
-        <clipPath id="bodyClip">
+        <clipPath id="${p}bodyClip">
           <rect x="0" y="0" width="300" height="580"/>
         </clipPath>
       </defs>
 
-      <g class="body-segments" filter="url(#softShadow)">
+      <g class="body-segments" filter="url(#${p}softShadow)">
 
         <!-- ===== 胴体（静的ベース）===== -->
         <g class="seg-torso">
           <path class="body-part" data-part="torso"
             d="M82,74 C82,68 115,64 150,64 C185,64 218,68 218,74 L220,150 L218,242 C216,258 196,264 150,264 C104,264 84,258 82,242 L80,150 Z"
-            fill="url(#skinGrad)" stroke="#c4956e" stroke-width="1.2"/>
+            fill="url(#${p}skinGrad)" stroke="#c4956e" stroke-width="1.2"/>
           <!-- 背骨ライン（静的・薄く） -->
           <path class="spine-static" d="M150,70 C150,70 148,85 150,100 C152,115 148,130 150,145 C152,160 148,175 150,190 C152,205 148,220 150,240"
             stroke="#d4a882" stroke-width="1.2" fill="none" opacity="0.2"/>
@@ -103,15 +104,15 @@ const BodyDiagram = {
           <!-- 首（胴体に付属） -->
           <path class="body-part" data-part="neck"
             d="M138,52 Q150,58 162,52 L162,66 Q150,68 138,66 Z"
-            fill="url(#skinGrad)" stroke="#c4956e" stroke-width="1"/>
-          <circle class="joint" cx="150" cy="54" r="4.5" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
+            fill="url(#${p}skinGrad)" stroke="#c4956e" stroke-width="1"/>
+          <circle class="joint" cx="150" cy="54" r="4.5" fill="url(#${p}jointGrad)" stroke="#d97706" stroke-width="1.3"/>
         </g>
 
         <!-- ===== 頭部（mastoidで傾く）===== -->
         <g class="seg seg-head">
           <ellipse cx="150" cy="26" rx="24" ry="28" fill="#5a3825" opacity="0.3"/>
           <ellipse class="body-part" data-part="head" cx="150" cy="28" rx="22" ry="26"
-            fill="url(#headGrad)" stroke="#c4956e" stroke-width="1.2"/>
+            fill="url(#${p}headGrad)" stroke="#c4956e" stroke-width="1.2"/>
           <path d="M128,18 C128,6 172,6 172,18 L172,28 C172,22 128,22 128,28 Z" fill="#4a2c1a" opacity="0.5"/>
           <ellipse class="body-part" data-part="ear-l" cx="128" cy="32" rx="5" ry="8"
             fill="#f0c8a0" stroke="#c4956e" stroke-width="0.8"/>
@@ -121,19 +122,19 @@ const BodyDiagram = {
 
         <!-- ===== 左腕（肩〜手：scapulaInferiorで上下）===== -->
         <g class="seg seg-arm-l">
-          <ellipse class="joint seg-shoulder-joint-l" cx="82" cy="76" rx="8" ry="6" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
+          <ellipse class="joint seg-shoulder-joint-l" cx="82" cy="76" rx="8" ry="6" fill="url(#${p}jointGrad)" stroke="#d97706" stroke-width="1.3"/>
           <path class="body-part" data-part="upperArm-l"
             d="M78,82 C68,96 60,122 56,148 L48,148 C54,118 64,92 76,78 Z"
-            fill="url(#skinGrad)" stroke="#c4956e" stroke-width="1.1"/>
+            fill="url(#${p}skinGrad)" stroke="#c4956e" stroke-width="1.1"/>
           <path d="M72,88 C66,104 62,124 58,144" stroke="#d4a882" stroke-width="0.7" fill="none" opacity="0.3"/>
-          <ellipse class="joint" cx="52" cy="150" rx="7" ry="5" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
+          <ellipse class="joint" cx="52" cy="150" rx="7" ry="5" fill="url(#${p}jointGrad)" stroke="#d97706" stroke-width="1.3"/>
           <path class="body-part" data-part="forearm-l"
             d="M50,156 L46,222 L38,222 L44,156 Z"
-            fill="url(#skinGrad)" stroke="#c4956e" stroke-width="1.1"/>
-          <ellipse class="joint" cx="42" cy="226" rx="6" ry="4" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
+            fill="url(#${p}skinGrad)" stroke="#c4956e" stroke-width="1.1"/>
+          <ellipse class="joint" cx="42" cy="226" rx="6" ry="4" fill="url(#${p}jointGrad)" stroke="#d97706" stroke-width="1.3"/>
           <path class="body-part" data-part="hand-l"
             d="M38,230 L36,260 C35,268 34,280 33,290 C32,296 30,304 32,308 C34,314 42,314 44,308 C46,302 46,290 46,280 L48,260 L48,230 Z"
-            fill="url(#skinGradDark)" stroke="#c4956e" stroke-width="1"/>
+            fill="url(#${p}skinGradDark)" stroke="#c4956e" stroke-width="1"/>
           <line x1="34" y1="296" x2="32" y2="308" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
           <line x1="37" y1="296" x2="36" y2="310" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
           <line x1="40" y1="296" x2="40" y2="312" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
@@ -142,19 +143,19 @@ const BodyDiagram = {
 
         <!-- ===== 右腕 ===== -->
         <g class="seg seg-arm-r">
-          <ellipse class="joint seg-shoulder-joint-r" cx="218" cy="76" rx="8" ry="6" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
+          <ellipse class="joint seg-shoulder-joint-r" cx="218" cy="76" rx="8" ry="6" fill="url(#${p}jointGrad)" stroke="#d97706" stroke-width="1.3"/>
           <path class="body-part" data-part="upperArm-r"
             d="M222,82 C232,96 240,122 244,148 L252,148 C246,118 236,92 224,78 Z"
-            fill="url(#skinGrad)" stroke="#c4956e" stroke-width="1.1"/>
+            fill="url(#${p}skinGrad)" stroke="#c4956e" stroke-width="1.1"/>
           <path d="M228,88 C234,104 238,124 242,144" stroke="#d4a882" stroke-width="0.7" fill="none" opacity="0.3"/>
-          <ellipse class="joint" cx="248" cy="150" rx="7" ry="5" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
+          <ellipse class="joint" cx="248" cy="150" rx="7" ry="5" fill="url(#${p}jointGrad)" stroke="#d97706" stroke-width="1.3"/>
           <path class="body-part" data-part="forearm-r"
             d="M250,156 L254,222 L262,222 L256,156 Z"
-            fill="url(#skinGrad)" stroke="#c4956e" stroke-width="1.1"/>
-          <ellipse class="joint" cx="258" cy="226" rx="6" ry="4" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
+            fill="url(#${p}skinGrad)" stroke="#c4956e" stroke-width="1.1"/>
+          <ellipse class="joint" cx="258" cy="226" rx="6" ry="4" fill="url(#${p}jointGrad)" stroke="#d97706" stroke-width="1.3"/>
           <path class="body-part" data-part="hand-r"
             d="M262,230 L264,260 C265,268 266,280 267,290 C268,296 270,304 268,308 C266,314 258,314 256,308 C254,302 254,290 254,280 L252,260 L252,230 Z"
-            fill="url(#skinGradDark)" stroke="#c4956e" stroke-width="1"/>
+            fill="url(#${p}skinGradDark)" stroke="#c4956e" stroke-width="1"/>
           <line x1="266" y1="296" x2="268" y2="308" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
           <line x1="263" y1="296" x2="264" y2="310" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
           <line x1="260" y1="296" x2="260" y2="312" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
@@ -163,38 +164,38 @@ const BodyDiagram = {
 
         <!-- ===== 左脚（iliacCrestで上下）===== -->
         <g class="seg seg-leg-l">
-          <ellipse class="joint" cx="128" cy="260" rx="8" ry="6" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
+          <ellipse class="joint" cx="128" cy="260" rx="8" ry="6" fill="url(#${p}jointGrad)" stroke="#d97706" stroke-width="1.3"/>
           <path class="body-part" data-part="thigh-l"
             d="M118,266 C116,290 114,320 113,350 L112,370 L140,370 L139,350 C138,320 138,290 140,266 Z"
-            fill="url(#skinGrad)" stroke="#c4956e" stroke-width="1.1"/>
+            fill="url(#${p}skinGrad)" stroke="#c4956e" stroke-width="1.1"/>
           <path d="M124,280 C122,310 120,340 118,365" stroke="#d4a882" stroke-width="0.7" fill="none" opacity="0.25"/>
-          <ellipse class="joint" cx="126" cy="374" rx="9" ry="6" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
+          <ellipse class="joint" cx="126" cy="374" rx="9" ry="6" fill="url(#${p}jointGrad)" stroke="#d97706" stroke-width="1.3"/>
           <path class="body-part" data-part="shin-l"
             d="M116,380 C114,410 112,444 110,478 L110,494 L138,494 L138,478 C137,444 137,410 138,380 Z"
-            fill="url(#skinGrad)" stroke="#c4956e" stroke-width="1.1"/>
+            fill="url(#${p}skinGrad)" stroke="#c4956e" stroke-width="1.1"/>
           <path d="M114,395 C110,415 110,440 112,460" stroke="#d4a882" stroke-width="0.8" fill="none" opacity="0.25"/>
-          <ellipse class="joint" cx="124" cy="498" rx="8" ry="5" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
+          <ellipse class="joint" cx="124" cy="498" rx="8" ry="5" fill="url(#${p}jointGrad)" stroke="#d97706" stroke-width="1.3"/>
           <path class="body-part" data-part="foot-l"
             d="M112,503 L110,520 C109,530 140,530 138,520 L136,503 Z"
-            fill="url(#skinGradDark)" stroke="#c4956e" stroke-width="1"/>
+            fill="url(#${p}skinGradDark)" stroke="#c4956e" stroke-width="1"/>
         </g>
 
         <!-- ===== 右脚 ===== -->
         <g class="seg seg-leg-r">
-          <ellipse class="joint" cx="172" cy="260" rx="8" ry="6" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
+          <ellipse class="joint" cx="172" cy="260" rx="8" ry="6" fill="url(#${p}jointGrad)" stroke="#d97706" stroke-width="1.3"/>
           <path class="body-part" data-part="thigh-r"
             d="M160,266 C162,290 162,320 161,350 L160,370 L188,370 L187,350 C186,320 184,290 182,266 Z"
-            fill="url(#skinGrad)" stroke="#c4956e" stroke-width="1.1"/>
+            fill="url(#${p}skinGrad)" stroke="#c4956e" stroke-width="1.1"/>
           <path d="M176,280 C178,310 180,340 182,365" stroke="#d4a882" stroke-width="0.7" fill="none" opacity="0.25"/>
-          <ellipse class="joint" cx="174" cy="374" rx="9" ry="6" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
+          <ellipse class="joint" cx="174" cy="374" rx="9" ry="6" fill="url(#${p}jointGrad)" stroke="#d97706" stroke-width="1.3"/>
           <path class="body-part" data-part="shin-r"
             d="M162,380 C163,410 163,444 162,478 L162,494 L190,494 L190,478 C188,444 186,410 184,380 Z"
-            fill="url(#skinGrad)" stroke="#c4956e" stroke-width="1.1"/>
+            fill="url(#${p}skinGrad)" stroke="#c4956e" stroke-width="1.1"/>
           <path d="M186,395 C190,415 190,440 188,460" stroke="#d4a882" stroke-width="0.8" fill="none" opacity="0.25"/>
-          <ellipse class="joint" cx="176" cy="498" rx="8" ry="5" fill="url(#jointGrad)" stroke="#d97706" stroke-width="1.3"/>
+          <ellipse class="joint" cx="176" cy="498" rx="8" ry="5" fill="url(#${p}jointGrad)" stroke="#d97706" stroke-width="1.3"/>
           <path class="body-part" data-part="foot-r"
             d="M162,503 L160,520 C159,530 190,530 188,520 L186,503 Z"
-            fill="url(#skinGradDark)" stroke="#c4956e" stroke-width="1"/>
+            fill="url(#${p}skinGradDark)" stroke="#c4956e" stroke-width="1"/>
         </g>
       </g>
 
@@ -207,7 +208,7 @@ const BodyDiagram = {
 
       <!-- 動的レイヤー -->
       <g class="spine-dynamic-layer"></g>
-      <g class="zone-layer" clip-path="url(#bodyClip)"></g>
+      <g class="zone-layer" clip-path="url(#${p}bodyClip)"></g>
       <g class="indicator-layer"></g>
       <g class="landmark-layer"></g>
     </svg>`;
@@ -216,7 +217,8 @@ const BodyDiagram = {
   init(containerId) {
     const el = document.getElementById(containerId);
     if (!el) return;
-    el.innerHTML = this.createBodySVG();
+    const prefix = containerId.replace(/[^a-zA-Z]/g, '') + '_';
+    el.innerHTML = this.createBodySVG(prefix);
   },
 
   _highlightPart(svg, partName, color) {
@@ -225,13 +227,14 @@ const BodyDiagram = {
   },
 
   _resetParts(svg) {
+    const prefix = svg.dataset.prefix || '';
     svg.querySelectorAll('.body-part').forEach(el => {
       const p = el.dataset.part;
       if (!p) return;
-      if (p === 'head') el.setAttribute('fill', 'url(#headGrad)');
+      if (p === 'head') el.setAttribute('fill', `url(#${prefix}headGrad)`);
       else if (p.startsWith('ear')) el.setAttribute('fill', '#f0c8a0');
-      else if (p === 'hand-l' || p === 'hand-r' || p === 'foot-l' || p === 'foot-r') el.setAttribute('fill', 'url(#skinGradDark)');
-      else el.setAttribute('fill', 'url(#skinGrad)');
+      else if (p === 'hand-l' || p === 'hand-r' || p === 'foot-l' || p === 'foot-r') el.setAttribute('fill', `url(#${prefix}skinGradDark)`);
+      else el.setAttribute('fill', `url(#${prefix}skinGrad)`);
     });
   },
 
