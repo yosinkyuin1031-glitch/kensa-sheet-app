@@ -736,34 +736,7 @@ const BodyDiagram = {
     // === 身体パーツの動的シフト（全身版） ===
     this._applyUnifiedShifts(svg, allData);
 
-    // === 立位基本3点（乳様突起・肩甲下角・腸骨稜）のドット描画 ===
-    const standingPosMap = this.positions.firstStage;
-    for (const [key, pos] of Object.entries(standingPosMap)) {
-      const val = standingData ? standingData[key] : null;
-      if (val === null || val === undefined) continue;
-
-      const leftY  = pos.baseY + this._lShift(val);
-      const rightY = pos.baseY + this._rShift(val);
-
-      landmarkLayer.appendChild(this._createSVGEl('circle', {
-        cx: pos.leftX, cy: leftY, r: 5,
-        fill: val === -1 ? '#3b82f6' : val === 1 ? '#f97316' : '#22c55e',
-        stroke: 'white', 'stroke-width': 1.5
-      }));
-      landmarkLayer.appendChild(this._createSVGEl('circle', {
-        cx: pos.rightX, cy: rightY, r: 5,
-        fill: val === 1 ? '#3b82f6' : val === -1 ? '#f97316' : '#22c55e',
-        stroke: 'white', 'stroke-width': 1.5
-      }));
-
-      // 立位ラベル（ドットの左右外側に小さく配置）
-      landmarkLayer.appendChild(this._createSVGEl('text', {
-        x: 150, y: pos.baseY - 10, 'text-anchor': 'middle',
-        'font-size': 7, fill: '#94a3b8', 'font-weight': 600
-      }, pos.label));
-    }
-
-    // === 詳細6ランドマークのドット描画（接続線なし） ===
+    // === 詳細6ランドマークのドット描画 ===
     const posMap = this.unifiedPositions;
     for (const [key, pos] of Object.entries(posMap)) {
       const val = allData[key];
@@ -774,39 +747,48 @@ const BodyDiagram = {
 
       // 左ドット
       landmarkLayer.appendChild(this._createSVGEl('circle', {
-        cx: pos.leftX, cy: leftY, r: 6,
+        cx: pos.leftX, cy: leftY, r: 5,
         fill: val === -1 ? '#3b82f6' : val === 1 ? '#f97316' : '#22c55e',
-        stroke: 'white', 'stroke-width': 2
+        stroke: 'white', 'stroke-width': 1.5
       }));
 
       // 右ドット
       landmarkLayer.appendChild(this._createSVGEl('circle', {
-        cx: pos.rightX, cy: rightY, r: 6,
+        cx: pos.rightX, cy: rightY, r: 5,
         fill: val === 1 ? '#3b82f6' : val === -1 ? '#f97316' : '#22c55e',
-        stroke: 'white', 'stroke-width': 2
+        stroke: 'white', 'stroke-width': 1.5
       }));
 
-      // ラベル（左右両方、ドットの下に配置して被り回避）
-      const labelY = pos.baseY + 20;
-      const xOff = (key === 'greaterTrochanter') ? 30 : 14;
+      // ラベル（左側のみ、ドットの外側に配置）
       landmarkLayer.appendChild(this._createSVGEl('text', {
-        x: pos.leftX - xOff, y: labelY, 'text-anchor': 'end',
-        'font-size': 7, fill: '#64748b', 'font-weight': 600
-      }, pos.label));
-      landmarkLayer.appendChild(this._createSVGEl('text', {
-        x: pos.rightX + xOff, y: labelY, 'text-anchor': 'start',
+        x: pos.leftX - 12, y: pos.baseY + 3, 'text-anchor': 'end',
         'font-size': 7, fill: '#64748b', 'font-weight': 600
       }, pos.label));
     }
 
-    // === 立位検査データ（乳様突起・肩甲下角・腸骨稜）の詰まり/伸び可視化 ===
-    this._drawStandingAnalysis(svg, standingData || {}, allData);
+    // === 立位基本3点の小ドット（胴体内側、詳細とずらす） ===
+    const standingPosMap = this.positions.firstStage;
+    for (const [key, pos] of Object.entries(standingPosMap)) {
+      const val = standingData ? standingData[key] : null;
+      if (val === null || val === undefined) continue;
 
-    // === 詰まり・伸びインジケーター（全身連続版） ===
-    this._drawUnifiedCompressionIndicators(svg, allData);
+      const leftY  = pos.baseY + this._lShift(val);
+      const rightY = pos.baseY + this._rShift(val);
 
-    // === 体幹への影響（腕脚の詰まり＋骨盤傾斜の結果） ===
-    this._drawTrunkImpact(svg, allData, standingData || {});
+      landmarkLayer.appendChild(this._createSVGEl('circle', {
+        cx: pos.leftX, cy: leftY, r: 3.5,
+        fill: val === -1 ? '#3b82f6' : val === 1 ? '#f97316' : '#22c55e',
+        stroke: 'white', 'stroke-width': 1, opacity: 0.7
+      }));
+      landmarkLayer.appendChild(this._createSVGEl('circle', {
+        cx: pos.rightX, cy: rightY, r: 3.5,
+        fill: val === 1 ? '#3b82f6' : val === -1 ? '#f97316' : '#22c55e',
+        stroke: 'white', 'stroke-width': 1, opacity: 0.7
+      }));
+    }
+
+    // === 全身の詰まり・伸び判定と可視化 ===
+    this._drawAllCompressionIndicators(svg, allData, standingData || {});
   },
 
   // ===== 全身シフト（上半身＋下半身） =====
@@ -837,97 +819,8 @@ const BodyDiagram = {
     }
   },
 
-  // ===== 全身連続の詰まり・伸びインジケーター =====
-  // 各区間を腕・脚の実際の位置に配置
-  _drawUnifiedCompressionIndicators(svg, data) {
-    const indicatorLayer = svg.querySelector('.indicator-layer');
-    if (!indicatorLayer) return;
-
-    const keys = ['acromion', 'mastoidDetail', 'radialStyloid', 'greaterTrochanter', 'patellaUpper', 'lateralMalleolus'];
-    const posMap = this.unifiedPositions;
-
-    // 各区間のインジケーター位置と対応パーツ
-    const segmentConfig = {
-      0: { // 肩峰→肘頭 = 上腕
-        leftX: 65, rightX: 235,
-        parts: { left: ['upperArm-l'], right: ['upperArm-r'] }
-      },
-      1: { // 肘頭→茎状突起 = 前腕
-        leftX: 48, rightX: 252,
-        parts: { left: ['forearm-l', 'hand-l'], right: ['forearm-r', 'hand-r'] }
-      },
-      2: { // 茎状突起→大転子 = 体幹
-        leftX: 115, rightX: 185,
-        parts: { left: [], right: [] }
-      },
-      3: { // 大転子→膝蓋骨 = 太もも
-        leftX: 80, rightX: 220,
-        parts: { left: ['thigh-l'], right: ['thigh-r'] }
-      },
-      4: { // 膝蓋骨→外果 = すね
-        leftX: 78, rightX: 222,
-        parts: { left: ['shin-l'], right: ['shin-r'] }
-      }
-    };
-
-    for (let i = 0; i < keys.length - 1; i++) {
-      const keyA = keys[i];
-      const keyB = keys[i + 1];
-      const valA = data[keyA];
-      const valB = data[keyB];
-
-      if (valA === null || valA === undefined || valB === null || valB === undefined) continue;
-      if (valA === 0 && valB === 0) continue;
-      if (valA === valB) continue;
-      if (valA === 0 || valB === 0) continue;
-
-      const leftCompressed = (valA === 1 && valB === -1);
-      const rightCompressed = (valA === -1 && valB === 1);
-      if (!leftCompressed && !rightCompressed) continue;
-
-      const cfg = segmentConfig[i];
-      const posA = posMap[keyA];
-      const posB = posMap[keyB];
-      const midY = (posA.baseY + posB.baseY) / 2;
-
-      const compSide = leftCompressed ? 'left' : 'right';
-      const compX = compSide === 'left' ? cfg.leftX : cfg.rightX;
-      const stretchX = compSide === 'left' ? cfg.rightX : cfg.leftX;
-      const compLabel = compSide === 'left' ? '左' : '右';
-      const stretchLabel = compSide === 'left' ? '右' : '左';
-
-      // パーツハイライト（腕・脚を赤/紫で色付け）
-      const contractedParts = cfg.parts[compSide] || [];
-      const tensionedParts = cfg.parts[compSide === 'left' ? 'right' : 'left'] || [];
-      contractedParts.forEach(p => this._highlightPart(svg, p, 'rgba(239,68,68,0.30)'));
-      tensionedParts.forEach(p => this._highlightPart(svg, p, 'rgba(168,85,247,0.22)'));
-
-      // 縮みインジケーター
-      indicatorLayer.appendChild(this._createSVGEl('rect', {
-        x: compX - 22, y: midY - 10, width: 44, height: 20,
-        rx: 6, fill: '#ef4444', opacity: 0.9
-      }));
-      indicatorLayer.appendChild(this._createSVGEl('text', {
-        x: compX, y: midY + 4, 'text-anchor': 'middle',
-        'font-size': 9, fill: 'white', 'font-weight': 800
-      }, `${compLabel}縮`));
-
-      // 伸びインジケーター
-      indicatorLayer.appendChild(this._createSVGEl('rect', {
-        x: stretchX - 22, y: midY - 10, width: 44, height: 20,
-        rx: 6, fill: '#8b5cf6', opacity: 0.85
-      }));
-      indicatorLayer.appendChild(this._createSVGEl('text', {
-        x: stretchX, y: midY + 4, 'text-anchor': 'middle',
-        'font-size': 9, fill: 'white', 'font-weight': 800
-      }, `${stretchLabel}伸`));
-
-      // エリア名ラベルは省略（被り防止）
-    }
-  },
-
-  // ===== 体幹への影響（腕脚の詰まり＋骨盤傾斜の結果） =====
-  _drawTrunkImpact(svg, detailData, standingData) {
+  // ===== 全区間の詰まり・伸びを統合的に描画（被り回避） =====
+  _drawAllCompressionIndicators(svg, detailData, standingData) {
     const indicatorLayer = svg.querySelector('.indicator-layer');
     if (!indicatorLayer) return;
 
@@ -935,33 +828,16 @@ const BodyDiagram = {
     const acromVal = detailData.acromion;
     const gtVal = detailData.greaterTrochanter;
     const iliacVal = standingData.iliacCrest;
-    const scapVal = standingData.scapulaInferior;
 
-    // 体幹回旋ラベル位置（肩甲下角・前腕と被らないよう下寄り）
-    const trunkMidY = 210;
-
-    // 4. 肩峰↔大転子の回旋判定
-    let rotationLabel = '';
-    let rotationColor = '#22c55e';
-    if (acromVal != null && gtVal != null) {
-      if (acromVal !== 0 && gtVal !== 0 && acromVal !== gtVal) {
-        rotationLabel = '体幹回旋';
-        rotationColor = '#f59e0b';
-      } else if (acromVal !== 0 && gtVal !== 0 && acromVal === gtVal) {
-        rotationLabel = '全体偏位';
-        rotationColor = '#ef4444';
-      }
-    }
-
-    // === 体幹中心ライン（肩峰→大転子） ===
+    // === 体幹中心ライン（肩峰→大転子）点線 ===
     if (acromVal != null && gtVal != null && (acromVal !== 0 || gtVal !== 0)) {
       const acromXOff = (acromVal || 0) * 4;
       const gtXOff = (gtVal || 0) * 4;
       indicatorLayer.appendChild(this._createSVGEl('line', {
         x1: cx + acromXOff, y1: 78,
         x2: cx + gtXOff, y2: 252,
-        stroke: '#f59e0b', 'stroke-width': 2.5,
-        'stroke-dasharray': '8,4', opacity: 0.6
+        stroke: '#f59e0b', 'stroke-width': 2,
+        'stroke-dasharray': '6,4', opacity: 0.5
       }));
     }
 
@@ -971,98 +847,121 @@ const BodyDiagram = {
       const iliacRightY = 240 + this._rShift(iliacVal);
       indicatorLayer.appendChild(this._createSVGEl('line', {
         x1: 100, y1: iliacLeftY, x2: 200, y2: iliacRightY,
-        stroke: '#f59e0b', 'stroke-width': 2, 'stroke-dasharray': '4,3', opacity: 0.5
+        stroke: '#f59e0b', 'stroke-width': 1.5, 'stroke-dasharray': '4,3', opacity: 0.4
       }));
     }
 
-    // === 回旋ラベル（体幹中央に大きく） ===
-    if (rotationLabel) {
-      indicatorLayer.appendChild(this._createSVGEl('rect', {
-        x: cx - 32, y: trunkMidY - 12, width: 64, height: 24,
-        rx: 12, fill: rotationColor, opacity: 0.9
-      }));
-      indicatorLayer.appendChild(this._createSVGEl('text', {
-        x: cx, y: trunkMidY + 4, 'text-anchor': 'middle',
-        'font-size': 11, fill: 'white', 'font-weight': 800
-      }, rotationLabel));
-    }
+    // === 全区間を統合管理（bodyの右端に縮/伸バッジを縦に並べる） ===
+    // 胴体内の区間（立位+詳細のクロス判定）
+    const mastVal = standingData.mastoid;
+    const scapVal = standingData.scapulaInferior;
 
-  },
-
-  // ===== 立位検査 + 詳細検査の4区間 詰まり/伸び可視化 =====
-  // 乳様突起↔肩峰、肩峰↔肩甲下角、肩甲下角↔腸骨稜、腸骨稜↔大転子
-  _drawStandingAnalysis(svg, standingData, detailData) {
-    const indicatorLayer = svg.querySelector('.indicator-layer');
-    if (!indicatorLayer) return;
-
-    // データ取得
-    const mastVal = standingData.mastoid;       // 乳様突起
-    const scapVal = standingData.scapulaInferior; // 肩甲下角
-    const iliacVal = standingData.iliacCrest;    // 腸骨稜
-    const acromVal = detailData.acromion;         // 肩峰
-    const gtVal = detailData.greaterTrochanter;  // 大転子
-
-    // 各ランドマークのY座標（人体図上の位置）
-    const posY = {
-      mastoid: 38,    // 乳様突起（頭頂付近）
-      acromion: 78,   // 肩峰
-      scapulaInferior: 155, // 肩甲下角
-      iliacCrest: 232,     // 腸骨稜
-      greaterTrochanter: 252 // 大転子
-    };
-
-    // 4区間の定義
-    const segments = [
-      { upper: 'mastoid', lower: 'acromion', valA: mastVal, valB: acromVal, area: '乳様突起〜肩峰', leftX: 110, rightX: 190 },
-      { upper: 'acromion', lower: 'scapulaInferior', valA: acromVal, valB: scapVal, area: '肩峰〜肩甲下角', leftX: 95, rightX: 205 },
-      { upper: 'scapulaInferior', lower: 'iliacCrest', valA: scapVal, valB: iliacVal, area: '肩甲下角〜腸骨稜', leftX: 100, rightX: 200 },
-      { upper: 'iliacCrest', lower: 'greaterTrochanter', valA: iliacVal, valB: gtVal, area: '腸骨稜〜大転子', leftX: 110, rightX: 190 }
+    const allSegments = [
+      // 胴体区間（立位×詳細クロス）
+      { valA: mastVal, valB: acromVal, midY: 56, area: '頭〜肩' },
+      { valA: acromVal, valB: scapVal, midY: 116, area: '肩〜肩甲' },
+      { valA: scapVal, valB: iliacVal, midY: 192, area: '背中' },
+      { valA: iliacVal, valB: gtVal, midY: 242, area: '骨盤' },
+      // 腕区間
+      { valA: detailData.acromion, valB: detailData.mastoidDetail, midY: 112, area: '上腕',
+        parts: { left: ['upperArm-l'], right: ['upperArm-r'] }, isLimb: true },
+      { valA: detailData.mastoidDetail, valB: detailData.radialStyloid, midY: 185, area: '前腕',
+        parts: { left: ['forearm-l', 'hand-l'], right: ['forearm-r', 'hand-r'] }, isLimb: true },
+      // 脚区間
+      { valA: detailData.greaterTrochanter, valB: detailData.patellaUpper, midY: 310, area: '太もも',
+        parts: { left: ['thigh-l'], right: ['thigh-r'] }, isLimb: true },
+      { valA: detailData.patellaUpper, valB: detailData.lateralMalleolus, midY: 435, area: 'すね',
+        parts: { left: ['shin-l'], right: ['shin-r'] }, isLimb: true },
     ];
 
-    for (const seg of segments) {
+    // 使用済みY座標を追跡して被りを回避
+    const usedYRanges = [];
+    const findSafeY = (targetY) => {
+      let y = targetY;
+      let attempts = 0;
+      while (attempts < 20) {
+        const conflict = usedYRanges.some(([lo, hi]) => y >= lo - 2 && y <= hi + 2);
+        if (!conflict) break;
+        y += 22; // 下にずらす
+        attempts++;
+      }
+      usedYRanges.push([y - 10, y + 10]);
+      return y;
+    };
+
+    for (const seg of allSegments) {
       if (seg.valA == null || seg.valB == null) continue;
       if (seg.valA === 0 && seg.valB === 0) continue;
       if (seg.valA === seg.valB) continue;
       if (seg.valA === 0 || seg.valB === 0) continue;
 
-      // 互い違い → 詰まり判定
       const leftCompressed = (seg.valA === 1 && seg.valB === -1);
       const rightCompressed = (seg.valA === -1 && seg.valB === 1);
       if (!leftCompressed && !rightCompressed) continue;
 
-      let midY = (posY[seg.upper] + posY[seg.lower]) / 2;
-      // 腕脚ラベルとの被り回避
-      if (midY > 50 && midY < 65) midY = 58;        // 乳様突起↔肩峰
-      if (midY > 110 && midY < 125) midY = 135;     // 肩峰↔肩甲下角
-      if (midY > 185 && midY < 200) midY = 205;     // 肩甲下角↔腸骨稜
-      if (midY > 235 && midY < 250) midY = 248;     // 腸骨稜↔大転子
-      const compSide = leftCompressed ? '左' : '右';
-      const stretchSide = leftCompressed ? '右' : '左';
-      const compX = leftCompressed ? seg.leftX : seg.rightX;
-      const stretchX = leftCompressed ? seg.rightX : seg.leftX;
+      const compSide = leftCompressed ? 'left' : 'right';
 
-      // 詰まりラベル（赤）「右縮」「左縮」
-      indicatorLayer.appendChild(this._createSVGEl('rect', {
-        x: compX - 16, y: midY - 9, width: 32, height: 18,
-        rx: 6, fill: '#ef4444', opacity: 0.9
-      }));
-      indicatorLayer.appendChild(this._createSVGEl('text', {
-        x: compX, y: midY + 4, 'text-anchor': 'middle',
-        'font-size': 9, fill: 'white', 'font-weight': 800
-      }, `${compSide}縮`));
+      // パーツハイライト（腕・脚の場合）
+      if (seg.parts) {
+        const contractedParts = seg.parts[compSide] || [];
+        const tensionedParts = seg.parts[compSide === 'left' ? 'right' : 'left'] || [];
+        contractedParts.forEach(p => this._highlightPart(svg, p, 'rgba(239,68,68,0.28)'));
+        tensionedParts.forEach(p => this._highlightPart(svg, p, 'rgba(168,85,247,0.20)'));
+      }
 
-      // 伸びラベル（紫）「左伸び」「右伸び」
-      indicatorLayer.appendChild(this._createSVGEl('rect', {
-        x: stretchX - 16, y: midY - 9, width: 32, height: 18,
-        rx: 6, fill: '#8b5cf6', opacity: 0.85
-      }));
-      indicatorLayer.appendChild(this._createSVGEl('text', {
-        x: stretchX, y: midY + 4, 'text-anchor': 'middle',
-        'font-size': 9, fill: 'white', 'font-weight': 800
-      }, `${stretchSide}伸`));
+      // 腕脚の区間はバッジを表示（胴体内の区間は点線のみで十分）
+      if (seg.isLimb) {
+        const safeY = findSafeY(seg.midY);
+        const compLabel = compSide === 'left' ? '左縮' : '右縮';
+        const stretchLabel = compSide === 'left' ? '右伸' : '左伸';
+        const compX = compSide === 'left' ? 18 : 282;
+        const stretchX = compSide === 'left' ? 282 : 18;
+
+        // 縮バッジ（外側マージンに配置）
+        indicatorLayer.appendChild(this._createSVGEl('rect', {
+          x: compX - 16, y: safeY - 8, width: 32, height: 16,
+          rx: 4, fill: '#ef4444', opacity: 0.85
+        }));
+        indicatorLayer.appendChild(this._createSVGEl('text', {
+          x: compX, y: safeY + 4, 'text-anchor': 'middle',
+          'font-size': 8, fill: 'white', 'font-weight': 700
+        }, compLabel));
+
+        // 伸バッジ
+        indicatorLayer.appendChild(this._createSVGEl('rect', {
+          x: stretchX - 16, y: safeY - 8, width: 32, height: 16,
+          rx: 4, fill: '#8b5cf6', opacity: 0.8
+        }));
+        indicatorLayer.appendChild(this._createSVGEl('text', {
+          x: stretchX, y: safeY + 4, 'text-anchor': 'middle',
+          'font-size': 8, fill: 'white', 'font-weight': 700
+        }, stretchLabel));
+      }
     }
 
-    // ===== 茎状突起・外果のマーカー（手先・足先に○×） =====
+    // === 体幹回旋/全体偏位ラベル ===
+    if (acromVal != null && gtVal != null && acromVal !== 0 && gtVal !== 0) {
+      let rotLabel = '';
+      let rotColor = '';
+      if (acromVal !== gtVal) {
+        rotLabel = '体幹回旋';
+        rotColor = '#f59e0b';
+      } else {
+        rotLabel = '全体偏位';
+        rotColor = '#ef4444';
+      }
+      const rotY = findSafeY(165);
+      indicatorLayer.appendChild(this._createSVGEl('rect', {
+        x: cx - 28, y: rotY - 9, width: 56, height: 18,
+        rx: 9, fill: rotColor, opacity: 0.85
+      }));
+      indicatorLayer.appendChild(this._createSVGEl('text', {
+        x: cx, y: rotY + 4, 'text-anchor': 'middle',
+        'font-size': 9, fill: 'white', 'font-weight': 800
+      }, rotLabel));
+    }
+
+    // === 手先・足先のマーカー ===
     this._drawEndpointMarkers(svg, detailData || {});
   },
 
