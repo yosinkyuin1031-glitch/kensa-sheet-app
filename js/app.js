@@ -704,6 +704,7 @@
   function setupWizardNavigation() {
     document.querySelectorAll('.wizard-next').forEach(btn => {
       btn.addEventListener('click', () => {
+        if (btn.disabled) return;
         if (validateCurrentStep()) goToStep(currentStep + 1);
       });
     });
