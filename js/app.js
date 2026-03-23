@@ -753,48 +753,7 @@
   }
 
   function validateCurrentStep() {
-    if (currentStep === 0) return true;
-
-    // Step 1（立位検査）: 詳細6ランドマーク + 基本3ランドマーク
-    if (currentStep === 1) {
-      // 詳細検査（上半身）
-      for (const lm of InspectionLogic.upperDetailLandmarks) {
-        if (detailData.upperDetail[lm.key] === null) {
-          alert(`「${lm.name}」を入力してください`);
-          return false;
-        }
-      }
-      // 詳細検査（下半身）
-      for (const lm of InspectionLogic.lowerDetailLandmarks) {
-        if (detailData.lowerDetail[lm.key] === null) {
-          alert(`「${lm.name}」を入力してください`);
-          return false;
-        }
-      }
-      // 基本3ランドマーク
-      for (const landmark of Object.keys(InspectionLogic.landmarks)) {
-        if (examData.standing[landmark] === null) {
-          const landmarkName = InspectionLogic.landmarks[landmark].name;
-          alert(`基本検査の「${landmarkName}」を入力してください`);
-          return false;
-        }
-      }
-      return true;
-    }
-
-    // Step 2, 3: 座位・上半身
-    const positions = ['', 'seated', 'upperBody'];
-    const position = positions[currentStep - 1];
-    if (!position) return true;
-    const data = examData[position];
-
-    for (const landmark of Object.keys(InspectionLogic.landmarks)) {
-      if (data[landmark] === null) {
-        const landmarkName = InspectionLogic.landmarks[landmark].name;
-        alert(`「${landmarkName}」を入力してください`);
-        return false;
-      }
-    }
+    // バリデーションなし：未入力でも先に進める
     return true;
   }
 
@@ -1453,13 +1412,7 @@
   }
 
   function validateDetailedExam(position, landmarkDefs) {
-    const data = detailData[position];
-    for (const lm of landmarkDefs) {
-      if (data[lm.key] === null) {
-        alert(`「${lm.name}」を入力してください`);
-        return false;
-      }
-    }
+    // バリデーションなし：未入力でも進める
     return true;
   }
 
