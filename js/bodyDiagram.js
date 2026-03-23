@@ -226,9 +226,12 @@ const BodyDiagram = {
 
   _resetParts(svg) {
     svg.querySelectorAll('.body-part').forEach(el => {
-      if (el.dataset.part && el.dataset.part.startsWith('ear')) {
-        el.setAttribute('fill', '#f0c8a0');
-      }
+      const p = el.dataset.part;
+      if (!p) return;
+      if (p === 'head') el.setAttribute('fill', 'url(#headGrad)');
+      else if (p.startsWith('ear')) el.setAttribute('fill', '#f0c8a0');
+      else if (p === 'hand-l' || p === 'hand-r' || p === 'foot-l' || p === 'foot-r') el.setAttribute('fill', 'url(#skinGradDark)');
+      else el.setAttribute('fill', 'url(#skinGrad)');
     });
   },
 

@@ -749,12 +749,51 @@
     });
 
     if (step === 2) updateSeatedComparison();
+    updateNextButtonState();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function validateCurrentStep() {
-    // バリデーションなし：未入力でも先に進める
-    return true;
+    return true; // ボタン無効化で制御するため常にtrue
+  }
+
+  // 現在のステップの全ランドマークが入力済みか判定し、次へボタンを有効/無効化
+  function updateNextButtonState() {
+    const panel = document.querySelector(`.wizard-panel[data-panel="${currentStep}"]`);
+    if (!panel) return;
+
+    const nextBtn = panel.querySelector('.wizard-next') || panel.querySelector('#diagnoseBtn');
+    if (!nextBtn) return;
+
+    let allFilled = true;
+
+    if (currentStep === 1) {
+      // Step 1: 詳細6 + 基本3 = 9ランドマーク
+      for (const lm of InspectionLogic.upperDetailLandmarks) {
+        if (detailData.upperDetail[lm.key] === null) { allFilled = false; break; }
+      }
+      if (allFilled) {
+        for (const lm of InspectionLogic.lowerDetailLandmarks) {
+          if (detailData.lowerDetail[lm.key] === null) { allFilled = false; break; }
+        }
+      }
+      if (allFilled) {
+        for (const landmark of Object.keys(InspectionLogic.landmarks)) {
+          if (examData.standing[landmark] === null) { allFilled = false; break; }
+        }
+      }
+    } else if (currentStep === 2 || currentStep === 3) {
+      const position = currentStep === 2 ? 'seated' : 'upperBody';
+      const data = examData[position];
+      for (const landmark of Object.keys(InspectionLogic.landmarks)) {
+        if (data[landmark] === null) { allFilled = false; break; }
+      }
+    } else {
+      return; // Step 0, 4 はバリデーション不要
+    }
+
+    nextBtn.disabled = !allFilled;
+    nextBtn.style.opacity = allFilled ? '1' : '0.4';
   }
 
   // ===== 重心バランスボタン =====
@@ -814,6 +853,7 @@
 
           if (position === 'seated') updateSeatedComparison();
           updateDiagram(position);
+          updateNextButtonState();
         });
       });
     });
