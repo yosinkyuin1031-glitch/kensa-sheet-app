@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>検査アプリ - 段階的原因特定システム</title>
-  <link rel="stylesheet" href="css/style.css?v=20260324b">
+  <link rel="stylesheet" href="css/style.css?v=20260324c">
   <script>
     // Service Worker強制リセット（古いキャッシュを自動削除）
     if ('serviceWorker' in navigator) {
@@ -23,7 +23,7 @@
   <link rel="apple-touch-icon" href="icons/icon.svg">
   <meta name="theme-color" content="#2563eb">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
-  <script src="js/supabase-cdn.min.js?v=20260324b"></script>
+  <script src="js/supabase-cdn.min.js?v=20260324c"></script>
 </head>
 <body data-view="practitioner">
   <!-- ===== ログイン画面 ===== -->
@@ -83,18 +83,10 @@
     <div class="header-inner">
       <div class="header-top">
         <div>
-          <h1 class="app-title">
-            <span class="practitioner-only">検査アプリ</span>
-            <span class="patient-only">からだの状態レポート</span>
-          </h1>
-          <p class="header-subtitle practitioner-only">段階的原因特定システム</p>
-          <p class="header-subtitle patient-only">あなたの身体バランスをわかりやすくお伝えします</p>
+          <h1 class="app-title">検査アプリ</h1>
+          <p class="header-subtitle">段階的原因特定システム</p>
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
-          <div class="view-toggle" id="viewToggle">
-            <button class="toggle-btn active" data-mode="practitioner">施術者</button>
-            <button class="toggle-btn" data-mode="patient">患者さん</button>
-          </div>
           <button type="button" id="logoutBtn" class="btn btn-sm btn-secondary" style="font-size:11px;padding:4px 8px;">ログアウト</button>
         </div>
       </div>
@@ -102,21 +94,16 @@
   </header>
 
   <main class="main-content">
-    <!-- ナビゲーションタブ（施術者モード） -->
-    <nav class="tab-nav practitioner-only">
+    <!-- ナビゲーションタブ -->
+    <nav class="tab-nav">
       <button class="tab-btn active" data-tab="exam">検査</button>
       <button class="tab-btn" data-tab="diagnosis">診断結果</button>
       <button class="tab-btn" data-tab="report">レポート</button>
       <button class="tab-btn" data-tab="history">カルテ</button>
     </nav>
-    <!-- ナビゲーションタブ（患者モード） -->
-    <nav class="tab-nav patient-only patient-tab-nav">
-      <button class="tab-btn active" data-tab="diagnosis">検査結果</button>
-      <button class="tab-btn" data-tab="report">レポート</button>
-    </nav>
 
-    <!-- ===== 検査セクション（施術者のみ） ===== -->
-    <section id="exam-section" class="tab-content active practitioner-only">
+    <!-- ===== 検査セクション ===== -->
+    <section id="exam-section" class="tab-content active">
 
       <!-- ウィザード進行バー -->
       <div class="wizard-progress">
@@ -476,14 +463,7 @@
     <!-- ===== 診断結果セクション ===== -->
     <section id="diagnosis-section" class="tab-content">
       <div class="section-header">
-        <h2 class="practitioner-only">診断結果</h2>
-        <h2 class="patient-only">検査結果</h2>
-      </div>
-      <!-- 患者モード：結果がない時のメッセージ -->
-      <div id="patientWaiting" class="patient-only patient-waiting-card" style="display:none;">
-        <div class="waiting-icon">🔄</div>
-        <h3>検査中です</h3>
-        <p>施術者が検査を行っています。<br>結果が出るまでしばらくお待ちください。</p>
+        <h2>診断結果</h2>
       </div>
       <div id="diagnosisContent"></div>
 
@@ -505,8 +485,8 @@
       <!-- 経過グラフ -->
       <div id="trendSection" style="display:none;"></div>
 
-      <!-- アクションボタン（施術者モード）— 全身統合分析後に表示 -->
-      <div class="form-actions action-bar-compact practitioner-only" id="diagnosisActions" style="display:none;">
+      <!-- アクションボタン — 全身統合分析後に表示 -->
+      <div class="form-actions action-bar-compact" id="diagnosisActions" style="display:none;">
         <div class="action-bar-row">
           <button type="button" id="showSelfcareBtn" class="btn btn-sm btn-accent" style="display:none;">セルフケア提案</button>
           <button type="button" id="showProtocolBtn" class="btn btn-sm btn-accent" style="display:none;">施術プロトコル</button>
@@ -521,16 +501,6 @@
           <button type="button" id="showTrendBtn" class="btn btn-xs btn-secondary" style="display:none;">経過</button>
         </div>
       </div>
-      <!-- アクションボタン（患者モード）— 全身統合分析後に表示 -->
-      <div class="form-actions action-bar-compact patient-only patient-action-bar" id="patientActions" style="display:none;">
-        <div class="action-bar-row">
-          <button type="button" id="patientSelfcareBtn" class="btn btn-sm btn-accent" style="display:none;">セルフケアを見る</button>
-        </div>
-        <div class="action-bar-row action-bar-sub">
-          <button type="button" id="patientPdfBtn" class="btn btn-xs btn-secondary">PDF保存</button>
-          <button type="button" id="patientPrintBtn" class="btn btn-xs btn-secondary" style="display:none;">印刷</button>
-        </div>
-      </div>
     </section>
 
     <!-- ===== レポートセクション ===== -->
@@ -540,7 +510,7 @@
     </section>
 
     <!-- ===== カルテセクション（施術者のみ） ===== -->
-    <section id="history-section" class="tab-content practitioner-only">
+    <section id="history-section" class="tab-content">
       <!-- 患者一覧ビュー -->
       <div id="karteListView">
         <div class="section-header">
@@ -628,13 +598,13 @@
   <!-- 印刷用コンテナ（通常は非表示、印刷時のみ表示） -->
   <div id="printContainer" class="print-container"></div>
 
-  <script src="js/supabase.js?v=20260324b"></script>
-  <script src="js/inspection.js?v=20260324b"></script>
-  <script src="js/bodyDiagram.js?v=20260324b"></script>
-  <script src="js/selfcare.js?v=20260324b"></script>
-  <script src="js/storage.js?v=20260324b"></script>
-  <script src="js/pdf.js?v=20260324b"></script>
-  <script src="js/app.js?v=20260324b"></script>
+  <script src="js/supabase.js?v=20260324c"></script>
+  <script src="js/inspection.js?v=20260324c"></script>
+  <script src="js/bodyDiagram.js?v=20260324c"></script>
+  <script src="js/selfcare.js?v=20260324c"></script>
+  <script src="js/storage.js?v=20260324c"></script>
+  <script src="js/pdf.js?v=20260324c"></script>
+  <script src="js/app.js?v=20260324c"></script>
   <script>
     // フォールバック：app.jsでエラーが出た場合のログイン処理
     window.addEventListener('load', function() {

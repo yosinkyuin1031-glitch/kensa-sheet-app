@@ -5,7 +5,7 @@
 
   // ===== 状態管理 =====
   let currentStep = 0;
-  let viewMode = 'practitioner'; // 'practitioner' or 'patient'
+  const viewMode = 'practitioner'; // 施術者専用
   let examData = {
     standing: { mastoid: null, scapulaInferior: null, iliacCrest: null },
     seated: { mastoid: null, scapulaInferior: null, iliacCrest: null },
@@ -136,7 +136,6 @@
 
   async function init() {
     try {
-    setupViewToggle();
     setupTabNavigation();
     setupWizardNavigation();
     setupLandmarkButtons();
