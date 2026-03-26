@@ -453,12 +453,93 @@ const TreatmentProtocol = {
     }
   },
 
+  // ===== カスタムプロトコルキャッシュ =====
+  _customProtocols: [],
+
+  async loadCustomProtocols(clinicId) {
+    if (!clinicId || typeof SupabaseAuth === 'undefined') return;
+    try {
+      const { data, error } = await SupabaseAuth.client
+        .from('custom_protocols')
+        .select('*')
+        .eq('clinic_id', clinicId)
+        .eq('is_active', true)
+        .order('sort_order');
+      if (!error && data) this._customProtocols = data;
+    } catch (e) {
+      console.error('カスタムプロトコル読み込みエラー:', e);
+    }
+  },
+
+  async saveCustomProtocol(clinicId, item) {
+    const { data, error } = await SupabaseAuth.client
+      .from('custom_protocols')
+      .insert({ ...item, clinic_id: clinicId, created_by: SupabaseAuth.getUserId() })
+      .select()
+      .single();
+    if (error) throw error;
+    await this.loadCustomProtocols(clinicId);
+    return data;
+  },
+
+  async updateCustomProtocol(id, updates) {
+    const { error } = await SupabaseAuth.client
+      .from('custom_protocols')
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', id);
+    if (error) throw error;
+    await this.loadCustomProtocols(SupabaseAuth.getClinicId());
+  },
+
+  async deleteCustomProtocol(id) {
+    const { error } = await SupabaseAuth.client
+      .from('custom_protocols')
+      .delete()
+      .eq('id', id);
+    if (error) throw error;
+    await this.loadCustomProtocols(SupabaseAuth.getClinicId());
+  },
+
   getProtocol(primaryCause) {
-    return this.protocols[primaryCause] || null;
+    const preset = this.protocols[primaryCause] || null;
+    // カスタムのmainタイプをマージ
+    const customs = this._customProtocols.filter(
+      p => p.protocol_type === 'main' && p.protocol_key === primaryCause
+    );
+    if (!preset && customs.length === 0) return null;
+    if (!preset) {
+      const c = customs[0];
+      return { title: c.title, techniques: c.techniques, checkpoints: c.checkpoints || [] };
+    }
+    if (customs.length === 0) return preset;
+    // マージ：プリセットのtechniquesにカスタムを追加
+    const merged = { ...preset };
+    for (const c of customs) {
+      const techs = Array.isArray(c.techniques) ? c.techniques : JSON.parse(c.techniques || '[]');
+      merged.techniques = [...merged.techniques, ...techs];
+      const cps = Array.isArray(c.checkpoints) ? c.checkpoints : JSON.parse(c.checkpoints || '[]');
+      merged.checkpoints = [...(merged.checkpoints || []), ...cps];
+    }
+    return merged;
   },
 
   getContractionProtocol(areaShort) {
-    return this.protocols.contraction?.[areaShort] || null;
+    const preset = this.protocols.contraction?.[areaShort] || null;
+    const customs = this._customProtocols.filter(
+      p => p.protocol_type === 'area' && p.protocol_key === areaShort
+    );
+    if (!preset && customs.length === 0) return null;
+    if (!preset) {
+      const c = customs[0];
+      return { title: c.title, techniques: Array.isArray(c.techniques) ? c.techniques : JSON.parse(c.techniques || '[]') };
+    }
+    if (customs.length === 0) return preset;
+    const merged = { ...preset };
+    for (const c of customs) {
+      const techs = Array.isArray(c.techniques) ? c.techniques : JSON.parse(c.techniques || '[]');
+      merged.techniques = [...merged.techniques, ...techs];
+    }
+    return merged;
   },
 
   generatePlan(diagnosisResult, contractionResult) {

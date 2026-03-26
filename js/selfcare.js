@@ -309,13 +309,80 @@ const SelfcareDatabase = {
     return `<img src="img/selfcare-ai/${folder}/${file}" alt="${key}" style="width:100%;max-width:400px;border-radius:14px;">`;
   },
 
-  // ===== 問題箇所からセルフケアを取得 =====
-  getSelfcareForArea(areaShort, issueType) {
-    const areaData = this.exercises[areaShort];
-    if (!areaData) return null;
+  // ===== カスタム項目キャッシュ =====
+  _customItems: [],
 
+  async loadCustomItems(clinicId) {
+    if (!clinicId || typeof SupabaseAuth === 'undefined') return;
+    try {
+      const { data, error } = await SupabaseAuth.client
+        .from('custom_selfcare_items')
+        .select('*')
+        .eq('clinic_id', clinicId)
+        .eq('is_active', true)
+        .order('sort_order');
+      if (!error && data) this._customItems = data;
+    } catch (e) {
+      console.error('カスタムセルフケア読み込みエラー:', e);
+    }
+  },
+
+  async saveCustomItem(clinicId, item) {
+    const { data, error } = await SupabaseAuth.client
+      .from('custom_selfcare_items')
+      .insert({ ...item, clinic_id: clinicId, created_by: SupabaseAuth.getUserId() })
+      .select()
+      .single();
+    if (error) throw error;
+    await this.loadCustomItems(clinicId);
+    return data;
+  },
+
+  async updateCustomItem(id, updates) {
+    const { error } = await SupabaseAuth.client
+      .from('custom_selfcare_items')
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', id);
+    if (error) throw error;
+    await this.loadCustomItems(SupabaseAuth.getClinicId());
+  },
+
+  async deleteCustomItem(id) {
+    const { error } = await SupabaseAuth.client
+      .from('custom_selfcare_items')
+      .delete()
+      .eq('id', id);
+    if (error) throw error;
+    await this.loadCustomItems(SupabaseAuth.getClinicId());
+  },
+
+  // ===== 問題箇所からセルフケアを取得（プリセット＋カスタム配列） =====
+  getSelfcareForArea(areaShort, issueType) {
+    const results = [];
     const type = issueType === 'tension' ? 'tension' : 'contraction';
-    return areaData[type] || null;
+
+    // プリセット
+    const areaData = this.exercises[areaShort];
+    if (areaData && areaData[type]) {
+      results.push({ ...areaData[type], _source: 'preset' });
+    }
+
+    // カスタム項目
+    const customs = this._customItems.filter(
+      item => item.area_key === areaShort && item.issue_type === type
+    );
+    for (const c of customs) {
+      results.push({
+        name: c.name, target: c.target, description: c.description,
+        steps: Array.isArray(c.steps) ? c.steps : JSON.parse(c.steps || '[]'),
+        sets: c.sets, frequency: c.frequency,
+        caution: c.caution || '', evidence: c.evidence || '',
+        illustration: c.illustration || null,
+        _source: 'custom', _id: c.id
+      });
+    }
+
+    return results;
   },
 
   // ===== セルフケアカードHTML生成 =====

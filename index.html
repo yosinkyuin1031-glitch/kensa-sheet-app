@@ -87,6 +87,7 @@
           <p class="header-subtitle">段階的原因特定システム</p>
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
+          <button type="button" id="settingsBtn" class="btn btn-sm btn-secondary" style="font-size:11px;padding:4px 8px;">設定</button>
           <button type="button" id="logoutBtn" class="btn btn-sm btn-secondary" style="font-size:11px;padding:4px 8px;">ログアウト</button>
         </div>
       </div>
@@ -542,6 +543,30 @@
   </main>
 
   <footer class="app-footer"><p>Body Check Pro v2.0</p></footer>
+
+  <!-- カスタム設定モーダル -->
+  <div id="customSettingsModal" class="custom-modal-overlay" style="display:none;">
+    <div class="custom-modal-content">
+      <div class="custom-modal-header">
+        <h2 style="margin:0;font-size:16px;">カスタム設定</h2>
+        <button type="button" id="closeCustomModal" class="btn btn-sm btn-secondary">閉じる</button>
+      </div>
+      <div class="custom-modal-tabs">
+        <button class="custom-modal-tab active" data-custom-tab="selfcare">セルフケア</button>
+        <button class="custom-modal-tab" data-custom-tab="protocol">施術プロトコル</button>
+      </div>
+      <div id="customSelfcarePanel" class="custom-modal-panel">
+        <button type="button" id="addCustomSelfcare" class="btn btn-sm btn-primary" style="margin-bottom:12px;">新規追加</button>
+        <div id="customSelfcareList"></div>
+      </div>
+      <div id="customProtocolPanel" class="custom-modal-panel" style="display:none;">
+        <button type="button" id="addCustomProtocol" class="btn btn-sm btn-primary" style="margin-bottom:12px;">新規追加</button>
+        <div id="customProtocolList"></div>
+      </div>
+      <div id="customFormArea"></div>
+    </div>
+  </div>
+
   </div><!-- /mainApp -->
 
   <!-- チュートリアルオーバーレイ -->

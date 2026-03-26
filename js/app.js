@@ -136,6 +136,12 @@
 
   async function init() {
     try {
+    // カスタム項目をバックグラウンドで読み込み
+    const clinicId = SupabaseAuth.getClinicId();
+    if (clinicId) {
+      SelfcareDatabase.loadCustomItems(clinicId);
+      TreatmentProtocol.loadCustomProtocols(clinicId);
+    }
     setupTabNavigation();
     setupWizardNavigation();
     setupLandmarkButtons();
@@ -148,6 +154,7 @@
     setupDetailedExamButtons();
     setupPatientSearch();
     setupProtocolButton();
+    setupCustomSettingsModal();
     setupBackupButtons();
     setupTrendButton();
     setDefaultDate();
@@ -1861,16 +1868,16 @@
       if (rendered.has(cacheKey)) continue;
       rendered.add(cacheKey);
 
-      const exercise = SelfcareDatabase.getSelfcareForArea(areaKey, issueType);
-      if (exercise) {
+      const exercises = SelfcareDatabase.getSelfcareForArea(areaKey, issueType);
+      for (const exercise of exercises) {
         html += SelfcareDatabase.renderSelfcareCard(exercise, issue.side, patientGender);
       }
     }
 
     // 外果が下がっている側の足裏ケアを追加
     if (footRollSide) {
-      const footExercise = SelfcareDatabase.getSelfcareForArea('足裏', 'contraction');
-      if (footExercise) {
+      const footExercises = SelfcareDatabase.getSelfcareForArea('足裏', 'contraction');
+      for (const footExercise of footExercises) {
         html += SelfcareDatabase.renderSelfcareCard(footExercise, footRollSide, patientGender);
       }
     }
@@ -1925,8 +1932,8 @@
           if (rendered.has(cacheKey)) continue;
           rendered.add(cacheKey);
           if (typeof SelfcareDatabase !== 'undefined') {
-            const exercise = SelfcareDatabase.getSelfcareForArea(issue.areaShort, issue.type);
-            if (exercise) {
+            const exercises = SelfcareDatabase.getSelfcareForArea(issue.areaShort, issue.type);
+            for (const exercise of exercises) {
               selfcareItems.push({
                 name: exercise.name,
                 description: exercise.description || '',
@@ -2026,8 +2033,8 @@
         if (rendered.has(cacheKey)) continue;
         rendered.add(cacheKey);
         if (typeof SelfcareDatabase !== 'undefined') {
-          const exercise = SelfcareDatabase.getSelfcareForArea(issue.areaShort, issue.type);
-          if (exercise) {
+          const exercises = SelfcareDatabase.getSelfcareForArea(issue.areaShort, issue.type);
+          for (const exercise of exercises) {
             selfcareItems.push({
               name: exercise.name,
               description: exercise.description || '',
@@ -2040,8 +2047,8 @@
     // 足裏ケアも追加
     if (detailData && detailData.lowerDetail && detailData.lowerDetail.lateralMalleolus !== 0) {
       if (typeof SelfcareDatabase !== 'undefined') {
-        const footExercise = SelfcareDatabase.getSelfcareForArea('足裏', 'contraction');
-        if (footExercise) {
+        const footExercises = SelfcareDatabase.getSelfcareForArea('足裏', 'contraction');
+        for (const footExercise of footExercises) {
           selfcareItems.push({
             name: footExercise.name,
             description: footExercise.description || '',
@@ -2282,8 +2289,9 @@
         if (rendered.has(cacheKey)) continue;
         rendered.add(cacheKey);
         if (typeof SelfcareDatabase !== 'undefined') {
-          const exercise = SelfcareDatabase.getSelfcareForArea(issue.areaShort, issue.type);
-          if (exercise) {
+          const exercises = SelfcareDatabase.getSelfcareForArea(issue.areaShort, issue.type);
+          for (const exercise of exercises) {
+            if (selfcareItems.length >= 4) break;
             selfcareItems.push({ exercise, side: issue.side });
           }
         }
@@ -2730,8 +2738,8 @@
           const cacheKey = `${issue.areaShort}_${issue.type}`;
           if (rendered.has(cacheKey)) continue;
           rendered.add(cacheKey);
-          const exercise = SelfcareDatabase.getSelfcareForArea(issue.areaShort, issue.type);
-          if (exercise) exercises.push(exercise);
+          const exList = SelfcareDatabase.getSelfcareForArea(issue.areaShort, issue.type);
+          for (const exercise of exList) exercises.push(exercise);
         }
 
         if (exercises.length > 0) {
@@ -3003,6 +3011,257 @@
   }
 
   // ===== DOM準備完了時に認証初期化 =====
+  // ===== カスタム設定モーダル =====
+  function setupCustomSettingsModal() {
+    const settingsBtn = document.getElementById('settingsBtn');
+    const modal = document.getElementById('customSettingsModal');
+    if (!settingsBtn || !modal) return;
+
+    settingsBtn.addEventListener('click', () => {
+      modal.style.display = 'flex';
+      renderCustomLists();
+    });
+
+    document.getElementById('closeCustomModal').addEventListener('click', () => {
+      modal.style.display = 'none';
+    });
+
+    // タブ切り替え
+    modal.querySelectorAll('.custom-modal-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        modal.querySelectorAll('.custom-modal-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const target = tab.dataset.customTab;
+        document.getElementById('customSelfcarePanel').style.display = target === 'selfcare' ? 'block' : 'none';
+        document.getElementById('customProtocolPanel').style.display = target === 'protocol' ? 'block' : 'none';
+      });
+    });
+
+    // 追加ボタン
+    document.getElementById('addCustomSelfcare').addEventListener('click', () => showSelfcareForm());
+    document.getElementById('addCustomProtocol').addEventListener('click', () => showProtocolForm());
+  }
+
+  const AREA_KEYS = ['首〜肩','肩〜腕','前腕〜手首','股関節〜太もも','太もも〜膝','すね〜足首','足裏','体幹'];
+  const PROTOCOL_KEYS_MAIN = ['foot','upperBody','cranialPelvic','spine'];
+  const PROTOCOL_KEYS_MAIN_LABELS = { foot:'足部', upperBody:'上半身', cranialPelvic:'頭蓋骨・骨盤', spine:'脊柱' };
+
+  function renderCustomLists() {
+    // セルフケアリスト
+    const selfcareList = document.getElementById('customSelfcareList');
+    const items = SelfcareDatabase._customItems;
+    if (items.length === 0) {
+      selfcareList.innerHTML = '<p style="color:#888;font-size:12px;padding:8px 0;">カスタム項目はまだありません</p>';
+    } else {
+      selfcareList.innerHTML = items.map(item => `
+        <div class="custom-item-card">
+          <div class="custom-item-info">
+            <strong>${item.name}</strong>
+            <span class="custom-item-meta">${item.area_key} / ${item.issue_type === 'contraction' ? '収縮' : '伸長'}</span>
+          </div>
+          <div class="custom-item-actions">
+            <button class="btn btn-sm btn-secondary" onclick="editSelfcareItem('${item.id}')">編集</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteSelfcareItem('${item.id}')">削除</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // プロトコルリスト
+    const protocolList = document.getElementById('customProtocolList');
+    const protocols = TreatmentProtocol._customProtocols;
+    if (protocols.length === 0) {
+      protocolList.innerHTML = '<p style="color:#888;font-size:12px;padding:8px 0;">カスタムプロトコルはまだありません</p>';
+    } else {
+      protocolList.innerHTML = protocols.map(p => `
+        <div class="custom-item-card">
+          <div class="custom-item-info">
+            <strong>${p.title}</strong>
+            <span class="custom-item-meta">${p.protocol_type === 'main' ? 'メイン' : '部位別'}: ${PROTOCOL_KEYS_MAIN_LABELS[p.protocol_key] || p.protocol_key}</span>
+          </div>
+          <div class="custom-item-actions">
+            <button class="btn btn-sm btn-secondary" onclick="editProtocolItem('${p.id}')">編集</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteProtocolItem('${p.id}')">削除</button>
+          </div>
+        </div>
+      `).join('');
+    }
+  }
+
+  // ===== セルフケア追加/編集フォーム =====
+  function showSelfcareForm(editItem) {
+    const formArea = document.getElementById('customFormArea');
+    const isEdit = !!editItem;
+    const steps = isEdit && editItem.steps ? (Array.isArray(editItem.steps) ? editItem.steps : JSON.parse(editItem.steps)) : [''];
+
+    formArea.innerHTML = `
+      <div class="custom-form">
+        <h3 style="margin:0 0 12px;font-size:14px;">${isEdit ? 'セルフケア編集' : 'セルフケア追加'}</h3>
+        <div class="custom-form-row">
+          <label>部位</label>
+          <select id="cf_area">${AREA_KEYS.map(k => `<option value="${k}" ${isEdit && editItem.area_key === k ? 'selected' : ''}>${k}</option>`).join('')}</select>
+        </div>
+        <div class="custom-form-row">
+          <label>タイプ</label>
+          <select id="cf_type">
+            <option value="contraction" ${isEdit && editItem.issue_type === 'contraction' ? 'selected' : ''}>収縮</option>
+            <option value="tension" ${isEdit && editItem.issue_type === 'tension' ? 'selected' : ''}>伸長</option>
+          </select>
+        </div>
+        <div class="custom-form-row"><label>名前</label><input id="cf_name" value="${isEdit ? editItem.name : ''}"></div>
+        <div class="custom-form-row"><label>対象筋</label><input id="cf_target" value="${isEdit ? editItem.target : ''}"></div>
+        <div class="custom-form-row"><label>説明</label><textarea id="cf_desc" rows="2">${isEdit ? editItem.description : ''}</textarea></div>
+        <div class="custom-form-row">
+          <label>手順</label>
+          <div id="cf_steps">${steps.map((s, i) => `<div class="step-row"><input value="${s}" class="cf-step-input"><button type="button" class="btn btn-sm btn-danger" onclick="this.parentElement.remove()">×</button></div>`).join('')}</div>
+          <button type="button" class="btn btn-sm btn-secondary" onclick="document.getElementById('cf_steps').insertAdjacentHTML('beforeend','<div class=\\'step-row\\'><input class=\\'cf-step-input\\' value=\\'\\'><button type=\\'button\\' class=\\'btn btn-sm btn-danger\\' onclick=\\'this.parentElement.remove()\\'>×</button></div>')">手順を追加</button>
+        </div>
+        <div class="custom-form-row"><label>回数</label><input id="cf_sets" value="${isEdit ? editItem.sets : ''}"></div>
+        <div class="custom-form-row"><label>頻度</label><input id="cf_frequency" value="${isEdit ? editItem.frequency : ''}"></div>
+        <div class="custom-form-row"><label>注意事項</label><textarea id="cf_caution" rows="2">${isEdit ? (editItem.caution || '') : ''}</textarea></div>
+        <div class="custom-form-row"><label>エビデンス</label><textarea id="cf_evidence" rows="2">${isEdit ? (editItem.evidence || '') : ''}</textarea></div>
+        <div class="custom-form-btns">
+          <button class="btn btn-primary" id="cf_save">${isEdit ? '更新' : '保存'}</button>
+          <button class="btn btn-secondary" onclick="document.getElementById('customFormArea').innerHTML=''">キャンセル</button>
+        </div>
+      </div>
+    `;
+    formArea.scrollIntoView({ behavior: 'smooth' });
+
+    document.getElementById('cf_save').addEventListener('click', async () => {
+      const steps = [...document.querySelectorAll('.cf-step-input')].map(el => el.value).filter(v => v.trim());
+      const data = {
+        area_key: document.getElementById('cf_area').value,
+        issue_type: document.getElementById('cf_type').value,
+        name: document.getElementById('cf_name').value,
+        target: document.getElementById('cf_target').value,
+        description: document.getElementById('cf_desc').value,
+        steps: JSON.stringify(steps),
+        sets: document.getElementById('cf_sets').value,
+        frequency: document.getElementById('cf_frequency').value,
+        caution: document.getElementById('cf_caution').value,
+        evidence: document.getElementById('cf_evidence').value,
+      };
+      if (!data.name || !data.target) { alert('名前と対象筋は必須です'); return; }
+      try {
+        if (isEdit) {
+          await SelfcareDatabase.updateCustomItem(editItem.id, data);
+        } else {
+          await SelfcareDatabase.saveCustomItem(SupabaseAuth.getClinicId(), data);
+        }
+        formArea.innerHTML = '';
+        renderCustomLists();
+      } catch (e) { alert('保存エラー: ' + e.message); }
+    });
+  }
+
+  // ===== プロトコル追加/編集フォーム =====
+  function showProtocolForm(editItem) {
+    const formArea = document.getElementById('customFormArea');
+    const isEdit = !!editItem;
+    const techs = isEdit && editItem.techniques ? (Array.isArray(editItem.techniques) ? editItem.techniques : JSON.parse(editItem.techniques)) : [{ name:'', target:'', description:'', duration:'' }];
+
+    const mainOptions = PROTOCOL_KEYS_MAIN.map(k => `<option value="${k}" ${isEdit && editItem.protocol_key === k ? 'selected' : ''}>${PROTOCOL_KEYS_MAIN_LABELS[k]}</option>`).join('');
+    const areaOptions = AREA_KEYS.map(k => `<option value="${k}" ${isEdit && editItem.protocol_key === k ? 'selected' : ''}>${k}</option>`).join('');
+
+    formArea.innerHTML = `
+      <div class="custom-form">
+        <h3 style="margin:0 0 12px;font-size:14px;">${isEdit ? 'プロトコル編集' : 'プロトコル追加'}</h3>
+        <div class="custom-form-row">
+          <label>タイプ</label>
+          <select id="pf_type" onchange="document.getElementById('pf_key_main').style.display=this.value==='main'?'block':'none';document.getElementById('pf_key_area').style.display=this.value==='area'?'block':'none';">
+            <option value="main" ${isEdit && editItem.protocol_type === 'main' ? 'selected' : ''}>メイン（原因別）</option>
+            <option value="area" ${isEdit && editItem.protocol_type === 'area' ? 'selected' : ''}>部位別（収縮）</option>
+          </select>
+        </div>
+        <div class="custom-form-row">
+          <label>対象</label>
+          <select id="pf_key_main" style="display:${!isEdit || editItem.protocol_type === 'main' ? 'block' : 'none'}">${mainOptions}</select>
+          <select id="pf_key_area" style="display:${isEdit && editItem.protocol_type === 'area' ? 'block' : 'none'}">${areaOptions}</select>
+        </div>
+        <div class="custom-form-row"><label>タイトル</label><input id="pf_title" value="${isEdit ? editItem.title : ''}"></div>
+        <div class="custom-form-row">
+          <label>テクニック</label>
+          <div id="pf_techs">${techs.map((t, i) => `
+            <div class="tech-row">
+              <input placeholder="名前" value="${t.name || ''}" class="pf-tech-name">
+              <input placeholder="対象" value="${t.target || ''}" class="pf-tech-target">
+              <input placeholder="説明" value="${t.description || ''}" class="pf-tech-desc">
+              <input placeholder="時間" value="${t.duration || ''}" class="pf-tech-dur" style="width:80px;">
+              <button type="button" class="btn btn-sm btn-danger" onclick="this.parentElement.remove()">×</button>
+            </div>
+          `).join('')}</div>
+          <button type="button" class="btn btn-sm btn-secondary" id="pf_add_tech">テクニック追加</button>
+        </div>
+        <div class="custom-form-btns">
+          <button class="btn btn-primary" id="pf_save">${isEdit ? '更新' : '保存'}</button>
+          <button class="btn btn-secondary" onclick="document.getElementById('customFormArea').innerHTML=''">キャンセル</button>
+        </div>
+      </div>
+    `;
+    formArea.scrollIntoView({ behavior: 'smooth' });
+
+    document.getElementById('pf_add_tech').addEventListener('click', () => {
+      document.getElementById('pf_techs').insertAdjacentHTML('beforeend', `
+        <div class="tech-row">
+          <input placeholder="名前" class="pf-tech-name">
+          <input placeholder="対象" class="pf-tech-target">
+          <input placeholder="説明" class="pf-tech-desc">
+          <input placeholder="時間" class="pf-tech-dur" style="width:80px;">
+          <button type="button" class="btn btn-sm btn-danger" onclick="this.parentElement.remove()">×</button>
+        </div>
+      `);
+    });
+
+    document.getElementById('pf_save').addEventListener('click', async () => {
+      const type = document.getElementById('pf_type').value;
+      const key = type === 'main' ? document.getElementById('pf_key_main').value : document.getElementById('pf_key_area').value;
+      const techniques = [...document.querySelectorAll('.tech-row')].map(row => ({
+        name: row.querySelector('.pf-tech-name').value,
+        target: row.querySelector('.pf-tech-target').value,
+        description: row.querySelector('.pf-tech-desc').value,
+        duration: row.querySelector('.pf-tech-dur').value,
+      })).filter(t => t.name.trim());
+
+      const data = {
+        protocol_type: type,
+        protocol_key: key,
+        title: document.getElementById('pf_title').value,
+        techniques: JSON.stringify(techniques),
+      };
+      if (!data.title) { alert('タイトルは必須です'); return; }
+      try {
+        if (isEdit) {
+          await TreatmentProtocol.updateCustomProtocol(editItem.id, data);
+        } else {
+          await TreatmentProtocol.saveCustomProtocol(SupabaseAuth.getClinicId(), data);
+        }
+        formArea.innerHTML = '';
+        renderCustomLists();
+      } catch (e) { alert('保存エラー: ' + e.message); }
+    });
+  }
+
+  // グローバルスコープに公開（onclick用）
+  window.editSelfcareItem = function(id) {
+    const item = SelfcareDatabase._customItems.find(i => i.id === id);
+    if (item) showSelfcareForm(item);
+  };
+  window.deleteSelfcareItem = async function(id) {
+    if (!confirm('削除しますか？')) return;
+    await SelfcareDatabase.deleteCustomItem(id);
+    renderCustomLists();
+  };
+  window.editProtocolItem = function(id) {
+    const item = TreatmentProtocol._customProtocols.find(i => i.id === id);
+    if (item) showProtocolForm(item);
+  };
+  window.deleteProtocolItem = async function(id) {
+    if (!confirm('削除しますか？')) return;
+    await TreatmentProtocol.deleteCustomProtocol(id);
+    renderCustomLists();
+  };
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initAuth);
   } else {
