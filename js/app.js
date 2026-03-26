@@ -3124,9 +3124,11 @@
         <div class="custom-form-row"><label>注意事項</label><textarea id="cf_caution" rows="2">${isEdit ? (editItem.caution || '') : ''}</textarea></div>
         <div class="custom-form-row"><label>エビデンス</label><textarea id="cf_evidence" rows="2">${isEdit ? (editItem.evidence || '') : ''}</textarea></div>
         <div class="custom-form-row">
-          <label>画像URL（任意）</label>
-          <input id="cf_image" placeholder="https://... 画像のURLを入力" value="${isEdit ? (editItem.illustration || '') : ''}">
-          <p style="font-size:11px;color:#888;margin-top:4px;">外部の画像URLを入力してください。空欄の場合はイラストなしで表示されます。</p>
+          <label>画像を挿入（任意）</label>
+          <input type="file" id="cf_image_file" accept="image/*" style="margin-bottom:6px;">
+          <div id="cf_image_preview" style="margin-top:6px;">${isEdit && editItem.illustration ? `<img src="${editItem.illustration}" style="max-width:120px;max-height:120px;border-radius:8px;border:1px solid #ddd;">` : ''}</div>
+          <input type="hidden" id="cf_image" value="${isEdit ? (editItem.illustration || '') : ''}">
+          <p style="font-size:11px;color:#888;margin-top:4px;">画像ファイルを選択してください。空欄の場合はイラストなしで表示されます。</p>
         </div>
         <div class="custom-form-btns">
           <button class="btn btn-primary" id="cf_save">${isEdit ? '更新' : '保存'}</button>
@@ -3135,6 +3137,19 @@
       </div>
     `;
     formArea.scrollIntoView({ behavior: 'smooth' });
+
+    // 画像ファイル選択時にBase64変換＋プレビュー
+    document.getElementById('cf_image_file').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.size > 2 * 1024 * 1024) { alert('画像は2MB以下にしてください'); e.target.value = ''; return; }
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        document.getElementById('cf_image').value = ev.target.result;
+        document.getElementById('cf_image_preview').innerHTML = `<img src="${ev.target.result}" style="max-width:120px;max-height:120px;border-radius:8px;border:1px solid #ddd;">`;
+      };
+      reader.readAsDataURL(file);
+    });
 
     document.getElementById('cf_save').addEventListener('click', async () => {
       const steps = [...document.querySelectorAll('.cf-step-input')].map(el => el.value).filter(v => v.trim());

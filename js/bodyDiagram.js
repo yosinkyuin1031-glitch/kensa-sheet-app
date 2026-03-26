@@ -19,7 +19,7 @@ const BodyDiagram = {
       radialStyloid: { leftX: 46,  rightX: 254, baseY: 224, label: '茎状突起' }
     },
     lowerDetail: {
-      greaterTrochanter: { leftX: 116, rightX: 184, baseY: 252, label: '大転子' },
+      greaterTrochanter: { leftX: 116, rightX: 184, baseY: 278, label: '大転子' },
       patellaUpper:      { leftX: 118, rightX: 182, baseY: 370, label: '膝蓋骨上端' },
       lateralMalleolus:  { leftX: 112, rightX: 188, baseY: 500, label: '外果' }
     }
@@ -700,7 +700,7 @@ const BodyDiagram = {
     acromion:           { leftX: 78,  rightX: 222, baseY: 78,  label: '肩峰' },
     mastoidDetail:      { leftX: 56,  rightX: 244, baseY: 146, label: '肘頭' },
     radialStyloid:      { leftX: 46,  rightX: 254, baseY: 224, label: '茎状突起' },
-    greaterTrochanter:  { leftX: 116, rightX: 184, baseY: 252, label: '大転子' },
+    greaterTrochanter:  { leftX: 116, rightX: 184, baseY: 278, label: '大転子' },
     patellaUpper:       { leftX: 118, rightX: 182, baseY: 370, label: '膝蓋骨上端' },
     lateralMalleolus:   { leftX: 112, rightX: 188, baseY: 500, label: '外果' }
   },
@@ -974,8 +974,8 @@ const BodyDiagram = {
     const iliacVal = standingData.iliacCrest;
     const scapVal = standingData.scapulaInferior;
 
-    // 体幹回旋ラベル位置（肩甲下角・前腕と被らないよう下寄り）
-    const trunkMidY = 210;
+    // 体幹回旋ラベル位置（肩甲下角・前腕と被らないよう中間）
+    const trunkMidY = 190;
 
     // 4. 肩峰↔大転子の回旋判定
     let rotationLabel = '';
@@ -996,7 +996,7 @@ const BodyDiagram = {
       const gtXOff = (gtVal || 0) * 4;
       indicatorLayer.appendChild(this._createSVGEl('line', {
         x1: cx + acromXOff, y1: 78,
-        x2: cx + gtXOff, y2: 252,
+        x2: cx + gtXOff, y2: 278,
         stroke: '#f59e0b', 'stroke-width': 2.5,
         'stroke-dasharray': '8,4', opacity: 0.6
       }));
@@ -1045,7 +1045,7 @@ const BodyDiagram = {
       acromion: 78,   // 肩峰
       scapulaInferior: 155, // 肩甲下角
       iliacCrest: 232,     // 腸骨稜
-      greaterTrochanter: 252 // 大転子
+      greaterTrochanter: 278 // 大転子
     };
 
     // 4区間の定義
@@ -1072,7 +1072,7 @@ const BodyDiagram = {
       if (midY > 50 && midY < 65) midY = 58;        // 乳様突起↔肩峰
       if (midY > 110 && midY < 125) midY = 135;     // 肩峰↔肩甲下角
       if (midY > 185 && midY < 200) midY = 205;     // 肩甲下角↔腸骨稜
-      if (midY > 235 && midY < 250) midY = 248;     // 腸骨稜↔大転子
+      if (midY > 248 && midY < 265) midY = 258;     // 腸骨稜↔大転子
       const compSide = leftCompressed ? '左' : '右';
       const stretchSide = leftCompressed ? '右' : '左';
       const compX = leftCompressed ? seg.leftX : seg.rightX;
