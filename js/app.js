@@ -3034,6 +3034,9 @@
         const target = tab.dataset.customTab;
         document.getElementById('customSelfcarePanel').style.display = target === 'selfcare' ? 'block' : 'none';
         document.getElementById('customProtocolPanel').style.display = target === 'protocol' ? 'block' : 'none';
+        // タブ切り替え時にフォームをクリア
+        document.getElementById('selfcareFormArea').innerHTML = '';
+        document.getElementById('protocolFormArea').innerHTML = '';
       });
     });
 
@@ -3090,7 +3093,7 @@
 
   // ===== セルフケア追加/編集フォーム =====
   function showSelfcareForm(editItem) {
-    const formArea = document.getElementById('customFormArea');
+    const formArea = document.getElementById('selfcareFormArea');
     const isEdit = !!editItem;
     const steps = isEdit && editItem.steps ? (Array.isArray(editItem.steps) ? editItem.steps : JSON.parse(editItem.steps)) : [''];
 
@@ -3120,9 +3123,14 @@
         <div class="custom-form-row"><label>頻度</label><input id="cf_frequency" value="${isEdit ? editItem.frequency : ''}"></div>
         <div class="custom-form-row"><label>注意事項</label><textarea id="cf_caution" rows="2">${isEdit ? (editItem.caution || '') : ''}</textarea></div>
         <div class="custom-form-row"><label>エビデンス</label><textarea id="cf_evidence" rows="2">${isEdit ? (editItem.evidence || '') : ''}</textarea></div>
+        <div class="custom-form-row">
+          <label>画像URL（任意）</label>
+          <input id="cf_image" placeholder="https://... 画像のURLを入力" value="${isEdit ? (editItem.illustration || '') : ''}">
+          <p style="font-size:11px;color:#888;margin-top:4px;">外部の画像URLを入力してください。空欄の場合はイラストなしで表示されます。</p>
+        </div>
         <div class="custom-form-btns">
           <button class="btn btn-primary" id="cf_save">${isEdit ? '更新' : '保存'}</button>
-          <button class="btn btn-secondary" onclick="document.getElementById('customFormArea').innerHTML=''">キャンセル</button>
+          <button class="btn btn-secondary" onclick="document.getElementById('selfcareFormArea').innerHTML=''">キャンセル</button>
         </div>
       </div>
     `;
@@ -3141,6 +3149,7 @@
         frequency: document.getElementById('cf_frequency').value,
         caution: document.getElementById('cf_caution').value,
         evidence: document.getElementById('cf_evidence').value,
+        illustration: document.getElementById('cf_image').value || null,
       };
       if (!data.name || !data.target) { alert('名前と対象筋は必須です'); return; }
       try {
@@ -3157,7 +3166,7 @@
 
   // ===== プロトコル追加/編集フォーム =====
   function showProtocolForm(editItem) {
-    const formArea = document.getElementById('customFormArea');
+    const formArea = document.getElementById('protocolFormArea');
     const isEdit = !!editItem;
     const techs = isEdit && editItem.techniques ? (Array.isArray(editItem.techniques) ? editItem.techniques : JSON.parse(editItem.techniques)) : [{ name:'', target:'', description:'', duration:'' }];
 
@@ -3195,7 +3204,7 @@
         </div>
         <div class="custom-form-btns">
           <button class="btn btn-primary" id="pf_save">${isEdit ? '更新' : '保存'}</button>
-          <button class="btn btn-secondary" onclick="document.getElementById('customFormArea').innerHTML=''">キャンセル</button>
+          <button class="btn btn-secondary" onclick="document.getElementById('protocolFormArea').innerHTML=''">キャンセル</button>
         </div>
       </div>
     `;

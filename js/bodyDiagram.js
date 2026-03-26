@@ -819,8 +819,13 @@ const BodyDiagram = {
       }
 
       // ラベル（左右両方、ドットの下に配置して被り回避）
-      const labelY = pos.baseY + 20;
-      const xOff = (key === 'greaterTrochanter') ? 30 : 14;
+      // 外果・膝蓋骨上端はラベルを外側に大きくずらして重なり回避
+      const labelYOff = (key === 'lateralMalleolus') ? 16 : 20;
+      const labelY = pos.baseY + labelYOff;
+      const xOff = (key === 'greaterTrochanter') ? 30
+                  : (key === 'lateralMalleolus') ? 30
+                  : (key === 'patellaUpper') ? 30
+                  : 14;
       landmarkLayer.appendChild(this._createSVGEl('text', {
         x: pos.leftX - xOff, y: labelY, 'text-anchor': 'end',
         'font-size': 7, fill: '#64748b', 'font-weight': 600
@@ -1114,7 +1119,7 @@ const BodyDiagram = {
       {
         key: 'lateralMalleolus',
         label: '外果',
-        leftX: 124, rightX: 176, y: 540  // 足先の下
+        leftX: 118, rightX: 182, y: 548  // 足先の下（重なり回避のため外側に配置）
       }
     ];
 

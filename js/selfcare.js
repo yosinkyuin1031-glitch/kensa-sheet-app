@@ -388,7 +388,14 @@ const SelfcareDatabase = {
   // ===== セルフケアカードHTML生成 =====
   renderSelfcareCard(exercise, side, gender) {
     const sideLabel = side === 'both' ? '両側' : side === 'right' ? '右側' : '左側';
-    const illustSvg = this.getIllustration(exercise.illustration, gender);
+
+    // カスタム項目でURLが入っている場合はそのまま表示、プリセットは従来の画像マップ
+    let illustHtml = '';
+    if (exercise.illustration && exercise.illustration.startsWith('http')) {
+      illustHtml = `<img src="${exercise.illustration}" alt="${exercise.name}" style="width:100%;max-width:400px;border-radius:14px;">`;
+    } else {
+      illustHtml = this.getIllustration(exercise.illustration, gender);
+    }
 
     // 実用的なポイントを自動生成
     const tipText = this._getTip(exercise.illustration);
@@ -402,7 +409,7 @@ const SelfcareDatabase = {
       <div class="selfcare-target-label">対象：${exercise.target}</div>
       <p class="selfcare-desc">${exercise.description}</p>
 
-      ${illustSvg ? `<div class="selfcare-illust-wrapper">${illustSvg}</div>` : ''}
+      ${illustHtml ? `<div class="selfcare-illust-wrapper">${illustHtml}</div>` : ''}
 
       <div class="selfcare-steps-header">やり方</div>
       <ol class="selfcare-steps">
