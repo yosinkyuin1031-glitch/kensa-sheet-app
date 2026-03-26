@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>検査アプリ - 管理画面</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', sans-serif; background: #f0f2f5; color: #333; min-height: 100vh; }
+
+    /* ===== Login ===== */
+    .login-overlay {
+      position: fixed; inset: 0; background: #14252A; display: flex; align-items: center; justify-content: center; z-index: 9999;
+    }
+    .login-box {
+      background: #fff; border-radius: 12px; padding: 48px 36px; width: 380px; max-width: 90vw; box-shadow: 0 8px 32px rgba(0,0,0,.25);
+    }
+    .login-box h1 { color: #14252A; font-size: 22px; margin-bottom: 8px; }
+    .login-box p.sub { color: #888; font-size: 13px; margin-bottom: 28px; }
+    .login-box label { display: block; font-size: 13px; font-weight: 600; color: #555; margin-bottom: 4px; }
+    .login-box input {
+      width: 100%; padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; margin-bottom: 16px; outline: none;
+    }
+    .login-box input:focus { border-color: #14252A; }
+    .login-box .btn-login {
+      width: 100%; padding: 12px; background: #14252A; color: #fff; border: none; border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer;
+    }
+    .login-box .btn-login:hover { background: #1e3a42; }
+    .login-box .btn-login:disabled { opacity: .5; cursor: not-allowed; }
+    .login-error { color: #e53e3e; font-size: 13px; margin-bottom: 12px; display: none; }
+
+    /* ===== Header ===== */
+    .admin-header {
+      background: #14252A; color: #fff; padding: 16px 32px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .admin-header h1 { font-size: 18px; font-weight: 700; }
+    .admin-header .user-info { display: flex; align-items: center; gap: 16px; font-size: 13px; }
+    .btn-logout {
+      background: rgba(255,255,255,.15); color: #fff; border: none; padding: 6px 16px; border-radius: 6px; cursor: pointer; font-size: 13px;
+    }
+    .btn-logout:hover { background: rgba(255,255,255,.25); }
+
+    /* ===== Layout ===== */
+    .admin-body { max-width: 1200px; margin: 0 auto; padding: 24px 20px; }
+
+    /* ===== Dashboard Cards ===== */
+    .dash-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 28px; }
+    .dash-card {
+      background: #fff; border-radius: 10px; padding: 20px 24px; box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    }
+    .dash-card .label { font-size: 12px; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+    .dash-card .value { font-size: 32px; font-weight: 700; color: #14252A; margin-top: 4px; }
+    .dash-card .note { font-size: 12px; color: #999; margin-top: 4px; }
+
+    /* ===== Sections ===== */
+    .section { background: #fff; border-radius: 10px; padding: 24px; margin-bottom: 24px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    .section h2 { font-size: 16px; color: #14252A; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid #14252A; }
+
+    /* ===== Table ===== */
+    .filter-bar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+    .filter-bar input, .filter-bar select {
+      padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; outline: none;
+    }
+    .filter-bar input:focus, .filter-bar select:focus { border-color: #14252A; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { background: #f7f8fa; color: #555; font-weight: 600; text-align: left; padding: 10px 12px; white-space: nowrap; }
+    td { padding: 10px 12px; border-bottom: 1px solid #eee; vertical-align: middle; }
+    tr:hover td { background: #fafbfc; }
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase;
+    }
+    .badge-active { background: #e6f9ed; color: #22863a; }
+    .badge-inactive { background: #f0f0f0; color: #888; }
+    .badge-suspended { background: #fde8e8; color: #d32f2f; }
+    .btn-toggle {
+      padding: 5px 14px; border: 1px solid #ccc; border-radius: 6px; font-size: 12px; cursor: pointer; background: #fff;
+    }
+    .btn-toggle:hover { background: #f5f5f5; }
+    .btn-toggle.suspend { border-color: #e53e3e; color: #e53e3e; }
+    .btn-toggle.activate { border-color: #22863a; color: #22863a; }
+
+    /* ===== Create Form ===== */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-group { display: flex; flex-direction: column; }
+    .form-group label { font-size: 13px; font-weight: 600; color: #555; margin-bottom: 4px; }
+    .form-group input, .form-group select {
+      padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; outline: none;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: #14252A; }
+    .form-actions { margin-top: 20px; display: flex; gap: 12px; align-items: center; }
+    .btn-primary {
+      background: #14252A; color: #fff; border: none; padding: 10px 28px; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer;
+    }
+    .btn-primary:hover { background: #1e3a42; }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+    .form-msg { font-size: 13px; }
+    .form-msg.success { color: #22863a; }
+    .form-msg.error { color: #e53e3e; }
+
+    /* ===== Loading ===== */
+    .loading { text-align: center; padding: 40px; color: #999; }
+    .spinner { display: inline-block; width: 24px; height: 24px; border: 3px solid #ddd; border-top-color: #14252A; border-radius: 50%; animation: spin .6s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 640px) {
+      .admin-header { padding: 12px 16px; }
+      .admin-body { padding: 16px 12px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .dash-cards { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== ログイン画面 ===== -->
+<div id="loginOverlay" class="login-overlay">
+  <div class="login-box">
+    <h1>管理画面</h1>
+    <p class="sub">検査アプリ管理者ログイン</p>
+    <div id="loginError" class="login-error"></div>
+    <label for="loginEmail">メールアドレス</label>
+    <input type="email" id="loginEmail" placeholder="admin@example.com" autocomplete="email">
+    <label for="loginPassword">パスワード</label>
+    <input type="password" id="loginPassword" placeholder="パスワード" autocomplete="current-password">
+    <button id="loginBtn" class="btn-login">ログイン</button>
+  </div>
+</div>
+
+<!-- ===== 管理画面本体 ===== -->
+<div id="adminApp" style="display:none;">
+  <header class="admin-header">
+    <h1>検査アプリ 管理画面</h1>
+    <div class="user-info">
+      <span id="adminEmail"></span>
+      <button class="btn-logout" onclick="doLogout()">ログアウト</button>
+    </div>
+  </header>
+
+  <div class="admin-body">
+    <!-- ダッシュボード -->
+    <div class="dash-cards">
+      <div class="dash-card">
+        <div class="label">総院数</div>
+        <div class="value" id="statTotal">-</div>
+      </div>
+      <div class="dash-card">
+        <div class="label">アクティブ院数</div>
+        <div class="value" id="statActive">-</div>
+      </div>
+      <div class="dash-card">
+        <div class="label">今月の新規</div>
+        <div class="value" id="statNew">-</div>
+      </div>
+      <div class="dash-card">
+        <div class="label">月間収益概算</div>
+        <div class="value" id="statRevenue">-</div>
+        <div class="note">standard: 3,000円 / advanced: 5,000円</div>
+      </div>
+    </div>
+
+    <!-- 院一覧 -->
+    <div class="section">
+      <h2>院一覧</h2>
+      <div class="filter-bar">
+        <input type="text" id="filterSearch" placeholder="院名・メールで検索">
+        <select id="filterStatus">
+          <option value="">全ステータス</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+          <option value="suspended">Suspended</option>
+        </select>
+        <select id="filterPlan">
+          <option value="">全プラン</option>
+          <option value="free">Free</option>
+          <option value="standard">Standard</option>
+          <option value="advanced">Advanced</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>院名</th>
+              <th>メール</th>
+              <th>プラン</th>
+              <th>ステータス</th>
+              <th>登録日</th>
+              <th>Stripe顧客ID</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="clinicTableBody">
+            <tr><td colspan="7" class="loading"><div class="spinner"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- アカウント発行 -->
+    <div class="section">
+      <h2>アカウント手動発行</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="newClinicName">院名</label>
+          <input type="text" id="newClinicName" placeholder="例: 山田整体院">
+        </div>
+        <div class="form-group">
+          <label for="newEmail">メールアドレス</label>
+          <input type="email" id="newEmail" placeholder="example@clinic.com">
+        </div>
+        <div class="form-group">
+          <label for="newPassword">初期パスワード</label>
+          <input type="text" id="newPassword" placeholder="8文字以上">
+        </div>
+        <div class="form-group">
+          <label for="newPlan">プラン</label>
+          <select id="newPlan">
+            <option value="standard">Standard (3,000円/月)</option>
+            <option value="advanced">Advanced (5,000円/月)</option>
+            <option value="free">Free</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button id="createBtn" class="btn-primary" onclick="createAccount()">アカウント作成</button>
+        <span id="createMsg" class="form-msg"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== Config =====
+const SUPABASE_URL = 'https://vzkfkazjylrkspqrnhnx.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_H1Ch2D2XIuSQMzNL-ns8zg_gAqrx7wL';
+const ADMIN_EMAIL = 'ooguchiyouhei@gmail.com';
+const PLAN_PRICES = { free: 0, standard: 3000, advanced: 5000 };
+
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let allClinics = [];
+
+// ===== Login =====
+document.getElementById('loginBtn').addEventListener('click', doLogin);
+document.getElementById('loginPassword').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const errEl = document.getElementById('loginError');
+  const btn = document.getElementById('loginBtn');
+
+  errEl.style.display = 'none';
+  if (!email || !password) { showLoginError('メールアドレスとパスワードを入力してください'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'ログイン中...';
+
+  try {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+
+    if (data.user.email !== ADMIN_EMAIL) {
+      await sb.auth.signOut();
+      showLoginError('管理者権限がありません');
+      btn.disabled = false;
+      btn.textContent = 'ログイン';
+      return;
+    }
+
+    showAdmin(data.user);
+  } catch (e) {
+    showLoginError(e.message === 'Invalid login credentials' ? 'メールアドレスまたはパスワードが正しくありません' : e.message);
+    btn.disabled = false;
+    btn.textContent = 'ログイン';
+  }
+}
+
+function showLoginError(msg) {
+  const el = document.getElementById('loginError');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+async function doLogout() {
+  await sb.auth.signOut();
+  location.reload();
+}
+
+// ===== Check existing session =====
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session && session.user.email === ADMIN_EMAIL) {
+    showAdmin(session.user);
+  }
+})();
+
+// ===== Show Admin =====
+function showAdmin(user) {
+  document.getElementById('loginOverlay').style.display = 'none';
+  document.getElementById('adminApp').style.display = 'block';
+  document.getElementById('adminEmail').textContent = user.email;
+  loadClinics();
+}
+
+// ===== Load Clinics =====
+async function loadClinics() {
+  try {
+    const res = await fetch('/api/admin/list-clinics');
+    if (!res.ok) throw new Error('API error: ' + res.status);
+    const json = await res.json();
+    allClinics = json.clinics || [];
+    updateDashboard();
+    renderTable();
+  } catch (e) {
+    console.error('院一覧取得エラー:', e);
+    document.getElementById('clinicTableBody').innerHTML = '<tr><td colspan="7" style="color:#e53e3e;padding:20px;">データ取得に失敗しました: ' + e.message + '</td></tr>';
+  }
+}
+
+// ===== Dashboard =====
+function updateDashboard() {
+  const total = allClinics.length;
+  const active = allClinics.filter(c => getStatus(c) === 'active').length;
+  const now = new Date();
+  const thisMonth = allClinics.filter(c => {
+    const d = new Date(c.created_at);
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  }).length;
+  const revenue = allClinics.reduce((sum, c) => {
+    if (getStatus(c) === 'active') sum += (PLAN_PRICES[c.plan] || 0);
+    return sum;
+  }, 0);
+
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statActive').textContent = active;
+  document.getElementById('statNew').textContent = thisMonth;
+  document.getElementById('statRevenue').textContent = '¥' + revenue.toLocaleString();
+}
+
+function getStatus(clinic) {
+  if (clinic.status) return clinic.status;
+  // fallback: check members
+  if (clinic.members && clinic.members.length > 0) {
+    return clinic.members[0].is_active ? 'active' : 'inactive';
+  }
+  return 'active';
+}
+
+// ===== Render Table =====
+function renderTable() {
+  const search = document.getElementById('filterSearch').value.toLowerCase();
+  const statusFilter = document.getElementById('filterStatus').value;
+  const planFilter = document.getElementById('filterPlan').value;
+
+  const filtered = allClinics.filter(c => {
+    if (search && !(c.name || '').toLowerCase().includes(search) && !(c.email || '').toLowerCase().includes(search)) return false;
+    if (statusFilter && getStatus(c) !== statusFilter) return false;
+    if (planFilter && c.plan !== planFilter) return false;
+    return true;
+  });
+
+  const tbody = document.getElementById('clinicTableBody');
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="padding:20px;text-align:center;color:#999;">該当する院がありません</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(c => {
+    const status = getStatus(c);
+    const badgeClass = status === 'active' ? 'badge-active' : status === 'suspended' ? 'badge-suspended' : 'badge-inactive';
+    const date = c.created_at ? new Date(c.created_at).toLocaleDateString('ja-JP') : '-';
+    const isActive = status === 'active';
+    const btnClass = isActive ? 'suspend' : 'activate';
+    const btnLabel = isActive ? '停止' : '再開';
+
+    return `<tr>
+      <td><strong>${esc(c.name || '-')}</strong></td>
+      <td>${esc(c.email || '-')}</td>
+      <td>${esc(c.plan || 'free')}</td>
+      <td><span class="badge ${badgeClass}">${status}</span></td>
+      <td>${date}</td>
+      <td style="font-size:11px;color:#888;">${esc(c.stripe_customer_id || '-')}</td>
+      <td><button class="btn-toggle ${btnClass}" onclick="toggleStatus('${c.id}', ${!isActive})">${btnLabel}</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// Filters
+document.getElementById('filterSearch').addEventListener('input', renderTable);
+document.getElementById('filterStatus').addEventListener('change', renderTable);
+document.getElementById('filterPlan').addEventListener('change', renderTable);
+
+// ===== Toggle Status =====
+async function toggleStatus(clinicId, active) {
+  if (!confirm(active ? 'このアカウントを再開しますか？' : 'このアカウントを停止しますか？')) return;
+
+  try {
+    const res = await fetch('/api/admin/toggle-status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ clinicId, active })
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error || 'APIエラー');
+    await loadClinics();
+  } catch (e) {
+    alert('操作に失敗しました: ' + e.message);
+  }
+}
+
+// ===== Create Account =====
+async function createAccount() {
+  const clinicName = document.getElementById('newClinicName').value.trim();
+  const email = document.getElementById('newEmail').value.trim();
+  const password = document.getElementById('newPassword').value;
+  const plan = document.getElementById('newPlan').value;
+  const msgEl = document.getElementById('createMsg');
+  const btn = document.getElementById('createBtn');
+
+  msgEl.textContent = '';
+  msgEl.className = 'form-msg';
+
+  if (!clinicName || !email || !password) {
+    msgEl.textContent = '全項目を入力してください';
+    msgEl.className = 'form-msg error';
+    return;
+  }
+  if (password.length < 8) {
+    msgEl.textContent = 'パスワードは8文字以上にしてください';
+    msgEl.className = 'form-msg error';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '作成中...';
+
+  try {
+    const res = await fetch('/api/admin/create-account', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ clinicName, email, password, plan })
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error || 'APIエラー');
+
+    msgEl.textContent = '作成完了 - clinic_id: ' + json.clinic_id;
+    msgEl.className = 'form-msg success';
+
+    // Reset form
+    document.getElementById('newClinicName').value = '';
+    document.getElementById('newEmail').value = '';
+    document.getElementById('newPassword').value = '';
+
+    await loadClinics();
+  } catch (e) {
+    msgEl.textContent = '作成失敗: ' + e.message;
+    msgEl.className = 'form-msg error';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'アカウント作成';
+  }
+}
+</script>
+</body>
+</html>
