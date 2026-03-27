@@ -30,7 +30,7 @@
   // ===== 認証・初期化 =====
   async function initAuth() {
     try {
-    SupabaseAuth.init();
+    await SupabaseAuth.init();
     } catch(e) {
       console.error('initAuth error:', e);
       const errEl = document.getElementById('loginError');

@@ -644,7 +644,7 @@
       document.getElementById('loginPassword').addEventListener('keydown', function(e) {
         if (e.key === 'Enter') btn.click();
       });
-      btn.addEventListener('click', function fallbackLogin() {
+      btn.addEventListener('click', async function fallbackLogin() {
         var email = document.getElementById('loginEmail').value.trim();
         var password = document.getElementById('loginPassword').value;
         var errorDiv = document.getElementById('loginError');
@@ -660,7 +660,7 @@
           return;
         }
         if (!SupabaseAuth.client) {
-          try { SupabaseAuth.init(); } catch(e) {
+          try { await SupabaseAuth.init(); } catch(e) {
             errorDiv.textContent = 'エラー: ' + e.message;
             errorDiv.style.display = 'block';
             return;

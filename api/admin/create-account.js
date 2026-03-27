@@ -26,7 +26,7 @@ module.exports = async function handler(req, res) {
 
   // Service Role client (RLS bypass)
   const supabase = createClient(
-    process.env.SUPABASE_URL || 'https://vzkfkazjylrkspqrnhnx.supabase.co',
+    process.env.SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY
   );
 

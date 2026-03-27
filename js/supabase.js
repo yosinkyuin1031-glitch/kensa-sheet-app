@@ -1,20 +1,40 @@
 // ===== Supabase クライアント初期化・認証管理 =====
 
 const SupabaseAuth = {
-  SUPABASE_URL: 'https://vzkfkazjylrkspqrnhnx.supabase.co',
-  SUPABASE_ANON_KEY: 'sb_publishable_H1Ch2D2XIuSQMzNL-ns8zg_gAqrx7wL',
+  SUPABASE_URL: '',
+  SUPABASE_ANON_KEY: '',
   client: null,
   currentUser: null,
   currentClinicId: null,
 
-  // Supabaseクライアント初期化
-  init() {
+  // 設定を読み込み（Vercel環境変数 → フォールバック）
+  async _loadConfig() {
     try {
+      const resp = await fetch('/api/config');
+      if (resp.ok) {
+        const cfg = await resp.json();
+        if (cfg.supabaseUrl && cfg.supabaseAnonKey) {
+          this.SUPABASE_URL = cfg.supabaseUrl;
+          this.SUPABASE_ANON_KEY = cfg.supabaseAnonKey;
+          return;
+        }
+      }
+    } catch (e) {
+      // API取得失敗時はフォールバック
+    }
+    // フォールバック（ローカル開発・API未設定時）
+    this.SUPABASE_URL = 'https://vzkfkazjylrkspqrnhnx.supabase.co';
+    this.SUPABASE_ANON_KEY = 'sb_publishable_H1Ch2D2XIuSQMzNL-ns8zg_gAqrx7wL';
+  },
+
+  // Supabaseクライアント初期化
+  async init() {
+    try {
+      await this._loadConfig();
       this.client = window.supabase.createClient(this.SUPABASE_URL, this.SUPABASE_ANON_KEY);
       return this.client;
     } catch (e) {
       console.error('Supabase初期化エラー:', e);
-      // 画面にエラー表示
       const errEl = document.getElementById('loginError');
       if (errEl) {
         errEl.textContent = 'システム読み込みエラー: ' + e.message;
