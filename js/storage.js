@@ -136,6 +136,12 @@ const Storage = {
     const userId = this._userId();
     if (!clinicId) {
       console.error('clinic_idが取得できません');
+      alert('エラー詳細: clinic_idが取得できません。ログアウトして再ログインしてください。');
+      return false;
+    }
+    if (!userId) {
+      console.error('user_idが取得できません');
+      alert('エラー詳細: user_idが取得できません。ログアウトして再ログインしてください。');
       return false;
     }
 
@@ -163,9 +169,15 @@ const Storage = {
       if (extraFields.medicalHistory) patientRow.medical_history = extraFields.medicalHistory;
     }
 
-    await this._db()
+    const { error: patientError } = await this._db()
       .from('ks_patients')
       .upsert(patientRow, { onConflict: 'clinic_id,patient_id' });
+
+    if (patientError) {
+      console.error('患者マスタ保存エラー:', patientError);
+      alert(`エラー詳細（患者マスタ）: ${patientError.message}\ncode: ${patientError.code}\nhint: ${patientError.hint || 'なし'}`);
+      return false;
+    }
 
     // ks_examinations に挿入
     const row = {
@@ -199,6 +211,7 @@ const Storage = {
 
     if (error) {
       console.error('保存エラー:', error);
+      alert(`エラー詳細（検査データ）: ${error.message}\ncode: ${error.code}\nhint: ${error.hint || 'なし'}\ndetails: ${error.details || 'なし'}`);
       return false;
     }
 
