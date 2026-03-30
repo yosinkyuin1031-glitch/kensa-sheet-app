@@ -145,24 +145,11 @@ img {
   backdrop-filter: blur(8px);
 }
 
-.screenshot-placeholder {
-  background: linear-gradient(135deg, #e2e8f0, #f1f5f9);
+.hero-screenshot img {
+  width: 100%;
   border-radius: 8px;
-  aspect-ratio: 16 / 10;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #64748b;
-  font-size: 14px;
-  position: relative;
-}
-
-.screenshot-placeholder::after {
-  content: "アプリ画面キャプチャ";
-  background: #fff;
-  padding: 8px 16px;
-  border-radius: 4px;
-  border: 1px dashed #cbd5e1;
+  display: block;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
 }
 
 /* 限定バナー */
@@ -278,6 +265,90 @@ img {
   line-height: 1.7;
 }
 
+/* ========== デモスライドショー ========== */
+.demo-slideshow {
+  max-width: 700px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.demo-slideshow-viewport {
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  background: #f1f5f9;
+}
+
+.demo-slideshow-viewport img {
+  width: 100%;
+  display: block;
+  transition: opacity 0.5s ease;
+}
+
+.demo-slideshow-caption {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 14px;
+  color: #64748b;
+  min-height: 2em;
+}
+
+.demo-slideshow-nav {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.demo-slideshow-nav button {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: none;
+  background: #cbd5e1;
+  cursor: pointer;
+  transition: background 0.2s;
+  padding: 0;
+}
+
+.demo-slideshow-nav button.active {
+  background: #2563eb;
+  width: 28px;
+  border-radius: 5px;
+}
+
+.demo-slideshow-arrows {
+  position: absolute;
+  top: 50%;
+  left: -16px;
+  right: -16px;
+  transform: translateY(-50%);
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.demo-slideshow-arrows button {
+  pointer-events: auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.9);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  cursor: pointer;
+  font-size: 18px;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.demo-slideshow-arrows button:hover {
+  background: #fff;
+}
+
 /* ========== ビフォーアフター訴求 ========== */
 .ba-section {
   background: linear-gradient(135deg, #0f172a, #1e3a5f);
@@ -340,8 +411,10 @@ img {
   padding: 20px;
 }
 
-.ba-mockup .screenshot-placeholder {
-  aspect-ratio: 4 / 5;
+.ba-mockup-inner {
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 /* ========== 導入メリット ========== */
@@ -397,13 +470,17 @@ img {
   overflow: hidden;
 }
 
-.gallery-item .screenshot-placeholder {
+.gallery-item img {
+  width: 100%;
+  display: block;
   aspect-ratio: 9 / 16;
-  border-radius: 0;
+  object-fit: cover;
+  object-position: top;
 }
 
-.gallery-item .screenshot-placeholder::after {
-  content: attr(data-label);
+.gallery-item svg {
+  width: 100%;
+  display: block;
 }
 
 .gallery-label {
@@ -534,6 +611,107 @@ img {
   color: #64748b;
   margin-top: 4px;
 }
+
+/* Stripe決済ボタン */
+.stripe-checkout-section {
+  max-width: 480px;
+  margin: 40px auto 0;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 32px 28px;
+  text-align: left;
+}
+
+.stripe-checkout-section h4 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-align: center;
+  color: #1a1a2e;
+}
+
+.stripe-field {
+  margin-bottom: 16px;
+}
+
+.stripe-field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 6px;
+}
+
+.stripe-field input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 15px;
+  font-family: inherit;
+  transition: border-color 0.2s;
+  background: #fff;
+}
+
+.stripe-field input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+}
+
+.stripe-submit-btn {
+  width: 100%;
+  padding: 16px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 8px;
+  font-family: inherit;
+}
+
+.stripe-submit-btn:hover {
+  background: #1d4ed8;
+}
+
+.stripe-submit-btn:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
+
+.stripe-note {
+  font-size: 12px;
+  color: #94a3b8;
+  text-align: center;
+  margin-top: 12px;
+  line-height: 1.6;
+}
+
+.stripe-or {
+  text-align: center;
+  margin: 24px 0 16px;
+  font-size: 13px;
+  color: #94a3b8;
+  position: relative;
+}
+
+.stripe-or::before,
+.stripe-or::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 40%;
+  height: 1px;
+  background: #e2e8f0;
+}
+
+.stripe-or::before { left: 0; }
+.stripe-or::after { right: 0; }
 
 /* ========== FAQ ========== */
 .faq {
@@ -679,6 +857,15 @@ img {
   .cta-section h2 {
     font-size: 22px;
   }
+
+  .demo-slideshow-arrows {
+    left: 4px;
+    right: 4px;
+  }
+
+  .stripe-checkout-section {
+    padding: 24px 20px;
+  }
 }
 </style>
 </head>
@@ -707,7 +894,7 @@ img {
       <span class="cta-btn-sub">先着5名 モニター限定 3,980円/月</span>
     </a>
     <div class="hero-screenshot">
-      <div class="screenshot-placeholder"></div>
+      <img src="images/dashboard.png" alt="検査アプリ ダッシュボード画面 - 検査数・患者数・月別推移をひと目で確認" loading="lazy">
     </div>
   </div>
 </section>
@@ -817,6 +1004,27 @@ img {
   </div>
 </section>
 
+<!-- アプリデモスライドショー -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-title">
+      <span>DEMO</span>
+      実際のアプリ画面
+    </h2>
+    <div class="demo-slideshow" id="demoSlideshow">
+      <div class="demo-slideshow-viewport">
+        <img id="slideImg" src="images/patient-info.png" alt="デモ画面">
+      </div>
+      <div class="demo-slideshow-arrows">
+        <button onclick="slideChange(-1)" aria-label="前へ">&lt;</button>
+        <button onclick="slideChange(1)" aria-label="次へ">&gt;</button>
+      </div>
+      <div class="demo-slideshow-caption" id="slideCaption">Step1: 患者情報 - 主訴・痛みレベル(NRS)を入力</div>
+      <div class="demo-slideshow-nav" id="slideNav"></div>
+    </div>
+  </div>
+</section>
+
 <!-- ビフォーアフター訴求 -->
 <section class="section ba-section">
   <div class="container">
@@ -842,7 +1050,111 @@ img {
         </ul>
       </div>
       <div class="ba-mockup">
-        <div class="screenshot-placeholder" data-label="ビフォーアフター比較画面"></div>
+        <div class="ba-mockup-inner">
+          <!-- ビフォーアフター比較のSVGモックアップ -->
+          <svg viewBox="0 0 360 520" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">
+            <!-- ヘッダー -->
+            <rect width="360" height="44" fill="#3b82f6"/>
+            <text x="180" y="28" text-anchor="middle" fill="#fff" font-size="15" font-weight="700" font-family="sans-serif">前回との比較</text>
+            <!-- 背景 -->
+            <rect y="44" width="360" height="476" fill="#f1f5f9"/>
+            <!-- 前回カード -->
+            <rect x="16" y="60" width="156" height="200" rx="8" fill="#fff" stroke="#e2e8f0"/>
+            <text x="94" y="82" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="sans-serif">前回 2026/03/18</text>
+            <!-- 前回 人体図シルエット -->
+            <g transform="translate(54, 90)">
+              <ellipse cx="40" cy="12" rx="12" ry="14" fill="#fde68a" stroke="#f59e0b" stroke-width="1"/>
+              <rect x="26" y="26" width="28" height="40" rx="4" fill="#fde68a" stroke="#f59e0b" stroke-width="1"/>
+              <line x1="26" y1="32" x2="10" y2="55" stroke="#f59e0b" stroke-width="4" stroke-linecap="round"/>
+              <line x1="54" y1="32" x2="70" y2="55" stroke="#f59e0b" stroke-width="4" stroke-linecap="round"/>
+              <line x1="34" y1="66" x2="28" y2="98" stroke="#f59e0b" stroke-width="4" stroke-linecap="round"/>
+              <line x1="46" y1="66" x2="52" y2="98" stroke="#f59e0b" stroke-width="4" stroke-linecap="round"/>
+              <!-- 歪み矢印（右下がり） -->
+              <line x1="18" y1="28" x2="62" y2="35" stroke="#ef4444" stroke-width="2" stroke-dasharray="3,2"/>
+              <line x1="20" y1="45" x2="60" y2="50" stroke="#ef4444" stroke-width="2" stroke-dasharray="3,2"/>
+              <line x1="22" y1="62" x2="58" y2="65" stroke="#ef4444" stroke-width="2" stroke-dasharray="3,2"/>
+            </g>
+            <rect x="28" y="202" width="60" height="18" rx="4" fill="#fef2f2" stroke="#fecaca"/>
+            <text x="58" y="215" text-anchor="middle" fill="#dc2626" font-size="10" font-weight="600" font-family="sans-serif">NRS 7/10</text>
+            <rect x="96" y="202" width="64" height="18" rx="4" fill="#fef2f2" stroke="#fecaca"/>
+            <text x="128" y="215" text-anchor="middle" fill="#dc2626" font-size="9" font-weight="600" font-family="sans-serif">ずれ 6/9箇所</text>
+            <text x="94" y="245" text-anchor="middle" fill="#64748b" font-size="10" font-family="sans-serif">右肩の痛み、首のこり</text>
+            <!-- 今回カード -->
+            <rect x="188" y="60" width="156" height="200" rx="8" fill="#fff" stroke="#3b82f6" stroke-width="2"/>
+            <text x="266" y="82" text-anchor="middle" fill="#3b82f6" font-size="11" font-weight="600" font-family="sans-serif">今回 2026/03/25</text>
+            <!-- 今回 人体図シルエット（改善） -->
+            <g transform="translate(226, 90)">
+              <ellipse cx="40" cy="12" rx="12" ry="14" fill="#bbf7d0" stroke="#22c55e" stroke-width="1"/>
+              <rect x="26" y="26" width="28" height="40" rx="4" fill="#bbf7d0" stroke="#22c55e" stroke-width="1"/>
+              <line x1="26" y1="32" x2="10" y2="55" stroke="#22c55e" stroke-width="4" stroke-linecap="round"/>
+              <line x1="54" y1="32" x2="70" y2="55" stroke="#22c55e" stroke-width="4" stroke-linecap="round"/>
+              <line x1="34" y1="66" x2="28" y2="98" stroke="#22c55e" stroke-width="4" stroke-linecap="round"/>
+              <line x1="46" y1="66" x2="52" y2="98" stroke="#22c55e" stroke-width="4" stroke-linecap="round"/>
+              <!-- 歪み矢印（ほぼ水平=改善） -->
+              <line x1="18" y1="30" x2="62" y2="31" stroke="#22c55e" stroke-width="2" stroke-dasharray="3,2"/>
+              <line x1="20" y1="47" x2="60" y2="48" stroke="#22c55e" stroke-width="2" stroke-dasharray="3,2"/>
+              <line x1="22" y1="63" x2="58" y2="63" stroke="#22c55e" stroke-width="2" stroke-dasharray="3,2"/>
+            </g>
+            <rect x="200" y="202" width="60" height="18" rx="4" fill="#f0fdf4" stroke="#bbf7d0"/>
+            <text x="230" y="215" text-anchor="middle" fill="#16a34a" font-size="10" font-weight="600" font-family="sans-serif">NRS 4/10</text>
+            <rect x="268" y="202" width="64" height="18" rx="4" fill="#f0fdf4" stroke="#bbf7d0"/>
+            <text x="300" y="215" text-anchor="middle" fill="#16a34a" font-size="9" font-weight="600" font-family="sans-serif">ずれ 3/9箇所</text>
+            <text x="266" y="245" text-anchor="middle" fill="#64748b" font-size="10" font-family="sans-serif">右肩の痛み（軽減）</text>
+            <!-- 改善サマリー -->
+            <rect x="16" y="280" width="328" height="80" rx="8" fill="#fff" stroke="#e2e8f0"/>
+            <text x="180" y="300" text-anchor="middle" fill="#1a1a2e" font-size="13" font-weight="700" font-family="sans-serif">改善サマリー</text>
+            <g transform="translate(30, 312)">
+              <rect width="92" height="32" rx="6" fill="#eff6ff"/>
+              <text x="46" y="21" text-anchor="middle" fill="#2563eb" font-size="11" font-weight="600" font-family="sans-serif">痛み -3pt</text>
+            </g>
+            <g transform="translate(134, 312)">
+              <rect width="92" height="32" rx="6" fill="#f0fdf4"/>
+              <text x="46" y="21" text-anchor="middle" fill="#16a34a" font-size="11" font-weight="600" font-family="sans-serif">ずれ -3箇所</text>
+            </g>
+            <g transform="translate(238, 312)">
+              <rect width="92" height="32" rx="6" fill="#fef3c7"/>
+              <text x="46" y="15" text-anchor="middle" fill="#d97706" font-size="10" font-weight="600" font-family="sans-serif">改善傾向</text>
+              <text x="46" y="27" text-anchor="middle" fill="#d97706" font-size="9" font-family="sans-serif">継続推奨</text>
+            </g>
+            <!-- 経過グラフミニ -->
+            <rect x="16" y="376" width="328" height="120" rx="8" fill="#fff" stroke="#e2e8f0"/>
+            <text x="32" y="396" fill="#1a1a2e" font-size="12" font-weight="700" font-family="sans-serif">経過グラフ</text>
+            <text x="300" y="396" text-anchor="end" fill="#94a3b8" font-size="10" font-family="sans-serif">直近5回</text>
+            <!-- グラフエリア -->
+            <g transform="translate(40, 406)">
+              <!-- Y軸 -->
+              <line x1="0" y1="0" x2="0" y2="72" stroke="#e2e8f0" stroke-width="1"/>
+              <text x="-4" y="5" text-anchor="end" fill="#94a3b8" font-size="8" font-family="sans-serif">9</text>
+              <text x="-4" y="41" text-anchor="end" fill="#94a3b8" font-size="8" font-family="sans-serif">5</text>
+              <text x="-4" y="76" text-anchor="end" fill="#94a3b8" font-size="8" font-family="sans-serif">0</text>
+              <!-- X軸 -->
+              <line x1="0" y1="72" x2="280" y2="72" stroke="#e2e8f0" stroke-width="1"/>
+              <!-- グリッド -->
+              <line x1="0" y1="36" x2="280" y2="36" stroke="#f1f5f9" stroke-width="1"/>
+              <!-- ずれ箇所の折れ線 -->
+              <polyline points="0,16 70,24 140,32 210,40 280,48" fill="none" stroke="#3b82f6" stroke-width="2.5"/>
+              <!-- ポイント -->
+              <circle cx="0" cy="16" r="4" fill="#3b82f6"/>
+              <circle cx="70" cy="24" r="4" fill="#3b82f6"/>
+              <circle cx="140" cy="32" r="4" fill="#3b82f6"/>
+              <circle cx="210" cy="40" r="4" fill="#3b82f6"/>
+              <circle cx="280" cy="48" r="5" fill="#fff" stroke="#3b82f6" stroke-width="2.5"/>
+              <!-- NRS折れ線 -->
+              <polyline points="0,16 70,24 140,36 210,44 280,48" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,3"/>
+              <!-- ラベル -->
+              <text x="0" y="84" text-anchor="middle" fill="#94a3b8" font-size="8" font-family="sans-serif">3/4</text>
+              <text x="70" y="84" text-anchor="middle" fill="#94a3b8" font-size="8" font-family="sans-serif">3/11</text>
+              <text x="140" y="84" text-anchor="middle" fill="#94a3b8" font-size="8" font-family="sans-serif">3/18</text>
+              <text x="210" y="84" text-anchor="middle" fill="#94a3b8" font-size="8" font-family="sans-serif">3/25</text>
+              <text x="280" y="84" text-anchor="middle" fill="#3b82f6" font-size="8" font-weight="600" font-family="sans-serif">今回</text>
+            </g>
+            <!-- 凡例 -->
+            <line x1="200" y1="404" x2="218" y2="404" stroke="#3b82f6" stroke-width="2"/>
+            <text x="222" y="408" fill="#64748b" font-size="8" font-family="sans-serif">ずれ箇所</text>
+            <line x1="260" y1="404" x2="278" y2="404" stroke="#f59e0b" stroke-width="2" stroke-dasharray="3,2"/>
+            <text x="282" y="408" fill="#64748b" font-size="8" font-family="sans-serif">NRS</text>
+          </svg>
+        </div>
       </div>
     </div>
   </div>
@@ -884,20 +1196,20 @@ img {
     </h2>
     <div class="gallery-grid">
       <div class="gallery-item">
-        <div class="screenshot-placeholder" data-label="検査入力画面"></div>
+        <img src="images/standing-exam.png" alt="立位検査画面 - 3つのランドマークを左右評価" loading="lazy">
         <div class="gallery-label">検査入力画面</div>
       </div>
       <div class="gallery-item">
-        <div class="screenshot-placeholder" data-label="人体図表示"></div>
-        <div class="gallery-label">人体図表示</div>
+        <img src="images/diagnosis-result.png" alt="診断結果 - 原因部位と歪みパターンを自動判定" loading="lazy">
+        <div class="gallery-label">診断結果</div>
       </div>
       <div class="gallery-item">
-        <div class="screenshot-placeholder" data-label="ビフォーアフター比較"></div>
-        <div class="gallery-label">ビフォーアフター比較</div>
+        <img src="images/history.png" alt="検査履歴 - 患者別の検査記録を時系列で管理" loading="lazy">
+        <div class="gallery-label">検査履歴</div>
       </div>
       <div class="gallery-item">
-        <div class="screenshot-placeholder" data-label="経過グラフ"></div>
-        <div class="gallery-label">経過グラフ</div>
+        <img src="images/patients.png" alt="患者一覧 - 登録患者を検索・管理" loading="lazy">
+        <div class="gallery-label">患者一覧</div>
       </div>
     </div>
   </div>
@@ -947,6 +1259,26 @@ img {
       LINEでモニター申し込み
       <span class="cta-btn-sub">先着5名 残りわずか</span>
     </a>
+
+    <!-- Stripe決済フォーム -->
+    <div class="stripe-checkout-section">
+      <h4>カード決済で今すぐ申し込む</h4>
+      <div class="stripe-field">
+        <label for="stripe-clinic">院名</label>
+        <input type="text" id="stripe-clinic" placeholder="例：山田整体院">
+      </div>
+      <div class="stripe-field">
+        <label for="stripe-email">メールアドレス</label>
+        <input type="email" id="stripe-email" placeholder="example@email.com">
+      </div>
+      <button class="stripe-submit-btn" id="stripeCheckoutBtn" onclick="handleStripeCheckout()">
+        月額 3,980円で申し込む
+      </button>
+      <p class="stripe-note">
+        Stripeによる安全な決済処理。<br>
+        クレジットカード情報は当社サーバーに保存されません。
+      </p>
+    </div>
   </div>
 </section>
 
@@ -1009,6 +1341,115 @@ img {
     <p style="margin-top:12px;">&copy; 2026 大口神経整体院 All Rights Reserved.</p>
   </div>
 </footer>
+
+<script>
+// ===== デモスライドショー =====
+const slides = [
+  { src: "images/patient-info.png", caption: "Step1: 患者情報 - 主訴・痛みレベル(NRS)を入力" },
+  { src: "images/standing-exam.png", caption: "Step2: 立位検査 - 3つのランドマークの左右差を評価" },
+  { src: "images/diagnosis-result.png", caption: "Step3: 診断結果 - 原因部位・歪みパターンを自動判定" },
+  { src: "images/selfcare.png", caption: "AIがセルフケアメニューを自動提案" },
+  { src: "images/pdf-output.png", caption: "患者用レポート・施術提案書をPDF出力" },
+  { src: "images/history.png", caption: "検査履歴 - 患者の経過を時系列で管理" },
+  { src: "images/patients.png", caption: "患者一覧 - 全患者の情報を一元管理" },
+  { src: "images/dashboard.png", caption: "ダッシュボード - 検査数・患者数・月別推移" },
+];
+
+let currentSlide = 0;
+
+function initSlideshow() {
+  const nav = document.getElementById('slideNav');
+  if (!nav) return;
+  slides.forEach((_, i) => {
+    const btn = document.createElement('button');
+    btn.addEventListener('click', () => goToSlide(i));
+    if (i === 0) btn.classList.add('active');
+    nav.appendChild(btn);
+  });
+}
+
+function goToSlide(i) {
+  currentSlide = i;
+  const img = document.getElementById('slideImg');
+  const caption = document.getElementById('slideCaption');
+  const nav = document.getElementById('slideNav');
+  if (!img || !caption || !nav) return;
+  img.style.opacity = '0';
+  setTimeout(() => {
+    img.src = slides[i].src;
+    img.alt = slides[i].caption;
+    caption.textContent = slides[i].caption;
+    img.style.opacity = '1';
+  }, 250);
+  nav.querySelectorAll('button').forEach((btn, j) => {
+    btn.classList.toggle('active', j === i);
+  });
+}
+
+function slideChange(dir) {
+  let next = currentSlide + dir;
+  if (next < 0) next = slides.length - 1;
+  if (next >= slides.length) next = 0;
+  goToSlide(next);
+}
+
+// 自動スライド
+let autoSlideTimer = setInterval(() => slideChange(1), 5000);
+document.getElementById('demoSlideshow')?.addEventListener('mouseenter', () => clearInterval(autoSlideTimer));
+document.getElementById('demoSlideshow')?.addEventListener('mouseleave', () => {
+  autoSlideTimer = setInterval(() => slideChange(1), 5000);
+});
+
+initSlideshow();
+
+// ===== Stripe決済 =====
+async function handleStripeCheckout() {
+  const clinicName = document.getElementById('stripe-clinic').value.trim();
+  const email = document.getElementById('stripe-email').value.trim();
+  const btn = document.getElementById('stripeCheckoutBtn');
+
+  if (!clinicName) {
+    alert('院名を入力してください');
+    return;
+  }
+  if (!email || !email.includes('@')) {
+    alert('メールアドレスを入力してください');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '処理中...';
+
+  try {
+    const res = await fetch('https://clinic-saas-lp.vercel.app/api/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        planName: '検査シート モニタープラン',
+        email: email,
+        clinicName: clinicName,
+        amount: 3980,
+        paymentType: 'monthly',
+        selectedApps: ['kensa']
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      alert('決済ページの作成に失敗しました。LINEからお申し込みください。');
+      btn.disabled = false;
+      btn.textContent = '月額 3,980円で申し込む';
+    }
+  } catch (e) {
+    alert('通信エラーが発生しました。LINEからお申し込みください。');
+    btn.disabled = false;
+    btn.textContent = '月額 3,980円で申し込む';
+  }
+}
+</script>
 
 </body>
 </html>
