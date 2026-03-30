@@ -1892,25 +1892,36 @@
   // ===== 診断アクション =====
   function setupDiagnosisActions() {
     document.getElementById('saveHistoryBtn').addEventListener('click', async () => {
-      if (!diagnosisResult) return;
-      const patientName = document.getElementById('patientName').value;
-      const memoEl = document.getElementById('inspectionMemo');
-      const memo = memoEl ? memoEl.value : '';
-      const extraFields = {
-        age: patientAge,
-        gender: patientGender,
-        occupation: patientOccupation,
-        visitType: visitType,
-        medicalHistory: medicalHistory
-      };
-      const chiefComplaints = chiefComplaintText ? [chiefComplaintText] : [];
-      const success = await Storage.save(examData, diagnosisResult, patientName, memo, detailData, contractionResult, weightBalance, selectedPatientId, painLevel, chiefComplaints, extraFields);
-      if (success) {
-        alert('検査結果を保存しました');
-        await updateCompareButton();
-        await updateTrendButton();
-      } else {
-        alert('保存に失敗しました');
+      try {
+        if (!diagnosisResult) { alert('診断結果がありません'); return; }
+        const patientName = document.getElementById('patientName').value;
+        const memoEl = document.getElementById('inspectionMemo');
+        const memo = memoEl ? memoEl.value : '';
+        const extraFields = {
+          age: patientAge,
+          gender: patientGender,
+          occupation: patientOccupation,
+          visitType: visitType,
+          medicalHistory: medicalHistory
+        };
+        const chiefComplaints = chiefComplaintText ? [chiefComplaintText] : [];
+        const clinicId = SupabaseAuth.getClinicId();
+        const userId = SupabaseAuth.getUserId();
+        if (!clinicId || !userId) {
+          alert(`保存エラー: 認証情報が不足しています\nclinic_id: ${clinicId || 'なし'}\nuser_id: ${userId || 'なし'}\n\nログアウトして再ログインしてください。`);
+          return;
+        }
+        const success = await Storage.save(examData, diagnosisResult, patientName, memo, detailData, contractionResult, weightBalance, selectedPatientId, painLevel, chiefComplaints, extraFields);
+        if (success) {
+          alert('検査結果を保存しました');
+          await updateCompareButton();
+          await updateTrendButton();
+        } else {
+          alert('保存に失敗しました（Storage.saveがfalseを返しました）');
+        }
+      } catch (e) {
+        console.error('保存処理で例外:', e);
+        alert(`保存処理で例外が発生しました:\n${e.message}\n\n${e.stack ? e.stack.substring(0, 300) : ''}`);
       }
     });
 
