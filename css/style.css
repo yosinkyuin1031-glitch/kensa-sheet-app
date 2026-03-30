@@ -671,6 +671,16 @@ body[data-view="patient"] .patient-treatment-hint p {
   display: block;
 }
 
+/* ミニ体図（前回比較用） */
+.mini-diagram {
+  width: 100% !important;
+  max-width: 160px;
+  margin: 0 auto;
+  padding: 6px 4px 4px;
+  border: 1px solid #e2e8f0;
+  box-shadow: none;
+}
+
 .body-svg .body-part {
   transition: fill 0.3s ease, opacity 0.3s ease;
 }

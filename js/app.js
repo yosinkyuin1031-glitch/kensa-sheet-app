@@ -461,22 +461,40 @@
     });
 
     // Y軸ラベル
-    svg += `<text x="14" y="${padTop + plotH / 2}" text-anchor="middle" font-size="10" fill="#64748b" transform="rotate(-90, 14, ${padTop + plotH / 2})">バランススコア</text>`;
+    svg += `<text x="14" y="${padTop + plotH / 2}" text-anchor="middle" font-size="10" fill="#64748b" transform="rotate(-90, 14, ${padTop + plotH / 2})">歪み度</text>`;
 
     // 矢印（改善方向を示す）
-    svg += `<text x="${padLeft - 8}" y="${padTop - 8}" text-anchor="end" font-size="9" fill="#94a3b8">悪い</text>`;
-    svg += `<text x="${padLeft - 8}" y="${padTop + plotH + 14}" text-anchor="end" font-size="9" fill="#22c55e">良い</text>`;
+    svg += `<text x="${padLeft - 8}" y="${padTop - 8}" text-anchor="end" font-size="9" fill="#ef4444">↑歪み大</text>`;
+    svg += `<text x="${padLeft - 8}" y="${padTop + plotH + 14}" text-anchor="end" font-size="9" fill="#22c55e">↓正常</text>`;
 
     svg += '</svg>';
+
+    // 全体の変化判定
+    const firstScore = exams[0].score;
+    const lastScore = exams[exams.length - 1].score;
+    const totalChange = lastScore - firstScore;
+    let summaryText = '';
+    if (totalChange < 0) {
+      summaryText = `<span style="color:#22c55e;font-weight:700;">改善傾向</span>（歪み度 ${firstScore} → ${lastScore}）`;
+    } else if (totalChange > 0) {
+      summaryText = `<span style="color:#ef4444;font-weight:700;">悪化傾向</span>（歪み度 ${firstScore} → ${lastScore}）`;
+    } else {
+      summaryText = `<span style="color:#64748b;font-weight:700;">横ばい</span>（歪み度 ${firstScore}）`;
+    }
 
     // HTML生成
     let html = '<div class="trend-card">';
     html += '<div class="trend-header">';
     html += '<h3>経過グラフ</h3>';
     html += `<p>${patientName || '患者'}さんの検査${exams.length}回分の推移</p>`;
+    html += `<p style="margin-top:4px;">${summaryText}</p>`;
     html += '</div>';
 
     html += `<div class="trend-chart-wrapper">${svg}</div>`;
+
+    html += '<div class="trend-guide" style="font-size:11px;color:#64748b;padding:6px 12px;background:#f8fafc;border-radius:8px;margin:8px 0;">';
+    html += '📊 <strong>見方：</strong>グラフが<span style="color:#22c55e;font-weight:600;">下がる</span>ほど歪みが減って改善。<span style="color:#ef4444;font-weight:600;">上がる</span>と歪みが増加。0が理想。';
+    html += '</div>';
 
     html += '<div class="trend-legend">';
     html += '<span class="trend-legend-item"><span class="trend-legend-dot" style="background:#22c55e;"></span> 良好 (0-2)</span>';
@@ -1268,6 +1286,9 @@
       }
     }
 
+    // 前回比較の体図を描画
+    await renderComparisonDiagrams();
+
     // アクションボタンは全身統合分析後に表示するため、ここでは非表示のまま
     document.getElementById('diagnosisActions').style.display = 'none';
     // 患者モード用アクションバーも非表示
@@ -1311,16 +1332,94 @@
     const prevDate = new Date(prev.date);
     const prevDateStr = `${prevDate.getFullYear()}/${String(prevDate.getMonth()+1).padStart(2,'0')}/${String(prevDate.getDate()).padStart(2,'0')}`;
 
+    // 前回・今回のバランススコア計算
+    let prevScore = 0, currScore = 0;
+    if (prev.examData) {
+      for (const pos of ['standing', 'seated', 'upperBody']) {
+        if (prev.examData[pos]) {
+          for (const lm of Object.keys(prev.examData[pos])) {
+            prevScore += Math.abs(prev.examData[pos][lm] || 0);
+          }
+        }
+      }
+    }
+    for (const pos of ['standing', 'seated', 'upperBody']) {
+      if (examData[pos]) {
+        for (const lm of Object.keys(examData[pos])) {
+          currScore += Math.abs(examData[pos][lm] || 0);
+        }
+      }
+    }
+    const scoreDiff = currScore - prevScore;
+    const scoreArrow = scoreDiff < 0 ? '↓ 改善' : scoreDiff > 0 ? '↑ 悪化' : '→ 変化なし';
+    const scoreColor = scoreDiff < 0 ? '#22c55e' : scoreDiff > 0 ? '#ef4444' : '#64748b';
+
+    // 前回の体図用ID（後でbodyDiagramを描画）
+    const prevDiagramId = 'diagram-prev-compare';
+    const currDiagramId = 'diagram-curr-compare';
+
     return `
     <div class="prev-comparison-card">
       <h4 class="prev-comparison-title">前回との比較（${prevDateStr}）</h4>
+      <div class="compare-diagrams" style="display:flex;gap:8px;margin:12px 0;">
+        <div style="flex:1;text-align:center;">
+          <div style="font-size:11px;color:#64748b;margin-bottom:4px;">前回</div>
+          <div class="body-diagram-container mini-diagram" id="${prevDiagramId}" style="max-height:200px;"></div>
+          <div style="margin-top:4px;">
+            <span style="font-size:12px;background:${prevCause.color || '#94a3b8'};color:white;padding:2px 8px;border-radius:8px;">${prevCause.icon || ''} ${prevCause.label || '?'}</span>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;font-size:24px;color:#94a3b8;">→</div>
+        <div style="flex:1;text-align:center;">
+          <div style="font-size:11px;color:#64748b;margin-bottom:4px;">今回</div>
+          <div class="body-diagram-container mini-diagram" id="${currDiagramId}" style="max-height:200px;"></div>
+          <div style="margin-top:4px;">
+            <span style="font-size:12px;background:${currCause.color || '#94a3b8'};color:white;padding:2px 8px;border-radius:8px;">${currCause.icon || ''} ${currCause.label || '?'}</span>
+          </div>
+        </div>
+      </div>
       <div class="compare-item">
-        <span class="compare-label">判定</span>
-        <span>${prevCause.icon || ''} ${prevCause.label || '?'} → ${currCause.icon || ''} ${currCause.label || '?'}</span>
+        <span class="compare-label">歪み度</span>
+        <span style="color:${scoreColor};font-weight:700;">${prevScore} → ${currScore}（${scoreArrow}）</span>
       </div>
       ${nrsCompare}
       ${wbCompare}
     </div>`;
+  }
+
+  // 前回比較の体図を描画（renderDiagnosis後に呼ぶ）
+  async function renderComparisonDiagrams() {
+    if (!selectedPatientId || !diagnosisResult) return;
+    const history = await Storage.getHistoryByPatient(selectedPatientId);
+    if (history.length < 2) return;
+
+    const prev = history[0];
+    if (!prev.diagnosisResult) return;
+
+    // 前回の体図
+    const prevEl = document.getElementById('diagram-prev-compare');
+    if (prevEl) {
+      BodyDiagram.init('diagram-prev-compare');
+      if (prev.detailData && prev.detailData.upperDetail && prev.detailData.upperDetail.acromion !== null) {
+        // detailDataがある場合（contractionResultから上半身・下半身を分解）
+        const prevUpper = prev.contractionResult?.upper?.rawData || prev.detailData?.upperDetail || {};
+        const prevLower = prev.contractionResult?.lower?.rawData || prev.detailData?.lowerDetail || {};
+        BodyDiagram.updateUnified('diagram-prev-compare', prevUpper, prevLower, prev.examData?.standing || {});
+      } else if (prev.examData?.standing) {
+        BodyDiagram.update('diagram-prev-compare', 'firstStage', prev.examData.standing);
+      }
+    }
+
+    // 今回の体図
+    const currEl = document.getElementById('diagram-curr-compare');
+    if (currEl) {
+      BodyDiagram.init('diagram-curr-compare');
+      if (detailData.upperDetail.acromion !== null) {
+        BodyDiagram.updateUnified('diagram-curr-compare', detailData.upperDetail, detailData.lowerDetail, examData.standing);
+      } else {
+        BodyDiagram.update('diagram-curr-compare', 'firstStage', examData.standing);
+      }
+    }
   }
 
   // ===== 患者向けラベル =====
