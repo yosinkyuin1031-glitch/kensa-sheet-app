@@ -73,9 +73,9 @@ const Storage = {
     return this._cache;
   },
 
-  // 患者IDを生成
+  // 患者IDを生成（UUID v4形式）
   _generatePatientId() {
-    return 'p_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 5);
+    return crypto.randomUUID();
   },
 
   // 患者一覧（重複なし）
