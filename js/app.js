@@ -1399,7 +1399,7 @@
       <div class="compare-diagrams" style="display:flex;gap:8px;margin:12px 0;">
         <div style="flex:1;text-align:center;">
           <div style="font-size:11px;color:#64748b;margin-bottom:4px;">前回</div>
-          <div class="body-diagram-container mini-diagram" id="${prevDiagramId}" style="max-height:200px;"></div>
+          <div class="body-diagram-container mini-diagram" id="${prevDiagramId}" style=""></div>
           <div style="margin-top:4px;">
             <span style="font-size:12px;background:${prevCause.color || '#94a3b8'};color:white;padding:2px 8px;border-radius:8px;">${prevCause.icon || ''} ${prevCause.label || '?'}</span>
           </div>
@@ -1407,7 +1407,7 @@
         <div style="display:flex;align-items:center;font-size:24px;color:#94a3b8;">→</div>
         <div style="flex:1;text-align:center;">
           <div style="font-size:11px;color:#64748b;margin-bottom:4px;">今回</div>
-          <div class="body-diagram-container mini-diagram" id="${currDiagramId}" style="max-height:200px;"></div>
+          <div class="body-diagram-container mini-diagram" id="${currDiagramId}" style=""></div>
           <div style="margin-top:4px;">
             <span style="font-size:12px;background:${currCause.color || '#94a3b8'};color:white;padding:2px 8px;border-radius:8px;">${currCause.icon || ''} ${currCause.label || '?'}</span>
           </div>
@@ -1441,7 +1441,7 @@
         // detailDataがある場合（contractionResultから上半身・下半身を分解）
         const prevUpper = prev.contractionResult?.upper?.rawData || prev.detailData?.upperDetail || {};
         const prevLower = prev.contractionResult?.lower?.rawData || prev.detailData?.lowerDetail || {};
-        BodyDiagram.updateUnified('diagram-prev-compare', prevUpper, prevLower, prev.examData?.standing || {}, {simple: true});
+        BodyDiagram.updateUnified('diagram-prev-compare', prevUpper, prevLower, prev.examData?.standing || {});
       } else if (prev.examData?.standing) {
         BodyDiagram.update('diagram-prev-compare', 'firstStage', prev.examData.standing);
       }
@@ -1452,7 +1452,7 @@
     if (currEl) {
       BodyDiagram.init('diagram-curr-compare');
       if (detailData.upperDetail.acromion !== null) {
-        BodyDiagram.updateUnified('diagram-curr-compare', detailData.upperDetail, detailData.lowerDetail, examData.standing, {simple: true});
+        BodyDiagram.updateUnified('diagram-curr-compare', detailData.upperDetail, detailData.lowerDetail, examData.standing);
       } else {
         BodyDiagram.update('diagram-curr-compare', 'firstStage', examData.standing);
       }
