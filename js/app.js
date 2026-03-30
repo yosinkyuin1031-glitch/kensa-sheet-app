@@ -1354,6 +1354,41 @@
     const scoreArrow = scoreDiff < 0 ? '↓ 改善' : scoreDiff > 0 ? '↑ 悪化' : '→ 変化なし';
     const scoreColor = scoreDiff < 0 ? '#22c55e' : scoreDiff > 0 ? '#ef4444' : '#64748b';
 
+    // 収縮・伸長箇所の数を計算
+    function countIssues(detail) {
+      let contractions = 0, tensions = 0;
+      if (detail?.upper) {
+        contractions += (detail.upper.contractions || []).length;
+        tensions += (detail.upper.tensions || []).length;
+      }
+      if (detail?.lower) {
+        contractions += (detail.lower.contractions || []).length;
+        tensions += (detail.lower.tensions || []).length;
+      }
+      return { contractions, tensions };
+    }
+
+    const prevIssues = countIssues(prev.contractionResult);
+    const currIssues = countIssues(contractionResult);
+
+    // 縮み箇所の比較
+    let contractionCompare = '';
+    if (prevIssues.contractions > 0 || currIssues.contractions > 0) {
+      const cDiff = currIssues.contractions - prevIssues.contractions;
+      const cArrow = cDiff < 0 ? '↓ 改善' : cDiff > 0 ? '↑ 増加' : '→ 変化なし';
+      const cColor = cDiff < 0 ? '#22c55e' : cDiff > 0 ? '#ef4444' : '#64748b';
+      contractionCompare = `<div class="compare-item"><span class="compare-label">🔴 縮み箇所</span><span style="color:${cColor};font-weight:700;">${prevIssues.contractions}箇所 → ${currIssues.contractions}箇所（${cArrow}）</span></div>`;
+    }
+
+    // 伸び箇所の比較
+    let tensionCompare = '';
+    if (prevIssues.tensions > 0 || currIssues.tensions > 0) {
+      const tDiff = currIssues.tensions - prevIssues.tensions;
+      const tArrow = tDiff < 0 ? '↓ 改善' : tDiff > 0 ? '↑ 増加' : '→ 変化なし';
+      const tColor = tDiff < 0 ? '#22c55e' : tDiff > 0 ? '#ef4444' : '#64748b';
+      tensionCompare = `<div class="compare-item"><span class="compare-label">🟣 伸び箇所</span><span style="color:${tColor};font-weight:700;">${prevIssues.tensions}箇所 → ${currIssues.tensions}箇所（${tArrow}）</span></div>`;
+    }
+
     // 前回の体図用ID（後でbodyDiagramを描画）
     const prevDiagramId = 'diagram-prev-compare';
     const currDiagramId = 'diagram-curr-compare';
@@ -1382,6 +1417,8 @@
         <span class="compare-label">歪み度</span>
         <span style="color:${scoreColor};font-weight:700;">${prevScore} → ${currScore}（${scoreArrow}）</span>
       </div>
+      ${contractionCompare}
+      ${tensionCompare}
       ${nrsCompare}
       ${wbCompare}
     </div>`;
