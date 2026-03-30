@@ -726,7 +726,9 @@ const BodyDiagram = {
   },
 
   // 全身統合ダイアグラムを描画（上半身データ＋下半身データを合わせて1枚で表示）
-  updateUnified(containerId, upperData, lowerData, standingData) {
+  // opts.simple = true: ミニ比較用（ラベル・矢印省略、ゾーン色+バッジのみ）
+  updateUnified(containerId, upperData, lowerData, standingData, opts) {
+    const simple = opts && opts.simple;
     const el = document.getElementById(containerId);
     if (!el) return;
 
@@ -757,46 +759,48 @@ const BodyDiagram = {
     this._applyUnifiedShifts(svg, allData);
 
     // === 立位基本3点（乳様突起・肩甲下角・腸骨稜）のドット描画 ===
-    const standingPosMap = this.positions.firstStage;
-    for (const [key, pos] of Object.entries(standingPosMap)) {
-      const val = standingData ? standingData[key] : null;
-      if (val === null || val === undefined) continue;
+    if (!simple) {
+      const standingPosMap = this.positions.firstStage;
+      for (const [key, pos] of Object.entries(standingPosMap)) {
+        const val = standingData ? standingData[key] : null;
+        if (val === null || val === undefined) continue;
 
-      const leftY  = pos.baseY + this._lShift(val);
-      const rightY = pos.baseY + this._rShift(val);
+        const leftY  = pos.baseY + this._lShift(val);
+        const rightY = pos.baseY + this._rShift(val);
 
-      landmarkLayer.appendChild(this._createSVGEl('circle', {
-        cx: pos.leftX, cy: leftY, r: 5,
-        fill: val === -1 ? '#3b82f6' : val === 1 ? '#f97316' : '#22c55e',
-        stroke: 'white', 'stroke-width': 1.5
-      }));
-      landmarkLayer.appendChild(this._createSVGEl('circle', {
-        cx: pos.rightX, cy: rightY, r: 5,
-        fill: val === 1 ? '#3b82f6' : val === -1 ? '#f97316' : '#22c55e',
-        stroke: 'white', 'stroke-width': 1.5
-      }));
+        landmarkLayer.appendChild(this._createSVGEl('circle', {
+          cx: pos.leftX, cy: leftY, r: 5,
+          fill: val === -1 ? '#3b82f6' : val === 1 ? '#f97316' : '#22c55e',
+          stroke: 'white', 'stroke-width': 1.5
+        }));
+        landmarkLayer.appendChild(this._createSVGEl('circle', {
+          cx: pos.rightX, cy: rightY, r: 5,
+          fill: val === 1 ? '#3b82f6' : val === -1 ? '#f97316' : '#22c55e',
+          stroke: 'white', 'stroke-width': 1.5
+        }));
 
-      // 立位ドットの↑↓矢印
-      if (val !== 0) {
-        const lArrow = val === -1 ? '↑' : '↓';
-        const lColor = val === -1 ? '#3b82f6' : '#f97316';
+        // 立位ドットの↑↓矢印
+        if (val !== 0) {
+          const lArrow = val === -1 ? '↑' : '↓';
+          const lColor = val === -1 ? '#3b82f6' : '#f97316';
+          landmarkLayer.appendChild(this._createSVGEl('text', {
+            x: pos.leftX, y: leftY - 10, 'text-anchor': 'middle',
+            'font-size': 9, fill: lColor, 'font-weight': 700
+          }, lArrow));
+          const rArrow = val === 1 ? '↑' : '↓';
+          const rColor = val === 1 ? '#3b82f6' : '#f97316';
+          landmarkLayer.appendChild(this._createSVGEl('text', {
+            x: pos.rightX, y: rightY - 10, 'text-anchor': 'middle',
+            'font-size': 9, fill: rColor, 'font-weight': 700
+          }, rArrow));
+        }
+
+        // 立位ラベル
         landmarkLayer.appendChild(this._createSVGEl('text', {
-          x: pos.leftX, y: leftY - 10, 'text-anchor': 'middle',
-          'font-size': 9, fill: lColor, 'font-weight': 700
-        }, lArrow));
-        const rArrow = val === 1 ? '↑' : '↓';
-        const rColor = val === 1 ? '#3b82f6' : '#f97316';
-        landmarkLayer.appendChild(this._createSVGEl('text', {
-          x: pos.rightX, y: rightY - 10, 'text-anchor': 'middle',
-          'font-size': 9, fill: rColor, 'font-weight': 700
-        }, rArrow));
+          x: 150, y: pos.baseY - 10, 'text-anchor': 'middle',
+          'font-size': 7, fill: '#94a3b8', 'font-weight': 600
+        }, pos.label));
       }
-
-      // 立位ラベル（ドットの左右外側に小さく配置）
-      landmarkLayer.appendChild(this._createSVGEl('text', {
-        x: 150, y: pos.baseY - 10, 'text-anchor': 'middle',
-        'font-size': 7, fill: '#94a3b8', 'font-weight': 600
-      }, pos.label));
     }
 
     // === 詳細6ランドマークのドット描画（接続線なし） ===
@@ -808,65 +812,114 @@ const BodyDiagram = {
       const leftY  = pos.baseY + this._lShift(val);
       const rightY = pos.baseY + this._rShift(val);
 
+      // simpleモード: ドットだけ小さく表示
+      const dotR = simple ? 4 : 6;
+      const dotSW = simple ? 1.5 : 2;
+
       // 左ドット
       landmarkLayer.appendChild(this._createSVGEl('circle', {
-        cx: pos.leftX, cy: leftY, r: 6,
+        cx: pos.leftX, cy: leftY, r: dotR,
         fill: val === -1 ? '#3b82f6' : val === 1 ? '#f97316' : '#22c55e',
-        stroke: 'white', 'stroke-width': 2
+        stroke: 'white', 'stroke-width': dotSW
       }));
 
       // 右ドット
       landmarkLayer.appendChild(this._createSVGEl('circle', {
-        cx: pos.rightX, cy: rightY, r: 6,
+        cx: pos.rightX, cy: rightY, r: dotR,
         fill: val === 1 ? '#3b82f6' : val === -1 ? '#f97316' : '#22c55e',
-        stroke: 'white', 'stroke-width': 2
+        stroke: 'white', 'stroke-width': dotSW
       }));
 
-      // 詳細ドットの↑↓矢印
-      if (val !== 0) {
-        const lArrow = val === -1 ? '↑' : '↓';
-        const lColor = val === -1 ? '#3b82f6' : '#f97316';
-        landmarkLayer.appendChild(this._createSVGEl('text', {
-          x: pos.leftX, y: leftY - 10, 'text-anchor': 'middle',
-          'font-size': 9, fill: lColor, 'font-weight': 700
-        }, lArrow));
-        const rArrow = val === 1 ? '↑' : '↓';
-        const rColor = val === 1 ? '#3b82f6' : '#f97316';
-        landmarkLayer.appendChild(this._createSVGEl('text', {
-          x: pos.rightX, y: rightY - 10, 'text-anchor': 'middle',
-          'font-size': 9, fill: rColor, 'font-weight': 700
-        }, rArrow));
-      }
+      // 矢印・ラベルはsimpleモードでは省略
+      if (!simple) {
+        if (val !== 0) {
+          const lArrow = val === -1 ? '↑' : '↓';
+          const lColor = val === -1 ? '#3b82f6' : '#f97316';
+          landmarkLayer.appendChild(this._createSVGEl('text', {
+            x: pos.leftX, y: leftY - 10, 'text-anchor': 'middle',
+            'font-size': 9, fill: lColor, 'font-weight': 700
+          }, lArrow));
+          const rArrow = val === 1 ? '↑' : '↓';
+          const rColor = val === 1 ? '#3b82f6' : '#f97316';
+          landmarkLayer.appendChild(this._createSVGEl('text', {
+            x: pos.rightX, y: rightY - 10, 'text-anchor': 'middle',
+            'font-size': 9, fill: rColor, 'font-weight': 700
+          }, rArrow));
+        }
 
-      // ラベル（左右両方、ドットの下に配置して被り回避）
-      // 外果・膝蓋骨上端はラベルを外側に大きくずらして重なり回避
-      const labelYOff = (key === 'lateralMalleolus') ? 16 : 20;
-      const labelY = pos.baseY + labelYOff;
-      const xOff = (key === 'greaterTrochanter') ? 30
-                  : (key === 'lateralMalleolus') ? 30
-                  : (key === 'patellaUpper') ? 30
-                  : 14;
-      landmarkLayer.appendChild(this._createSVGEl('text', {
-        x: pos.leftX - xOff, y: labelY, 'text-anchor': 'end',
-        'font-size': 7, fill: '#64748b', 'font-weight': 600
-      }, pos.label));
-      landmarkLayer.appendChild(this._createSVGEl('text', {
-        x: pos.rightX + xOff, y: labelY, 'text-anchor': 'start',
-        'font-size': 7, fill: '#64748b', 'font-weight': 600
-      }, pos.label));
+        const labelYOff = (key === 'lateralMalleolus') ? 16 : 20;
+        const labelY = pos.baseY + labelYOff;
+        const xOff = (key === 'greaterTrochanter') ? 30
+                    : (key === 'lateralMalleolus') ? 30
+                    : (key === 'patellaUpper') ? 30
+                    : 14;
+        landmarkLayer.appendChild(this._createSVGEl('text', {
+          x: pos.leftX - xOff, y: labelY, 'text-anchor': 'end',
+          'font-size': 7, fill: '#64748b', 'font-weight': 600
+        }, pos.label));
+        landmarkLayer.appendChild(this._createSVGEl('text', {
+          x: pos.rightX + xOff, y: labelY, 'text-anchor': 'start',
+          'font-size': 7, fill: '#64748b', 'font-weight': 600
+        }, pos.label));
+      }
     }
 
     // ラベル衝突回避トラッカーをリセット
     this._resetPlacedLabels();
 
-    // === 体幹への影響（全体偏位・体幹回旋ラベルを先に配置） ===
-    this._drawTrunkImpact(svg, allData, standingData || {});
+    if (simple) {
+      // simpleモード: パーツ色分けだけ（ラベルなし）
+      this._applySimpleHighlights(svg, allData, standingData || {});
+    } else {
+      // === 体幹への影響（全体偏位・体幹回旋ラベルを先に配置） ===
+      this._drawTrunkImpact(svg, allData, standingData || {});
 
-    // === 立位検査データ（乳様突起・肩甲下角・腸骨稜）の詰まり/伸び可視化 ===
-    this._drawStandingAnalysis(svg, standingData || {}, allData);
+      // === 立位検査データ（乳様突起・肩甲下角・腸骨稜）の詰まり/伸び可視化 ===
+      this._drawStandingAnalysis(svg, standingData || {}, allData);
 
-    // === 詰まり・伸びインジケーター（全身連続版） ===
-    this._drawUnifiedCompressionIndicators(svg, allData);
+      // === 詰まり・伸びインジケーター（全身連続版） ===
+      this._drawUnifiedCompressionIndicators(svg, allData);
+    }
+  },
+
+  // ===== simpleモード用: パーツの色分けのみ（ラベルなし） =====
+  _applySimpleHighlights(svg, detailData, standingData) {
+    // 全身連続の各区間で収縮/伸長を判定してパーツ色付け
+    const keys = ['acromion', 'mastoidDetail', 'radialStyloid', 'greaterTrochanter', 'patellaUpper', 'lateralMalleolus'];
+    const partMapping = {
+      0: { left: ['upperArm-l'], right: ['upperArm-r'] },
+      1: { left: ['forearm-l', 'hand-l'], right: ['forearm-r', 'hand-r'] },
+      2: { left: [], right: [] },
+      3: { left: ['thigh-l'], right: ['thigh-r'] },
+      4: { left: ['shin-l'], right: ['shin-r'] }
+    };
+
+    for (let i = 0; i < keys.length - 1; i++) {
+      const valA = detailData[keys[i]];
+      const valB = detailData[keys[i + 1]];
+      if (valA == null || valB == null || valA === 0 || valB === 0 || valA === valB) continue;
+
+      const leftCompressed = (valA === 1 && valB === -1);
+      const rightCompressed = (valA === -1 && valB === 1);
+      if (!leftCompressed && !rightCompressed) continue;
+
+      const compSide = leftCompressed ? 'left' : 'right';
+      const stretchSide = leftCompressed ? 'right' : 'left';
+      const mapping = partMapping[i];
+      if (mapping) {
+        (mapping[compSide] || []).forEach(p => this._highlightPart(svg, p, 'rgba(239,68,68,0.35)'));
+        (mapping[stretchSide] || []).forEach(p => this._highlightPart(svg, p, 'rgba(168,85,247,0.28)'));
+      }
+    }
+
+    // 体幹の色（全体偏位の場合赤っぽく）
+    const acromVal = detailData.acromion;
+    const gtVal = detailData.greaterTrochanter;
+    if (acromVal != null && gtVal != null && acromVal !== 0 && gtVal !== 0 && acromVal === gtVal) {
+      this._highlightPart(svg, 'torso', 'rgba(239,68,68,0.15)');
+    } else if (acromVal != null && gtVal != null && acromVal !== 0 && gtVal !== 0 && acromVal !== gtVal) {
+      this._highlightPart(svg, 'torso', 'rgba(245,158,11,0.15)');
+    }
   },
 
   // ===== 全身シフト（上半身＋下半身） =====

@@ -1441,7 +1441,7 @@
         // detailDataがある場合（contractionResultから上半身・下半身を分解）
         const prevUpper = prev.contractionResult?.upper?.rawData || prev.detailData?.upperDetail || {};
         const prevLower = prev.contractionResult?.lower?.rawData || prev.detailData?.lowerDetail || {};
-        BodyDiagram.updateUnified('diagram-prev-compare', prevUpper, prevLower, prev.examData?.standing || {});
+        BodyDiagram.updateUnified('diagram-prev-compare', prevUpper, prevLower, prev.examData?.standing || {}, {simple: true});
       } else if (prev.examData?.standing) {
         BodyDiagram.update('diagram-prev-compare', 'firstStage', prev.examData.standing);
       }
@@ -1452,7 +1452,7 @@
     if (currEl) {
       BodyDiagram.init('diagram-curr-compare');
       if (detailData.upperDetail.acromion !== null) {
-        BodyDiagram.updateUnified('diagram-curr-compare', detailData.upperDetail, detailData.lowerDetail, examData.standing);
+        BodyDiagram.updateUnified('diagram-curr-compare', detailData.upperDetail, detailData.lowerDetail, examData.standing, {simple: true});
       } else {
         BodyDiagram.update('diagram-curr-compare', 'firstStage', examData.standing);
       }
