@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>検査アプリ - 段階的原因特定システム</title>
-  <link rel="stylesheet" href="css/style.css?v=20260330b">
+  <link rel="stylesheet" href="css/style.css?v=20260330c">
   <script>
     // Service Worker強制リセット（古いキャッシュを自動削除）
     if ('serviceWorker' in navigator) {
@@ -23,7 +23,7 @@
   <link rel="apple-touch-icon" href="icons/icon.svg">
   <meta name="theme-color" content="#2563eb">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
-  <script src="js/supabase-cdn.min.js?v=20260330b"></script>
+  <script src="js/supabase-cdn.min.js?v=20260330c"></script>
 </head>
 <body data-view="practitioner">
   <!-- ===== ログイン画面 ===== -->
@@ -197,10 +197,10 @@
               <button type="button" class="nrs-btn" data-nrs="9">9</button>
               <button type="button" class="nrs-btn" data-nrs="10">10</button>
             </div>
-            <div class="nrs-labels" style="position:relative;height:1.2em;">
-              <span style="position:absolute;left:0;">痛みなし</span>
-              <span style="position:absolute;left:45.5%;transform:translateX(-50%);">中程度</span>
-              <span style="position:absolute;right:0;">最大の痛み</span>
+            <div class="nrs-labels">
+              <span>痛みなし</span>
+              <span>中程度</span>
+              <span>最大の痛み</span>
             </div>
           </div>
           <div class="form-group">
@@ -624,13 +624,13 @@
   <!-- 印刷用コンテナ（通常は非表示、印刷時のみ表示） -->
   <div id="printContainer" class="print-container"></div>
 
-  <script src="js/supabase.js?v=20260330b"></script>
-  <script src="js/inspection.js?v=20260330b"></script>
-  <script src="js/bodyDiagram.js?v=20260330b"></script>
-  <script src="js/selfcare.js?v=20260330b"></script>
-  <script src="js/storage.js?v=20260330b"></script>
-  <script src="js/pdf.js?v=20260330b"></script>
-  <script src="js/app.js?v=20260330b"></script>
+  <script src="js/supabase.js?v=20260330c"></script>
+  <script src="js/inspection.js?v=20260330c"></script>
+  <script src="js/bodyDiagram.js?v=20260330c"></script>
+  <script src="js/selfcare.js?v=20260330c"></script>
+  <script src="js/storage.js?v=20260330c"></script>
+  <script src="js/pdf.js?v=20260330c"></script>
+  <script src="js/app.js?v=20260330c"></script>
   <script>
     // フォールバック：app.jsでエラーが出た場合のログイン処理
     window.addEventListener('load', function() {
