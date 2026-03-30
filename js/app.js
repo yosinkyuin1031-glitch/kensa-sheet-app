@@ -1247,50 +1247,12 @@
     }
     html += '</tbody></table></div>';
 
-    // ステップごとの判定
-    html += '<div class="diagnosis-steps"><h3>段階的判定</h3>';
-
-    if (result.steps.length >= 2 && result.steps[1].comparison) {
-      const comp = result.steps[1].comparison;
-      html += `<div class="diagnosis-step-card ${comp.hasFootInfluence ? 'has-influence' : 'no-influence'}">
-        <h4>① 立位 → 座位（足の影響）</h4>
-        <p>${comp.hasFootInfluence
-          ? '🦶 <strong>変化あり</strong> → 足の接地による影響が確認されました'
-          : '→ <strong>変化なし</strong> → 足の影響ではありません'}</p>
-      </div>`;
-    }
-
-    if (result.steps.length >= 3 && result.steps[2].comparison) {
-      const comp = result.steps[2].comparison;
-      html += `<div class="diagnosis-step-card ${comp.hasUpperBodyInfluence ? 'has-influence' : 'no-influence'}">
-        <h4>② 座位 → 上半身検査（上半身の影響）</h4>
-        <p>${comp.hasUpperBodyInfluence
-          ? '💪 <strong>変化あり</strong> → 上半身の影響が確認されました'
-          : '→ <strong>変化なし</strong> → 上半身の影響ではありません'}</p>
-      </div>`;
-    }
-
-    if (result.pattern && result.pattern.pattern !== 'normal') {
-      const patternIcon = result.pattern.pattern === 'zenran' ? '🔴' : '🔵';
-      html += `<div class="diagnosis-step-card pattern-card">
-        <h4>③ パターン分析</h4>
-        <p>${patternIcon} <strong>${result.pattern.description}</strong></p>
-        <p class="pattern-detail">${result.pattern.detail}</p>
-      </div>`;
-    }
-
-    html += '</div>';
     html += '</div>'; // .practitioner-only
 
     // === 患者モード：シンプルな説明 ===
     html += '<div class="patient-only">';
     html += renderPatientView(result);
     html += '</div>';
-
-    // 詳細検査への案内
-    html += `<div class="detail-exam-guide practitioner-only">
-      <p>続いて<strong>全身の詳細検査</strong>を行い、収縮・伸長の具体的な箇所を特定します。</p>
-    </div>`;
 
     container.innerHTML = html;
 
