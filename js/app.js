@@ -19,6 +19,8 @@
   let diagnosisResult = null;
   let contractionResult = null;  // { upper: ..., lower: ... }
   let selectedPatientId = null;  // 選択中の患者ID
+  let loadedEntryId = null;      // 読み込んだ検査記録のID
+  let loadedEntryDate = null;    // 読み込んだ検査記録の日付
   let painLevel = null;  // NRS 0-10
   let chiefComplaintText = '';  // 主訴テキスト
   let patientAge = null;
@@ -1002,17 +1004,28 @@
     const history = await Storage.getHistoryByPatient(pid);
     if (history.length === 0) return;
 
-    // 最新（＝前回）の検査を取得
-    const prevEntry = history[0];
+    // 読み込んだエントリをスキップして「前回」を探す
+    let prevEntry = null;
+    for (const entry of history) {
+      if (loadedEntryId && entry.id === loadedEntryId) continue;
+      if (entry.diagnosisResult) {
+        prevEntry = entry;
+        break;
+      }
+    }
+    if (!prevEntry) return;
+
     const prevResult = prevEntry.diagnosisResult;
     const prevDetail = prevEntry.contractionResult;
     const prevDate = new Date(prevEntry.date);
-    const prevDateStr = `${prevDate.getFullYear()}/${String(prevDate.getMonth() + 1).padStart(2, '0')}/${String(prevDate.getDate()).padStart(2, '0')}`;
+    const prevDateStr = `${prevDate.getFullYear()}/${String(prevDate.getMonth() + 1).padStart(2, '0')}/${String(prevDate.getDate()).padStart(2, '0')} ${String(prevDate.getHours()).padStart(2, '0')}:${String(prevDate.getMinutes()).padStart(2, '0')}`;
+    const currDate2 = loadedEntryDate ? new Date(loadedEntryDate) : new Date();
+    const currDateStr2 = `${currDate2.getFullYear()}/${String(currDate2.getMonth() + 1).padStart(2, '0')}/${String(currDate2.getDate()).padStart(2, '0')} ${String(currDate2.getHours()).padStart(2, '0')}:${String(currDate2.getMinutes()).padStart(2, '0')}`;
 
     let html = '<div class="comparison-card">';
     html += '<div class="comparison-header">';
     html += '<h3>前回との比較（ビフォーアフター）</h3>';
-    html += `<p class="comparison-date-info">前回検査日: ${prevDateStr}</p>`;
+    html += `<p class="comparison-date-info">前回: ${prevDateStr} → 今回: ${currDateStr2}</p>`;
     html += '</div>';
 
     // 基本3ランドマーク比較（立位・座位・上半身）
@@ -1305,9 +1318,16 @@
     const history = await Storage.getHistoryByPatient(selectedPatientId);
     if (history.length < 2) return '';
 
-    // 直近の過去データ（現在保存前なので最新が前回）
-    const prev = history[0];
-    if (!prev.diagnosisResult) return '';
+    // 読み込んだエントリをスキップして「前回」を探す
+    let prev = null;
+    for (const entry of history) {
+      if (loadedEntryId && entry.id === loadedEntryId) continue;
+      if (entry.diagnosisResult) {
+        prev = entry;
+        break;
+      }
+    }
+    if (!prev) return '';
 
     const prevCause = InspectionLogic.causeLabels[prev.diagnosisResult.primaryCause] || {};
     const currCause = InspectionLogic.causeLabels[diagnosisResult.primaryCause] || {};
@@ -1330,7 +1350,9 @@
     }
 
     const prevDate = new Date(prev.date);
-    const prevDateStr = `${prevDate.getFullYear()}/${String(prevDate.getMonth()+1).padStart(2,'0')}/${String(prevDate.getDate()).padStart(2,'0')}`;
+    const prevDateStr = `${prevDate.getFullYear()}/${String(prevDate.getMonth()+1).padStart(2,'0')}/${String(prevDate.getDate()).padStart(2,'0')} ${String(prevDate.getHours()).padStart(2,'0')}:${String(prevDate.getMinutes()).padStart(2,'0')}`;
+    const currDate = loadedEntryDate ? new Date(loadedEntryDate) : new Date();
+    const currDateStr = `${currDate.getFullYear()}/${String(currDate.getMonth()+1).padStart(2,'0')}/${String(currDate.getDate()).padStart(2,'0')} ${String(currDate.getHours()).padStart(2,'0')}:${String(currDate.getMinutes()).padStart(2,'0')}`;
 
     // 前回・今回のバランススコア計算
     let prevScore = 0, currScore = 0;
@@ -1395,19 +1417,19 @@
 
     return `
     <div class="prev-comparison-card">
-      <h4 class="prev-comparison-title">前回との比較（${prevDateStr}）</h4>
+      <h4 class="prev-comparison-title">前回との比較</h4>
       <div class="compare-diagrams" style="display:flex;gap:8px;margin:12px 0;">
         <div style="flex:1;text-align:center;">
-          <div style="font-size:11px;color:#64748b;margin-bottom:4px;">前回</div>
-          <div class="body-diagram-container mini-diagram" id="${prevDiagramId}" style=""></div>
+          <div style="font-size:12px;color:#64748b;margin-bottom:4px;font-weight:700;">前回<br><span style="font-size:10px;font-weight:400;">${prevDateStr}</span></div>
+          <div class="body-diagram-container mini-diagram" id="${prevDiagramId}"></div>
           <div style="margin-top:4px;">
             <span style="font-size:12px;background:${prevCause.color || '#94a3b8'};color:white;padding:2px 8px;border-radius:8px;">${prevCause.icon || ''} ${prevCause.label || '?'}</span>
           </div>
         </div>
         <div style="display:flex;align-items:center;font-size:24px;color:#94a3b8;">→</div>
         <div style="flex:1;text-align:center;">
-          <div style="font-size:11px;color:#64748b;margin-bottom:4px;">今回</div>
-          <div class="body-diagram-container mini-diagram" id="${currDiagramId}" style=""></div>
+          <div style="font-size:12px;color:#64748b;margin-bottom:4px;font-weight:700;">今回<br><span style="font-size:10px;font-weight:400;">${currDateStr}</span></div>
+          <div class="body-diagram-container mini-diagram" id="${currDiagramId}"></div>
           <div style="margin-top:4px;">
             <span style="font-size:12px;background:${currCause.color || '#94a3b8'};color:white;padding:2px 8px;border-radius:8px;">${currCause.icon || ''} ${currCause.label || '?'}</span>
           </div>
@@ -1430,8 +1452,13 @@
     const history = await Storage.getHistoryByPatient(selectedPatientId);
     if (history.length < 2) return;
 
-    const prev = history[0];
-    if (!prev.diagnosisResult) return;
+    // 読み込んだエントリをスキップして前回を探す
+    let prev = null;
+    for (const entry of history) {
+      if (loadedEntryId && entry.id === loadedEntryId) continue;
+      if (entry.diagnosisResult) { prev = entry; break; }
+    }
+    if (!prev) return;
 
     // 前回の体図
     const prevEl = document.getElementById('diagram-prev-compare');
@@ -2995,6 +3022,9 @@
   async function loadFromHistory(id) {
     const entry = await Storage.getById(id);
     if (!entry) return;
+
+    loadedEntryId = entry.id;
+    loadedEntryDate = entry.date;
 
     examData = { ...entry.examData };
     if (entry.detailData) {
