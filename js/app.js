@@ -463,7 +463,7 @@
     });
 
     // Y軸ラベル
-    svg += `<text x="14" y="${padTop + plotH / 2}" text-anchor="middle" font-size="10" fill="#64748b" transform="rotate(-90, 14, ${padTop + plotH / 2})">歪み度</text>`;
+    svg += `<text x="14" y="${padTop + plotH / 2}" text-anchor="middle" font-size="10" fill="#64748b" transform="rotate(-90, 14, ${padTop + plotH / 2})">ずれ箇所数</text>`;
 
     // 矢印（改善方向を示す）
     svg += `<text x="${padLeft - 8}" y="${padTop - 8}" text-anchor="end" font-size="9" fill="#ef4444">↑歪み大</text>`;
@@ -477,11 +477,11 @@
     const totalChange = lastScore - firstScore;
     let summaryText = '';
     if (totalChange < 0) {
-      summaryText = `<span style="color:#22c55e;font-weight:700;">改善傾向</span>（歪み度 ${firstScore} → ${lastScore}）`;
+      summaryText = `<span style="color:#22c55e;font-weight:700;">改善傾向</span>（9箇所中 ${firstScore}箇所→${lastScore}箇所）`;
     } else if (totalChange > 0) {
-      summaryText = `<span style="color:#ef4444;font-weight:700;">悪化傾向</span>（歪み度 ${firstScore} → ${lastScore}）`;
+      summaryText = `<span style="color:#ef4444;font-weight:700;">悪化傾向</span>（9箇所中 ${firstScore}箇所→${lastScore}箇所）`;
     } else {
-      summaryText = `<span style="color:#64748b;font-weight:700;">横ばい</span>（歪み度 ${firstScore}）`;
+      summaryText = `<span style="color:#64748b;font-weight:700;">横ばい</span>（9箇所中${firstScore}箇所にずれ）`;
     }
 
     // HTML生成
@@ -495,7 +495,7 @@
     html += `<div class="trend-chart-wrapper">${svg}</div>`;
 
     html += '<div class="trend-guide" style="font-size:11px;color:#64748b;padding:6px 12px;background:#f8fafc;border-radius:8px;margin:8px 0;">';
-    html += '📊 <strong>見方：</strong>グラフが<span style="color:#22c55e;font-weight:600;">下がる</span>ほど歪みが減って改善。<span style="color:#ef4444;font-weight:600;">上がる</span>と歪みが増加。0が理想。';
+    html += '📊 <strong>見方：</strong>9箇所のチェックポイントのうち、ずれている箇所数を表示。グラフが<span style="color:#22c55e;font-weight:600;">下がる</span>ほど改善。0が理想。';
     html += '</div>';
 
     html += '<div class="trend-legend">';
@@ -1436,8 +1436,8 @@
         </div>
       </div>
       <div class="compare-item">
-        <span class="compare-label">歪み度</span>
-        <span style="color:${scoreColor};font-weight:700;">${prevScore} → ${currScore}（${scoreArrow}）</span>
+        <span class="compare-label">ずれ箇所</span>
+        <span style="color:${scoreColor};font-weight:700;">9箇所中${prevScore}箇所 → ${currScore}箇所（${scoreArrow}）</span>
       </div>
       ${contractionCompare}
       ${tensionCompare}
