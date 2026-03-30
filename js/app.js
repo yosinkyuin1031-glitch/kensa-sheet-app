@@ -235,7 +235,7 @@
       try {
         const history = await Storage.getAll();
         const exportData = {
-          appName: 'BodyCheckPro',
+          appName: 'KensaApp',
           version: '2.0',
           exportDate: new Date().toISOString(),
           data: history
@@ -249,7 +249,7 @@
           String(now.getMonth() + 1).padStart(2, '0') +
           String(now.getDate()).padStart(2, '0');
         a.href = url;
-        a.download = `bodycheck_backup_${dateStr}.json`;
+        a.download = `検査アプリ_バックアップ_${dateStr}.json`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -275,7 +275,7 @@
           const imported = JSON.parse(event.target.result);
 
           // バリデーション
-          if (!imported || !imported.appName || imported.appName !== 'BodyCheckPro' || !Array.isArray(imported.data)) {
+          if (!imported || !imported.appName || (imported.appName !== 'KensaApp' && imported.appName !== 'BodyCheckPro') || !Array.isArray(imported.data)) {
             alert('このファイルは検査アプリのバックアップデータではありません');
             return;
           }

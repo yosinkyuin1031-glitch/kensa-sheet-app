@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>検査シート作成アプリ ── 5つの強み</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap');
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: #0f172a;
+    color: #1e293b;
+    overflow: hidden;
+  }
+
+  .slide {
+    display: none;
+    width: 100vw;
+    height: 100vh;
+    padding: 60px 80px;
+    background: #ffffff;
+    position: relative;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .slide.active { display: flex; }
+
+  .page-num {
+    position: absolute;
+    bottom: 30px;
+    right: 50px;
+    font-size: 14px;
+    color: #94a3b8;
+    font-weight: 500;
+  }
+
+  .logo {
+    position: absolute;
+    top: 30px;
+    left: 50px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #0ea5e9;
+    letter-spacing: 1px;
+  }
+
+  .slide-title {
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 50%, #0369a1 100%);
+    color: #fff;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+  }
+  .slide-title .logo { color: rgba(255,255,255,0.6); }
+  .slide-title .page-num { color: rgba(255,255,255,0.4); }
+  .slide-title h1 {
+    font-size: 48px;
+    font-weight: 900;
+    line-height: 1.4;
+    margin-bottom: 20px;
+  }
+  .slide-title .subtitle {
+    font-size: 22px;
+    font-weight: 500;
+    opacity: 0.9;
+    margin-bottom: 40px;
+  }
+  .slide-title .price-badge {
+    display: inline-block;
+    background: #e9520e;
+    color: #fff;
+    padding: 12px 36px;
+    border-radius: 50px;
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  h2 {
+    font-size: 36px;
+    font-weight: 900;
+    color: #0ea5e9;
+    margin-bottom: 40px;
+    line-height: 1.3;
+  }
+  h2 .accent { color: #e9520e; }
+
+  h3 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 12px;
+  }
+
+  p, li {
+    font-size: 20px;
+    line-height: 1.8;
+    color: #475569;
+  }
+
+  .pain-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .pain-list li {
+    background: #fef2f2;
+    border-left: 4px solid #e9520e;
+    padding: 18px 24px;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 500;
+    color: #1e293b;
+  }
+
+  .category-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 30px;
+  }
+  .cat-card {
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 28px;
+    text-align: center;
+  }
+  .cat-card .cat-num {
+    font-size: 14px;
+    font-weight: 700;
+    color: #94a3b8;
+    margin-bottom: 8px;
+  }
+  .cat-card h3 {
+    font-size: 20px;
+    margin-bottom: 10px;
+    color: #1e293b;
+  }
+  .cat-card .price {
+    font-size: 22px;
+    font-weight: 900;
+    color: #e9520e;
+    margin-bottom: 8px;
+  }
+  .cat-card p { font-size: 15px; }
+
+  .slide-fourth {
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    color: #fff;
+    text-align: center;
+    align-items: center;
+  }
+  .slide-fourth .logo { color: rgba(255,255,255,0.6); }
+  .slide-fourth .page-num { color: rgba(255,255,255,0.4); }
+  .slide-fourth h2 { color: #fff; font-size: 44px; margin-bottom: 24px; }
+  .slide-fourth .desc {
+    font-size: 26px;
+    color: rgba(255,255,255,0.9);
+    margin-bottom: 40px;
+    font-weight: 500;
+  }
+  .slide-fourth .highlight-box {
+    background: rgba(255,255,255,0.15);
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 16px;
+    padding: 30px 50px;
+    font-size: 28px;
+    font-weight: 700;
+  }
+
+  .strength-num {
+    display: inline-block;
+    background: #0ea5e9;
+    color: #fff;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 40px;
+    font-size: 18px;
+    font-weight: 700;
+    margin-right: 12px;
+    vertical-align: middle;
+  }
+
+  .content-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 20px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  }
+  .content-table th {
+    background: #0ea5e9;
+    color: #fff;
+    padding: 14px 20px;
+    text-align: left;
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .content-table td {
+    padding: 14px 20px;
+    font-size: 16px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #334155;
+  }
+  .content-table tr:nth-child(even) td { background: #f8fafc; }
+  .content-table tr:last-child td { border-bottom: none; }
+
+  .feature-list {
+    list-style: none;
+    margin-top: 16px;
+  }
+  .feature-list li {
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 19px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .feature-list li:last-child { border-bottom: none; }
+  .check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: #dcfce7;
+    color: #16a34a;
+    border-radius: 50%;
+    font-size: 16px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .cross {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: #fee2e2;
+    color: #dc2626;
+    border-radius: 50%;
+    font-size: 16px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .learn-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 24px;
+    margin-top: 20px;
+  }
+  .learn-card {
+    background: #f0f9ff;
+    border: 2px solid #7dd3fc;
+    border-radius: 16px;
+    padding: 28px;
+    text-align: center;
+  }
+  .learn-card .learn-icon {
+    font-size: 36px;
+    margin-bottom: 12px;
+  }
+  .learn-card h3 { font-size: 18px; color: #0369a1; }
+  .learn-card p { font-size: 15px; margin-top: 10px; }
+
+  .price-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 20px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  }
+  .price-table th {
+    background: #0ea5e9;
+    color: #fff;
+    padding: 14px 20px;
+    text-align: left;
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .price-table td {
+    padding: 14px 20px;
+    font-size: 16px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #334155;
+  }
+  .price-table tr:nth-child(even) td { background: #f8fafc; }
+  .price-table tr:last-child td { border-bottom: none; }
+  .price-table tr.highlight td {
+    background: #eff6ff;
+    font-weight: 700;
+    color: #0ea5e9;
+    font-size: 18px;
+  }
+
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-top: 20px;
+  }
+  .compare-col {
+    border-radius: 16px;
+    padding: 30px;
+  }
+  .compare-col.other {
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+  }
+  .compare-col.ours {
+    background: #eff6ff;
+    border: 2px solid #0ea5e9;
+  }
+  .compare-col h3 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 20px;
+  }
+  .compare-col.other h3 { color: #94a3b8; }
+  .compare-col.ours h3 { color: #0ea5e9; }
+  .compare-col ul { list-style: none; }
+  .compare-col ul li {
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .flow-steps {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-top: 30px;
+  }
+  .flow-step {
+    flex: 1;
+    text-align: center;
+    position: relative;
+  }
+  .flow-step .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    background: #0ea5e9;
+    color: #fff;
+    border-radius: 50%;
+    font-size: 22px;
+    font-weight: 900;
+    margin-bottom: 14px;
+  }
+  .flow-step h3 { font-size: 16px; color: #1e293b; }
+  .flow-step p { font-size: 14px; margin-top: 6px; }
+  .flow-arrow {
+    display: flex;
+    align-items: center;
+    padding-top: 12px;
+    color: #0ea5e9;
+    font-size: 24px;
+    font-weight: 700;
+  }
+
+  .note {
+    margin-top: 20px;
+    padding: 16px 24px;
+    background: #f0f9ff;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #0369a1;
+    text-align: center;
+  }
+
+  .bottom-note {
+    position: absolute;
+    bottom: 60px;
+    left: 80px;
+    right: 80px;
+    padding: 16px 24px;
+    background: #eff6ff;
+    border-radius: 10px;
+    font-size: 17px;
+    font-weight: 700;
+    color: #0369a1;
+    text-align: center;
+  }
+
+  .nav {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 12px;
+    z-index: 100;
+  }
+  .nav button {
+    background: #0ea5e9;
+    color: #fff;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif;
+    transition: background 0.2s;
+  }
+  .nav button:hover { background: #0284c7; }
+</style>
+</head>
+<body>
+
+<!-- Slide 1: タイトル -->
+<div class="slide slide-title active" id="s1">
+  <div class="logo">検査シート作成アプリ</div>
+  <h1>検査シート作成アプリ<br>5つの強み</h1>
+  <p class="subtitle">治療院専用 段階的原因特定システム</p>
+  <span class="price-badge">月額 5,500円 / 買い切り 55,000円</span>
+  <div class="page-num">1 / 11</div>
+</div>
+
+<!-- Slide 2: 悩み -->
+<div class="slide" id="s2">
+  <div class="logo">検査シート作成アプリ</div>
+  <h2>治療院の検査記録<br>こんな<span class="accent">悩み</span>ありませんか?</h2>
+  <ul class="pain-list">
+    <li>紙の検査シートだと保管・検索が大変で、過去データとの比較ができない</li>
+    <li>姿勢分析アプリはカメラ撮影だけ。施術者の検査手技を記録できない</li>
+    <li>患者への説明が口頭だけで、納得感を得にくい</li>
+    <li>ビフォーアフターの数値的な変化を見せられない</li>
+    <li>検査結果から原因の特定に時間がかかる</li>
+    <li>電子カルテは高すぎて導入できない</li>
+  </ul>
+  <div class="note">検査シート作成アプリは、これらを全部解決します。</div>
+  <div class="page-num">2 / 11</div>
+</div>
+
+<!-- Slide 3: 3つのカテゴリ -->
+<div class="slide" id="s3">
+  <div class="logo">検査シート作成アプリ</div>
+  <h2>検査・カルテ市場の<span class="accent">3つのカテゴリ</span></h2>
+  <div class="category-grid">
+    <div class="cat-card">
+      <div class="cat-num">カテゴリ 1</div>
+      <h3>AI姿勢分析アプリ</h3>
+      <div class="price">月1〜3万円</div>
+      <p>シセイカルテ、Sportip Proなど。カメラ撮影型で施術者の検査手技は記録できない。</p>
+    </div>
+    <div class="cat-card">
+      <div class="cat-num">カテゴリ 2</div>
+      <h3>電子カルテシステム</h3>
+      <div class="price">月8,000〜15,000円</div>
+      <p>RIPCLE、ほねぺんなど。汎用カルテで検査に特化した機能がない。</p>
+    </div>
+    <div class="cat-card">
+      <div class="cat-num">カテゴリ 3</div>
+      <h3>紙の検査シート</h3>
+      <div class="price">0円</div>
+      <p>データ蓄積・比較・共有が不可能。過去データとの比較は手作業。</p>
+    </div>
+  </div>
+  <div class="page-num">3 / 11</div>
+</div>
+
+<!-- Slide 4: 第4のカテゴリ -->
+<div class="slide slide-fourth" id="s4">
+  <div class="logo">検査シート作成アプリ</div>
+  <h2>検査シート作成アプリは<br>「第4のカテゴリ」</h2>
+  <p class="desc">施術者の検査手技をデジタル化し、AIが原因を特定する新しいツール</p>
+  <div class="highlight-box">
+    カメラ撮影でもない、汎用カルテでもない、紙でもない<br>
+    ── 施術者の手技を活かした、新しい検査記録の形
+  </div>
+  <div class="page-num">4 / 11</div>
+</div>
+
+<!-- Slide 5: 強み1 -->
+<div class="slide" id="s5">
+  <div class="logo">検査シート作成アプリ</div>
+  <h2><span class="strength-num">1</span>段階的<span class="accent">原因特定</span>システム</h2>
+  <p style="font-size:19px;color:#475569;margin-bottom:16px;">立位→座位→上半身の3段階で、主要ランドマークの左右差をワンタップ記録。</p>
+  <table class="content-table">
+    <tr><th>検査段階</th><th>検査内容</th><th>記録方法</th></tr>
+    <tr><td>Step 1: 立位検査</td><td>乳様突起・肩甲下角・腸骨稜の左右差</td><td>ワンタップ選択</td></tr>
+    <tr><td>Step 2: 座位検査</td><td>座位でのランドマーク変位確認</td><td>ワンタップ選択</td></tr>
+    <tr><td>Step 3: 上半身検査</td><td>詳細な上半身の左右差検査</td><td>ワンタップ選択</td></tr>
+    <tr><td>診断結果</td><td>AIが検査結果を統合して原因部位を特定</td><td>自動生成</td></tr>
+  </table>
+  <div class="bottom-note">AI姿勢分析はカメラ任せ。このアプリは「施術者の手で確認した結果」をデジタル化します。</div>
+  <div class="page-num">5 / 11</div>
+</div>
+
+<!-- Slide 6: 強み2 -->
+<div class="slide" id="s6">
+  <div class="logo">検査シート作成アプリ</div>
+  <h2><span class="strength-num">2</span>PDFレポート<span class="accent">自動生成</span></h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:10px;">
+    <div>
+      <h3>患者説明資料として活用</h3>
+      <ul class="feature-list">
+        <li><span class="check">O</span>検査結果をプロフェッショナルなPDFで即時出力</li>
+        <li><span class="check">O</span>ビフォーアフターの変化を視覚的に提示</li>
+        <li><span class="check">O</span>患者に「見える化」した資料を渡せる</li>
+      </ul>
+    </div>
+    <div>
+      <h3>リピート率の向上に直結</h3>
+      <ul class="feature-list">
+        <li><span class="check">O</span>初回検査の結果を見せて、通院の必要性を納得してもらう</li>
+        <li><span class="check">O</span>再検査で「ここが改善しました」と数値で説明</li>
+        <li><span class="check">O</span>患者が家族に説明できる資料になる</li>
+      </ul>
+    </div>
+  </div>
+  <div class="bottom-note">口頭説明だけの施術者と、PDF資料を渡す施術者。患者の信頼度は大きく変わります。</div>
+  <div class="page-num">6 / 11</div>
+</div>
+
+<!-- Slide 7: 強み3 -->
+<div class="slide" id="s7">
+  <div class="logo">検査シート作成アプリ</div>
+  <h2><span class="strength-num">3</span><span class="accent">カルテ機能</span>で検査履歴を一元管理</h2>
+  <div class="learn-grid">
+    <div class="learn-card">
+      <div class="learn-icon">1</div>
+      <h3>患者ごとに履歴保存</h3>
+      <p>検査結果を自動保存。過去データとの比較で改善度を数値で把握</p>
+    </div>
+    <div class="learn-card">
+      <div class="learn-icon">2</div>
+      <h3>初診・再診の区分管理</h3>
+      <p>初診時の検査結果と再診時の結果を比較。治療効果の「見える化」</p>
+    </div>
+    <div class="learn-card">
+      <div class="learn-icon">3</div>
+      <h3>患者検索機能</h3>
+      <p>名前で即座に検索。過去の検査データに素早くアクセス</p>
+    </div>
+  </div>
+  <div class="note">紙のカルテでは不可能だった「検査データの蓄積と比較」が、自動で実現します。</div>
+  <div class="page-num">7 / 11</div>
+</div>
+
+<!-- Slide 8: 強み4 -->
+<div class="slide" id="s8">
+  <div class="logo">検査シート作成アプリ</div>
+  <h2><span class="strength-num">4</span>痛みレベル（NRS）の<span class="accent">定量記録</span></h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:10px;">
+    <div>
+      <h3>主観を客観データに変換</h3>
+      <ul class="feature-list">
+        <li><span class="check">O</span>0〜10のNRSスケールで痛みを数値化</li>
+        <li><span class="check">O</span>主訴（腰痛、肩痛など）をテキスト記録</li>
+        <li><span class="check">O</span>年齢・性別・職業も合わせて記録</li>
+      </ul>
+    </div>
+    <div>
+      <h3>経時変化のトラッキング</h3>
+      <ul class="feature-list">
+        <li><span class="check">O</span>来院ごとの痛みレベルの変化を追跡</li>
+        <li><span class="check">O</span>「3回前はPS8でしたが、今日はPS3です」と数値で説明</li>
+        <li><span class="check">O</span>治療効果のエビデンスとして活用</li>
+      </ul>
+    </div>
+  </div>
+  <div class="bottom-note">「なんとなく良くなった」ではなく「数値で良くなった」を証明できます。</div>
+  <div class="page-num">8 / 11</div>
+</div>
+
+<!-- Slide 9: 強み5 -->
+<div class="slide" id="s9">
+  <div class="logo">検査シート作成アプリ</div>
+  <h2><span class="strength-num">5</span>クラウド対応で<span class="accent">どこからでも</span>アクセス</h2>
+  <ul class="feature-list" style="margin-top:20px;">
+    <li><span class="check">O</span>Supabaseによるクラウドデータ保存。端末が壊れてもデータは安全</li>
+    <li><span class="check">O</span>PWA対応 ── スマホ・タブレットのホーム画面に追加してアプリのように使える</li>
+    <li><span class="check">O</span>院ごとにアカウント管理（マルチテナント）。データは完全に分離</li>
+    <li><span class="check">O</span>新規登録はメールアドレスとパスワードだけ。最短1分で使い始められる</li>
+    <li><span class="check">O</span>インストール不要。ブラウザからアクセスするだけ</li>
+  </ul>
+  <div class="note">高額な専用端末は不要。今お持ちのスマホ・タブレットがそのまま検査ツールになります。</div>
+  <div class="page-num">9 / 11</div>
+</div>
+
+<!-- Slide 10: 料金比較 -->
+<div class="slide" id="s10">
+  <div class="logo">検査シート作成アプリ</div>
+  <h2><span class="accent">料金比較</span></h2>
+  <table class="price-table">
+    <tr><th>サービス</th><th>月額</th><th>できること</th></tr>
+    <tr><td>シセイカルテ（AI姿勢分析）</td><td>推定10,000〜30,000円</td><td>カメラ撮影型。施術者の検査手技は記録不可</td></tr>
+    <tr><td>Sportip Pro（AI姿勢解析）</td><td>推定15,000〜30,000円</td><td>姿勢解析+予約+カルテ統合。高機能だが高額</td></tr>
+    <tr><td>RIPCLE（電子カルテ）</td><td>8,800円〜</td><td>汎用カルテ。検査特化の機能なし</td></tr>
+    <tr><td>紙の検査シート</td><td>0円</td><td>データ蓄積・比較・共有が不可能</td></tr>
+    <tr class="highlight"><td>検査シート作成アプリ</td><td>月額 5,500円</td><td>段階的原因特定 + PDF出力 + カルテ + NRS記録 + クラウド</td></tr>
+  </table>
+  <div class="note">施術者の検査手技をデジタル化できるのは、このアプリだけ。しかも月額5,500円。</div>
+  <div class="page-num">10 / 11</div>
+</div>
+
+<!-- Slide 11: 導入の流れ -->
+<div class="slide" id="s11">
+  <div class="logo">検査シート作成アプリ</div>
+  <h2><span class="accent">導入の流れ</span></h2>
+  <div class="flow-steps">
+    <div class="flow-step">
+      <div class="step-num">1</div>
+      <h3>アカウント登録</h3>
+      <p>メールアドレスのみ</p>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="step-num">2</div>
+      <h3>患者情報入力</h3>
+      <p>氏名・年齢・主訴</p>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="step-num">3</div>
+      <h3>3段階検査</h3>
+      <p>ワンタップで記録</p>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="step-num">4</div>
+      <h3>AI診断結果</h3>
+      <p>原因部位を自動特定</p>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="step-num">5</div>
+      <h3>PDF出力</h3>
+      <p>患者に資料を渡す</p>
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:50px;">
+    <div style="display:inline-block;background:#eff6ff;border:2px solid #0ea5e9;border-radius:16px;padding:30px 60px;">
+      <p style="font-size:26px;font-weight:900;color:#0ea5e9;">最短5分で、検査記録からPDFレポートまで完了。</p>
+      <p style="font-size:18px;color:#475569;margin-top:10px;">施術者の検査手技をデジタル化する、治療院専用の検査ツール。</p>
+      <p style="font-size:20px;font-weight:700;color:#e9520e;margin-top:10px;">それが検査シート作成アプリです。</p>
+    </div>
+  </div>
+  <div class="page-num">11 / 11</div>
+</div>
+
+<!-- ナビゲーション -->
+<div class="nav">
+  <button onclick="prevSlide()">← 前へ</button>
+  <button onclick="nextSlide()">次へ →</button>
+</div>
+
+<script>
+  let current = 0;
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+
+  function showSlide(n) {
+    slides[current].classList.remove('active');
+    current = (n + total) % total;
+    slides[current].classList.add('active');
+  }
+
+  function nextSlide() { showSlide(current + 1); }
+  function prevSlide() { showSlide(current - 1); }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+  });
+</script>
+
+</body>
+</html>

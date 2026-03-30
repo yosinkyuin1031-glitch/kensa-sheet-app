@@ -14,16 +14,16 @@ const PdfExport = {
       doc.rect(0, 0, 210, 30, 'F');
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(18);
-      doc.text('Body Check Report', 105, 14, { align: 'center' });
+      doc.text('検査レポート', 105, 14, { align: 'center' });
       doc.setFontSize(10);
-      doc.text('- For Patient -', 105, 22, { align: 'center' });
+      doc.text('- 患者様用 -', 105, 22, { align: 'center' });
 
       // --- Patient Info ---
       doc.setTextColor(30, 41, 59);
       doc.setFontSize(11);
       y = 40;
-      doc.text(`Name: ${patientName || '-'}`, 15, y);
-      doc.text(`Date: ${inspectionDate || new Date().toLocaleDateString('ja-JP')}`, 130, y);
+      doc.text(`お名前: ${patientName || '-'}`, 15, y);
+      doc.text(`検査日: ${inspectionDate || new Date().toLocaleDateString('ja-JP')}`, 130, y);
       y += 3;
       doc.setDrawColor(226, 232, 240);
       doc.line(15, y, 195, y);
@@ -43,7 +43,7 @@ const PdfExport = {
       // --- Body Status Summary ---
       doc.setTextColor(30, 41, 59);
       doc.setFontSize(13);
-      doc.text('Body Status', 15, y);
+      doc.text('体の状態', 15, y);
       y += 3;
       doc.setDrawColor(37, 99, 235);
       doc.setLineWidth(0.8);
@@ -53,7 +53,7 @@ const PdfExport = {
 
       doc.setFontSize(10);
       if (diagnosisResult.treatmentArea && diagnosisResult.treatmentArea !== 'none') {
-        doc.text(`Treatment Focus: ${diagnosisResult.treatmentArea}`, 20, y);
+        doc.text(`施術の重点: ${diagnosisResult.treatmentArea}`, 20, y);
         y += 7;
       }
 
@@ -61,7 +61,7 @@ const PdfExport = {
       if (diagnosisResult.pattern) {
         const patternDesc = diagnosisResult.pattern.description || '';
         if (patternDesc) {
-          doc.text(`Pattern: ${patternDesc}`, 20, y);
+          doc.text(`パターン: ${patternDesc}`, 20, y);
           y += 7;
         }
       }
@@ -70,18 +70,18 @@ const PdfExport = {
       if (contractionResult) {
         const allIssues = [];
         if (contractionResult.upper) {
-          allIssues.push(...contractionResult.upper.contractions.map(c => ({ ...c, part: 'Upper' })));
-          allIssues.push(...contractionResult.upper.tensions.map(t => ({ ...t, part: 'Upper' })));
+          allIssues.push(...contractionResult.upper.contractions.map(c => ({ ...c, part: '上半身' })));
+          allIssues.push(...contractionResult.upper.tensions.map(t => ({ ...t, part: '上半身' })));
         }
         if (contractionResult.lower) {
-          allIssues.push(...contractionResult.lower.contractions.map(c => ({ ...c, part: 'Lower' })));
-          allIssues.push(...contractionResult.lower.tensions.map(t => ({ ...t, part: 'Lower' })));
+          allIssues.push(...contractionResult.lower.contractions.map(c => ({ ...c, part: '下半身' })));
+          allIssues.push(...contractionResult.lower.tensions.map(t => ({ ...t, part: '下半身' })));
         }
 
         if (allIssues.length > 0) {
           y += 4;
           doc.setFontSize(13);
-          doc.text('Problem Areas', 15, y);
+          doc.text('気になる箇所', 15, y);
           y += 3;
           doc.setDrawColor(239, 68, 68);
           doc.setLineWidth(0.8);
@@ -95,12 +95,12 @@ const PdfExport = {
               doc.addPage();
               y = 20;
             }
-            const typeLabel = issue.type === 'contraction' ? 'Tight/Contracted' : 'Stretched/Tensioned';
-            const sideLabel = issue.side === 'both' ? 'Both sides' : issue.side === 'right' ? 'Right' : 'Left';
+            const typeLabel = issue.type === 'contraction' ? '収縮（硬くなっている）' : '伸長（引っ張られている）';
+            const sideLabel = issue.side === 'both' ? '両側' : issue.side === 'right' ? '右側' : '左側';
             doc.setFillColor(254, 242, 242);
             doc.roundedRect(15, y - 4, 180, 10, 2, 2, 'F');
             doc.setTextColor(220, 38, 38);
-            doc.text(`${issue.area} (${sideLabel}) - ${typeLabel}`, 20, y + 2);
+            doc.text(`${issue.area}（${sideLabel}）- ${typeLabel}`, 20, y + 2);
             doc.setTextColor(30, 41, 59);
             y += 14;
           }
@@ -116,7 +116,7 @@ const PdfExport = {
         y += 5;
         doc.setFontSize(13);
         doc.setTextColor(30, 41, 59);
-        doc.text('Selfcare Exercises', 15, y);
+        doc.text('セルフケア', 15, y);
         y += 3;
         doc.setDrawColor(34, 197, 94);
         doc.setLineWidth(0.8);
@@ -141,24 +141,26 @@ const PdfExport = {
             const descLines = doc.splitTextToSize(exercise.description, 160);
             doc.text(descLines, 20, y + 9);
           }
-          if (exercise.duration) {
-            doc.text(`Duration: ${exercise.duration}`, 20, y + 16);
+          if (exercise.sets) {
+            doc.text(`回数: ${exercise.sets}`, 20, y + 16);
+          } else if (exercise.duration) {
+            doc.text(`時間: ${exercise.duration}`, 20, y + 16);
           }
           y += 28;
         }
       }
 
       // --- Footer ---
-      this._addFooter(doc, 'Patient Report');
+      this._addFooter(doc, '患者様用レポート');
 
       // Save
       const dateStr = (inspectionDate || new Date().toISOString().split('T')[0]).replace(/-/g, '');
       const nameStr = patientName ? `_${patientName}` : '';
-      doc.save(`PatientReport_${dateStr}${nameStr}.pdf`);
+      doc.save(`検査レポート_${dateStr}${nameStr}.pdf`);
       return true;
     } catch (e) {
-      console.error('Patient PDF export failed:', e);
-      alert('PDF export failed. Please try again.');
+      console.error('患者用PDF出力エラー:', e);
+      alert('PDFの出力に失敗しました。もう一度お試しください。');
       return false;
     }
   },
@@ -176,20 +178,20 @@ const PdfExport = {
       doc.rect(0, 0, 210, 25, 'F');
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(14);
-      doc.text('Clinical Inspection Report', 105, 10, { align: 'center' });
+      doc.text('検査レポート（施術者用）', 105, 10, { align: 'center' });
       doc.setFontSize(8);
-      doc.text('Practitioner Use Only', 105, 17, { align: 'center' });
+      doc.text('※ 施術者専用 - 患者様への配布不可', 105, 17, { align: 'center' });
 
       // --- Patient Info ---
       doc.setTextColor(30, 41, 59);
       doc.setFontSize(10);
       y = 33;
-      doc.text(`Name: ${patientName || '-'}`, 15, y);
-      doc.text(`Date: ${inspectionDate || new Date().toLocaleDateString('ja-JP')}`, 130, y);
+      doc.text(`お名前: ${patientName || '-'}`, 15, y);
+      doc.text(`検査日: ${inspectionDate || new Date().toLocaleDateString('ja-JP')}`, 130, y);
       if (weightBalance) {
         y += 6;
-        const wbLabel = weightBalance === 'right' ? 'Right' : weightBalance === 'left' ? 'Left' : 'Even';
-        doc.text(`Weight Balance: ${wbLabel}`, 15, y);
+        const wbLabel = weightBalance === 'right' ? '右重心' : weightBalance === 'left' ? '左重心' : '均等';
+        doc.text(`重心バランス: ${wbLabel}`, 15, y);
       }
       y += 3;
       doc.setDrawColor(226, 232, 240);
@@ -198,7 +200,7 @@ const PdfExport = {
 
       // --- Diagnosis Summary ---
       doc.setFontSize(12);
-      doc.text('Diagnosis', 15, y);
+      doc.text('診断結果', 15, y);
       y += 2;
       doc.setDrawColor(37, 99, 235);
       doc.setLineWidth(0.8);
@@ -217,14 +219,14 @@ const PdfExport = {
       y += summaryLines.length * 5 + 5;
 
       if (diagnosisResult.treatmentArea && diagnosisResult.treatmentArea !== 'none') {
-        doc.text(`Treatment Area: ${diagnosisResult.treatmentArea}`, 20, y);
+        doc.text(`施術の重点: ${diagnosisResult.treatmentArea}`, 20, y);
         y += 7;
       }
 
       // --- Examination Data Table ---
       doc.setFontSize(12);
       doc.setTextColor(30, 41, 59);
-      doc.text('Examination Data', 15, y);
+      doc.text('検査データ', 15, y);
       y += 2;
       doc.setDrawColor(37, 99, 235);
       doc.setLineWidth(0.8);
@@ -236,7 +238,7 @@ const PdfExport = {
       doc.setFontSize(8);
       doc.setFillColor(241, 245, 249);
       doc.rect(15, y - 4, 180, 8, 'F');
-      const headers = ['Landmark'];
+      const headers = ['ランドマーク'];
       const colWidth = 40;
       for (const step of diagnosisResult.steps) {
         headers.push(step.name);
@@ -271,7 +273,7 @@ const PdfExport = {
 
       // --- Step-by-Step Analysis ---
       doc.setFontSize(12);
-      doc.text('Step Analysis', 15, y);
+      doc.text('段階別分析', 15, y);
       y += 2;
       doc.setDrawColor(37, 99, 235);
       doc.setLineWidth(0.8);
@@ -282,16 +284,16 @@ const PdfExport = {
       doc.setFontSize(9);
       if (diagnosisResult.steps.length >= 2 && diagnosisResult.steps[1].comparison) {
         const comp = diagnosisResult.steps[1].comparison;
-        doc.text(`Step 1 (Standing -> Seated): ${comp.hasFootInfluence ? 'CHANGE DETECTED - Foot influence' : 'No change - Not foot-related'}`, 20, y);
+        doc.text(`第1段階（立位→座位）: ${comp.hasFootInfluence ? '変化あり - 足部の影響' : '変化なし - 足部以外の要因'}`, 20, y);
         y += 6;
       }
       if (diagnosisResult.steps.length >= 3 && diagnosisResult.steps[2].comparison) {
         const comp = diagnosisResult.steps[2].comparison;
-        doc.text(`Step 2 (Seated -> Upper Body): ${comp.hasUpperBodyInfluence ? 'CHANGE DETECTED - Upper body influence' : 'No change - Not upper body-related'}`, 20, y);
+        doc.text(`第2段階（座位→上半身）: ${comp.hasUpperBodyInfluence ? '変化あり - 上半身の影響' : '変化なし - 上半身以外の要因'}`, 20, y);
         y += 6;
       }
       if (diagnosisResult.pattern && diagnosisResult.pattern.pattern !== 'normal') {
-        doc.text(`Pattern: ${diagnosisResult.pattern.description}`, 20, y);
+        doc.text(`パターン: ${diagnosisResult.pattern.description}`, 20, y);
         y += 6;
       }
       y += 5;
@@ -304,7 +306,7 @@ const PdfExport = {
         }
 
         doc.setFontSize(12);
-        doc.text('Contraction / Tension Analysis', 15, y);
+        doc.text('収縮・伸長分析', 15, y);
         y += 2;
         doc.setDrawColor(139, 92, 246);
         doc.setLineWidth(0.8);
@@ -315,7 +317,7 @@ const PdfExport = {
         // Upper body detail
         if (contractionResult.upper) {
           doc.setFontSize(10);
-          doc.text('Upper Body Landmarks:', 15, y);
+          doc.text('上半身ランドマーク:', 15, y);
           y += 6;
           doc.setFontSize(8);
 
@@ -327,16 +329,16 @@ const PdfExport = {
           y += 3;
 
           for (const c of contractionResult.upper.contractions) {
-            const sideLabel = c.side === 'both' ? 'Both' : c.side === 'right' ? 'Right' : 'Left';
+            const sideLabel = c.side === 'both' ? '両側' : c.side === 'right' ? '右側' : '左側';
             doc.setTextColor(220, 38, 38);
-            doc.text(`  CONTRACTION: ${c.area} (${sideLabel})`, 20, y);
+            doc.text(`  収縮: ${c.area}（${sideLabel}）`, 20, y);
             doc.setTextColor(30, 41, 59);
             y += 5;
           }
           for (const t of contractionResult.upper.tensions) {
-            const sideLabel = t.side === 'both' ? 'Both' : t.side === 'right' ? 'Right' : 'Left';
+            const sideLabel = t.side === 'both' ? '両側' : t.side === 'right' ? '右側' : '左側';
             doc.setTextColor(139, 92, 246);
-            doc.text(`  TENSION: ${t.area} (${sideLabel})`, 20, y);
+            doc.text(`  伸長: ${t.area}（${sideLabel}）`, 20, y);
             doc.setTextColor(30, 41, 59);
             y += 5;
           }
@@ -350,7 +352,7 @@ const PdfExport = {
             y = 20;
           }
           doc.setFontSize(10);
-          doc.text('Lower Body Landmarks:', 15, y);
+          doc.text('下半身ランドマーク:', 15, y);
           y += 6;
           doc.setFontSize(8);
 
@@ -362,16 +364,16 @@ const PdfExport = {
           y += 3;
 
           for (const c of contractionResult.lower.contractions) {
-            const sideLabel = c.side === 'both' ? 'Both' : c.side === 'right' ? 'Right' : 'Left';
+            const sideLabel = c.side === 'both' ? '両側' : c.side === 'right' ? '右側' : '左側';
             doc.setTextColor(220, 38, 38);
-            doc.text(`  CONTRACTION: ${c.area} (${sideLabel})`, 20, y);
+            doc.text(`  収縮: ${c.area}（${sideLabel}）`, 20, y);
             doc.setTextColor(30, 41, 59);
             y += 5;
           }
           for (const t of contractionResult.lower.tensions) {
-            const sideLabel = t.side === 'both' ? 'Both' : t.side === 'right' ? 'Right' : 'Left';
+            const sideLabel = t.side === 'both' ? '両側' : t.side === 'right' ? '右側' : '左側';
             doc.setTextColor(139, 92, 246);
-            doc.text(`  TENSION: ${t.area} (${sideLabel})`, 20, y);
+            doc.text(`  伸長: ${t.area}（${sideLabel}）`, 20, y);
             doc.setTextColor(30, 41, 59);
             y += 5;
           }
@@ -385,7 +387,7 @@ const PdfExport = {
           }
           y += 5;
           doc.setFontSize(10);
-          doc.text('Detailed Landmark Data:', 15, y);
+          doc.text('詳細ランドマークデータ:', 15, y);
           y += 7;
           doc.setFontSize(8);
 
@@ -418,7 +420,7 @@ const PdfExport = {
       y += 5;
       doc.setFontSize(12);
       doc.setTextColor(30, 41, 59);
-      doc.text('Treatment Recommendations', 15, y);
+      doc.text('施術プロトコル', 15, y);
       y += 2;
       doc.setDrawColor(245, 158, 11);
       doc.setLineWidth(0.8);
@@ -430,16 +432,16 @@ const PdfExport = {
       if (typeof TreatmentProtocol !== 'undefined') {
         const plan = TreatmentProtocol.generatePlan(diagnosisResult, contractionResult);
         if (plan.mainProtocol) {
-          doc.text(`Main Protocol: ${plan.mainProtocol.title}`, 20, y);
+          doc.text(`メインプロトコル: ${plan.mainProtocol.title}`, 20, y);
           y += 6;
           for (const tech of plan.mainProtocol.techniques) {
             if (y > 270) { doc.addPage(); y = 20; }
-            doc.text(`  - ${tech.name} (${tech.target}) [${tech.duration}]`, 25, y);
+            doc.text(`  - ${tech.name}（${tech.target}）[${tech.duration}]`, 25, y);
             y += 5;
           }
           y += 3;
           if (plan.mainProtocol.checkpoints && plan.mainProtocol.checkpoints.length > 0) {
-            doc.text('Checkpoints:', 20, y);
+            doc.text('チェックポイント:', 20, y);
             y += 5;
             for (const cp of plan.mainProtocol.checkpoints) {
               doc.text(`  - ${cp}`, 25, y);
@@ -456,7 +458,7 @@ const PdfExport = {
             y += 6;
             for (const tech of ap.techniques) {
               if (y > 270) { doc.addPage(); y = 20; }
-              doc.text(`  - ${tech.name} (${tech.target}) [${tech.duration}]`, 25, y);
+              doc.text(`  - ${tech.name}（${tech.target}）[${tech.duration}]`, 25, y);
               y += 5;
             }
             y += 3;
@@ -464,26 +466,26 @@ const PdfExport = {
         }
 
         if (plan.estimatedTime > 0) {
-          doc.text(`Estimated Total Time: ${plan.estimatedTime} min`, 20, y);
+          doc.text(`推定施術時間: 約${plan.estimatedTime}分`, 20, y);
           y += 6;
         }
       } else {
-        doc.text(`Primary cause: ${causeInfo.label}`, 20, y);
+        doc.text(`主原因: ${causeInfo.label}`, 20, y);
         y += 6;
-        doc.text(`Focus: ${diagnosisResult.treatmentArea || '-'}`, 20, y);
+        doc.text(`重点部位: ${diagnosisResult.treatmentArea || '-'}`, 20, y);
       }
 
       // --- Footer ---
-      this._addFooter(doc, 'Clinical Report');
+      this._addFooter(doc, '施術者用レポート');
 
       // Save
       const dateStr = (inspectionDate || new Date().toISOString().split('T')[0]).replace(/-/g, '');
       const nameStr = patientName ? `_${patientName}` : '';
-      doc.save(`ClinicalReport_${dateStr}${nameStr}.pdf`);
+      doc.save(`検査レポート_施術者用_${dateStr}${nameStr}.pdf`);
       return true;
     } catch (e) {
-      console.error('Clinical PDF export failed:', e);
-      alert('PDF export failed. Please try again.');
+      console.error('施術者用PDF出力エラー:', e);
+      alert('PDFの出力に失敗しました。もう一度お試しください。');
       return false;
     }
   },
@@ -500,7 +502,7 @@ const PdfExport = {
       doc.setPage(i);
       doc.setFontSize(7);
       doc.setTextColor(148, 163, 184);
-      doc.text(`Body Check Pro - ${reportType} - Page ${i}/${pageCount}`, 105, 290, { align: 'center' });
+      doc.text(`検査アプリ - ${reportType} - ${i}/${pageCount}ページ`, 105, 290, { align: 'center' });
     }
   },
 
@@ -515,22 +517,22 @@ const PdfExport = {
 
   _getPatientLabel(cause) {
     const labels = {
-      foot: 'Foot Balance Issue',
-      upperBody: 'Upper Body Balance Issue',
-      cranialPelvic: 'Whole Body Alignment',
-      spine: 'Spine Alignment',
-      none: 'Good Condition'
+      foot: '足元のバランスの問題',
+      upperBody: '上半身のバランスの問題',
+      cranialPelvic: '全身のバランスの乱れ',
+      spine: '背骨まわりのバランスの乱れ',
+      none: '良好な状態'
     };
     return labels[cause] || cause;
   },
 
   _getPatientSummary(result) {
     const summaries = {
-      foot: 'The way your feet contact the ground is affecting your body balance. Adjusting from the feet up can help improve alignment.',
-      upperBody: 'Your shoulder and arm position is affecting your body balance. Upper body adjustment can help.',
-      cranialPelvic: 'Your body tends to lean to one side. Cranial and pelvic alignment treatment is recommended.',
-      spine: 'Your body shows alternating misalignment. Spine adjustment can help restore balance.',
-      none: 'No significant misalignment detected. Keep maintaining good posture.'
+      foot: '足の接地の仕方が体全体のバランスに影響しています。足元から整えることで改善が期待できます。',
+      upperBody: '肩や腕の位置が体のバランスに影響しています。上半身の調整で改善が期待できます。',
+      cranialPelvic: '体が全体的に片側に傾く傾向があります。頭蓋骨と骨盤の調整をおすすめします。',
+      spine: '体に互い違いのズレが見られます。背骨の調整でバランスの回復が期待できます。',
+      none: '大きなズレは見られません。良い状態を維持していきましょう。'
     };
     return summaries[result.primaryCause] || result.summary;
   }
