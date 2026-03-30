@@ -30,6 +30,26 @@ const BodyDiagram = {
   // 右側シフト計算: val=1で上(-TILT)、val=-1で下(+TILT)
   _rShift(val) { return -(val || 0) * this.TILT; },
 
+  // ===== ラベル衝突回避 =====
+  _placedLabels: [],
+  _resetPlacedLabels() { this._placedLabels = []; },
+  // 既存ラベルと重ならないY座標を返す（side: 'left'/'right'/'center'）
+  _findSafeY(desiredY, side, height) {
+    const h = height || 22;
+    const sameSide = this._placedLabels.filter(l => l.side === side);
+    let y = desiredY;
+    let attempts = 0;
+    while (attempts < 20) {
+      const collision = sameSide.find(l => Math.abs(l.y - y) < (h + l.h) / 2 + 2);
+      if (!collision) break;
+      // 衝突 → 下にずらす
+      y = collision.y + (collision.h + h) / 2 + 3;
+      attempts++;
+    }
+    this._placedLabels.push({ y, side, h });
+    return y;
+  },
+
   // ===== 背面図SVG（セグメントをグループ化） =====
   createBodySVG(prefix) {
     const p = prefix || '';
@@ -836,14 +856,17 @@ const BodyDiagram = {
       }, pos.label));
     }
 
+    // ラベル衝突回避トラッカーをリセット
+    this._resetPlacedLabels();
+
+    // === 体幹への影響（全体偏位・体幹回旋ラベルを先に配置） ===
+    this._drawTrunkImpact(svg, allData, standingData || {});
+
     // === 立位検査データ（乳様突起・肩甲下角・腸骨稜）の詰まり/伸び可視化 ===
     this._drawStandingAnalysis(svg, standingData || {}, allData);
 
     // === 詰まり・伸びインジケーター（全身連続版） ===
     this._drawUnifiedCompressionIndicators(svg, allData);
-
-    // === 体幹への影響（腕脚の詰まり＋骨盤傾斜の結果） ===
-    this._drawTrunkImpact(svg, allData, standingData || {});
   },
 
   // ===== 全身シフト（上半身＋下半身） =====
@@ -925,41 +948,44 @@ const BodyDiagram = {
       const cfg = segmentConfig[i];
       const posA = posMap[keyA];
       const posB = posMap[keyB];
-      const midY = (posA.baseY + posB.baseY) / 2;
+      const rawMidY = (posA.baseY + posB.baseY) / 2;
 
       const compSide = leftCompressed ? 'left' : 'right';
       const compX = compSide === 'left' ? cfg.leftX : cfg.rightX;
       const stretchX = compSide === 'left' ? cfg.rightX : cfg.leftX;
       const compLabel = compSide === 'left' ? '左' : '右';
       const stretchLabel = compSide === 'left' ? '右' : '左';
+      const stretchSideKey = compSide === 'left' ? 'right' : 'left';
 
       // パーツハイライト（腕・脚を赤/紫で色付け）
       const contractedParts = cfg.parts[compSide] || [];
-      const tensionedParts = cfg.parts[compSide === 'left' ? 'right' : 'left'] || [];
+      const tensionedParts = cfg.parts[stretchSideKey] || [];
       contractedParts.forEach(p => this._highlightPart(svg, p, 'rgba(239,68,68,0.30)'));
       tensionedParts.forEach(p => this._highlightPart(svg, p, 'rgba(168,85,247,0.22)'));
 
+      // 衝突回避でY座標を決定
+      const compY = this._findSafeY(rawMidY, compSide, 22);
+      const stretchY = this._findSafeY(rawMidY, stretchSideKey, 22);
+
       // 縮みインジケーター
       indicatorLayer.appendChild(this._createSVGEl('rect', {
-        x: compX - 22, y: midY - 10, width: 44, height: 20,
+        x: compX - 22, y: compY - 10, width: 44, height: 20,
         rx: 6, fill: '#ef4444', opacity: 0.9
       }));
       indicatorLayer.appendChild(this._createSVGEl('text', {
-        x: compX, y: midY + 4, 'text-anchor': 'middle',
+        x: compX, y: compY + 4, 'text-anchor': 'middle',
         'font-size': 9, fill: 'white', 'font-weight': 800
       }, `${compLabel}縮`));
 
       // 伸びインジケーター
       indicatorLayer.appendChild(this._createSVGEl('rect', {
-        x: stretchX - 22, y: midY - 10, width: 44, height: 20,
+        x: stretchX - 22, y: stretchY - 10, width: 44, height: 20,
         rx: 6, fill: '#8b5cf6', opacity: 0.85
       }));
       indicatorLayer.appendChild(this._createSVGEl('text', {
-        x: stretchX, y: midY + 4, 'text-anchor': 'middle',
+        x: stretchX, y: stretchY + 4, 'text-anchor': 'middle',
         'font-size': 9, fill: 'white', 'font-weight': 800
       }, `${stretchLabel}伸`));
-
-      // エリア名ラベルは省略（被り防止）
     }
   },
 
@@ -1014,12 +1040,13 @@ const BodyDiagram = {
 
     // === 回旋ラベル（体幹中央に大きく） ===
     if (rotationLabel) {
+      const safeY = this._findSafeY(trunkMidY, 'center', 26);
       indicatorLayer.appendChild(this._createSVGEl('rect', {
-        x: cx - 32, y: trunkMidY - 12, width: 64, height: 24,
+        x: cx - 32, y: safeY - 12, width: 64, height: 24,
         rx: 12, fill: rotationColor, opacity: 0.9
       }));
       indicatorLayer.appendChild(this._createSVGEl('text', {
-        x: cx, y: trunkMidY + 4, 'text-anchor': 'middle',
+        x: cx, y: safeY + 4, 'text-anchor': 'middle',
         'font-size': 11, fill: 'white', 'font-weight': 800
       }, rotationLabel));
     }
@@ -1067,34 +1094,35 @@ const BodyDiagram = {
       const rightCompressed = (seg.valA === -1 && seg.valB === 1);
       if (!leftCompressed && !rightCompressed) continue;
 
-      let midY = (posY[seg.upper] + posY[seg.lower]) / 2;
-      // 腕脚ラベルとの被り回避
-      if (midY > 50 && midY < 65) midY = 58;        // 乳様突起↔肩峰
-      if (midY > 110 && midY < 125) midY = 135;     // 肩峰↔肩甲下角
-      if (midY > 185 && midY < 200) midY = 205;     // 肩甲下角↔腸骨稜
-      if (midY > 248 && midY < 265) midY = 258;     // 腸骨稜↔大転子
+      const rawMidY = (posY[seg.upper] + posY[seg.lower]) / 2;
       const compSide = leftCompressed ? '左' : '右';
       const stretchSide = leftCompressed ? '右' : '左';
       const compX = leftCompressed ? seg.leftX : seg.rightX;
       const stretchX = leftCompressed ? seg.rightX : seg.leftX;
+      const compSideKey = leftCompressed ? 'left' : 'right';
+      const stretchSideKey = leftCompressed ? 'right' : 'left';
+
+      // 衝突回避でY座標を決定
+      const compY = this._findSafeY(rawMidY, compSideKey, 20);
+      const stretchY = this._findSafeY(rawMidY, stretchSideKey, 20);
 
       // 詰まりラベル（赤）「右縮」「左縮」
       indicatorLayer.appendChild(this._createSVGEl('rect', {
-        x: compX - 16, y: midY - 9, width: 32, height: 18,
+        x: compX - 16, y: compY - 9, width: 32, height: 18,
         rx: 6, fill: '#ef4444', opacity: 0.9
       }));
       indicatorLayer.appendChild(this._createSVGEl('text', {
-        x: compX, y: midY + 4, 'text-anchor': 'middle',
+        x: compX, y: compY + 4, 'text-anchor': 'middle',
         'font-size': 9, fill: 'white', 'font-weight': 800
       }, `${compSide}縮`));
 
       // 伸びラベル（紫）「左伸び」「右伸び」
       indicatorLayer.appendChild(this._createSVGEl('rect', {
-        x: stretchX - 16, y: midY - 9, width: 32, height: 18,
+        x: stretchX - 16, y: stretchY - 9, width: 32, height: 18,
         rx: 6, fill: '#8b5cf6', opacity: 0.85
       }));
       indicatorLayer.appendChild(this._createSVGEl('text', {
-        x: stretchX, y: midY + 4, 'text-anchor': 'middle',
+        x: stretchX, y: stretchY + 4, 'text-anchor': 'middle',
         'font-size': 9, fill: 'white', 'font-weight': 800
       }, `${stretchSide}伸`));
     }
