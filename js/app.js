@@ -1376,22 +1376,38 @@
     const scoreArrow = scoreDiff < 0 ? '↓ 改善' : scoreDiff > 0 ? '↑ 悪化' : '→ 変化なし';
     const scoreColor = scoreDiff < 0 ? '#22c55e' : scoreDiff > 0 ? '#ef4444' : '#64748b';
 
-    // 収縮・伸長箇所の数を計算
-    function countIssues(detail) {
+    // 縮み・伸び箇所数をdetailDataから動的に計算
+    function countContractionZones(dData, sData) {
       let contractions = 0, tensions = 0;
-      if (detail?.upper) {
-        contractions += (detail.upper.contractions || []).length;
-        tensions += (detail.upper.tensions || []).length;
-      }
-      if (detail?.lower) {
-        contractions += (detail.lower.contractions || []).length;
-        tensions += (detail.lower.tensions || []).length;
+      if (!dData) return { contractions, tensions };
+
+      const upper = dData.upperDetail || {};
+      const lower = dData.lowerDetail || {};
+      const standing = sData || {};
+
+      // 隣接ランドマークのペアで互い違い（縮み/伸び）を判定
+      const pairs = [
+        [standing.mastoid, upper.acromion],
+        [upper.acromion, standing.scapulaInferior],
+        [standing.scapulaInferior, standing.iliacCrest],
+        [standing.iliacCrest, lower.greaterTrochanter],
+        [upper.acromion, upper.mastoidDetail],
+        [upper.mastoidDetail, upper.radialStyloid],
+        [lower.greaterTrochanter, lower.patellaUpper],
+        [lower.patellaUpper, lower.lateralMalleolus]
+      ];
+
+      for (const [a, b] of pairs) {
+        if (a == null || b == null || a === 0 || b === 0 || a === b) continue;
+        // 互い違い = 片側が縮み、反対側が伸び
+        contractions++;
+        tensions++;
       }
       return { contractions, tensions };
     }
 
-    const prevIssues = countIssues(prev.contractionResult);
-    const currIssues = countIssues(contractionResult);
+    const prevIssues = countContractionZones(prev.detailData, prev.examData?.standing);
+    const currIssues = countContractionZones(detailData, examData.standing);
 
     // 縮み箇所の比較
     let contractionCompare = '';
