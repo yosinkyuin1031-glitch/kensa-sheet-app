@@ -1191,6 +1191,53 @@ img {
   </div>
 </section>
 
+<!-- 開発者の想い -->
+<section class="section" style="background:#fff;">
+  <div class="container">
+    <h2 class="section-title">
+      <span>STORY</span>
+      なぜ、このアプリを作ったのか
+    </h2>
+    <div style="max-width:680px;margin:0 auto;">
+      <div style="background:#f0f9ff;border:2px solid #bae6fd;border-radius:16px;padding:32px;margin-bottom:24px;">
+        <p style="font-size:15px;color:#0369a1;font-weight:700;margin-bottom:12px;">大口神経整体院 院長 / 開発者</p>
+        <p style="font-size:22px;font-weight:800;color:#1a1a2e;margin-bottom:16px;">大口 陽平</p>
+        <p style="font-size:14px;color:#475569;line-height:2;">
+          神経整体・構造医学・東洋医学・仙腸関節療法など、さまざまな治療法を学んできました。<br>
+          その中で感じたのは、治療家のほとんどは「感覚系」で治療しているということ。<br>
+          感覚系の治療で良くなっても、患者さんからすると<strong>「なぜ良くなったのか」がわからない</strong>。
+        </p>
+      </div>
+      <div style="padding:0 8px;">
+        <p style="font-size:14px;color:#475569;line-height:2.2;margin-bottom:16px;">
+          患者さんに検査結果を見せると、大きな反応がありました。家で家族に「こういう風に歪んでたよ」と見せてくれて、それがきっかけで紹介にもつながりました。
+        </p>
+        <p style="font-size:14px;color:#475569;line-height:2.2;margin-bottom:16px;">
+          一方、周りの治療家に話を聞くと、こんな声が多かった。
+        </p>
+        <ul style="list-style:none;margin-bottom:20px;">
+          <li style="font-size:14px;color:#1a1a2e;padding:8px 0;padding-left:20px;position:relative;border-bottom:1px solid #f1f5f9;">
+            <span style="position:absolute;left:0;color:#e9520e;font-weight:700;">-</span>何の検査をすればいいかわからない
+          </li>
+          <li style="font-size:14px;color:#1a1a2e;padding:8px 0;padding-left:20px;position:relative;border-bottom:1px solid #f1f5f9;">
+            <span style="position:absolute;left:0;color:#e9520e;font-weight:700;">-</span>患者さんに説明がうまく伝わらない
+          </li>
+          <li style="font-size:14px;color:#1a1a2e;padding:8px 0;padding-left:20px;position:relative;border-bottom:1px solid #f1f5f9;">
+            <span style="position:absolute;left:0;color:#e9520e;font-weight:700;">-</span>施術者側だけが理解していて患者に共有できていない
+          </li>
+          <li style="font-size:14px;color:#1a1a2e;padding:8px 0;padding-left:20px;position:relative;">
+            <span style="position:absolute;left:0;color:#e9520e;font-weight:700;">-</span>スタッフが自分の治療や検査に自信を持てない
+          </li>
+        </ul>
+        <p style="font-size:15px;color:#1e40af;font-weight:700;line-height:2;background:#eff6ff;padding:20px 24px;border-radius:10px;">
+          今の体がどうなっているのか、それがどう変化して症状が変わったのか。状態と変化を「目に見える形」で伝えたい。<br>
+          開発者自身が現役の治療家だからこそ作れた、現場発のアプリです。
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- 課題セクション -->
 <section class="section problems">
   <div class="container">
@@ -1340,13 +1387,13 @@ img {
     </h2>
     <div class="demo-slideshow" id="demoSlideshow">
       <div class="demo-slideshow-viewport">
-        <img id="slideImg" src="images/patient-info.png" alt="デモ画面">
+        <img id="slideImg" src="images/dashboard.png" alt="デモ画面">
       </div>
       <div class="demo-slideshow-arrows">
         <button onclick="slideChange(-1)" aria-label="前へ">&lt;</button>
         <button onclick="slideChange(1)" aria-label="次へ">&gt;</button>
       </div>
-      <div class="demo-slideshow-caption" id="slideCaption">Step1: 患者情報 - 主訴・痛みレベル(NRS)を入力</div>
+      <div class="demo-slideshow-caption" id="slideCaption">ダッシュボード - 検査数・患者数・月別推移をひと目で確認</div>
       <div class="demo-slideshow-nav" id="slideNav"></div>
     </div>
   </div>
@@ -1363,36 +1410,31 @@ img {
       <div class="workflow-step">
         <div class="step-circle">1</div>
         <h4>患者情報入力</h4>
-        <p>氏名・年齢・主訴・NRS</p>
-        <img src="images/patient-info.png" alt="患者情報入力画面" loading="lazy">
+        <p>氏名・年齢・主訴<br>NRSで痛み数値化</p>
       </div>
       <div class="workflow-arrow">→</div>
       <div class="workflow-step">
         <div class="step-circle">2</div>
-        <h4>3段階検査</h4>
-        <p>ワンタップで記録</p>
-        <img src="images/standing-exam.png" alt="立位検査画面" loading="lazy">
+        <h4>立位検査</h4>
+        <p>乳様突起・肩甲下角<br>腸骨稜の左右差</p>
       </div>
       <div class="workflow-arrow">→</div>
       <div class="workflow-step">
         <div class="step-circle">3</div>
-        <h4>AI診断結果</h4>
-        <p>原因部位を自動特定</p>
-        <img src="images/diagnosis-result.png" alt="診断結果画面" loading="lazy">
+        <h4>座位検査</h4>
+        <p>足部の影響を<br>リアルタイム判定</p>
       </div>
       <div class="workflow-arrow">→</div>
       <div class="workflow-step">
         <div class="step-circle">4</div>
-        <h4>セルフケア提案</h4>
-        <p>AIが自動生成</p>
-        <img src="images/selfcare.png" alt="セルフケア提案画面" loading="lazy">
+        <h4>上半身検査</h4>
+        <p>肩峰・肘頭<br>茎状突起の左右差</p>
       </div>
       <div class="workflow-arrow">→</div>
       <div class="workflow-step">
         <div class="step-circle">5</div>
-        <h4>PDF出力</h4>
-        <p>患者に資料を渡す</p>
-        <img src="images/pdf-output.png" alt="PDF出力画面" loading="lazy">
+        <h4>AI診断</h4>
+        <p>原因部位を自動特定<br>PDF＋セルフケア出力</p>
       </div>
     </div>
     <div class="workflow-note">
@@ -1740,32 +1782,32 @@ img {
         <div class="gallery-label">ダッシュボード</div>
       </div>
       <div class="gallery-item">
-        <img src="images/patient-info.png" alt="患者情報 - 主訴・痛みレベル(NRS)入力" loading="lazy">
-        <div class="gallery-label">患者情報入力</div>
-      </div>
-      <div class="gallery-item">
-        <img src="images/standing-exam.png" alt="立位検査 - 3つのランドマークを左右評価" loading="lazy">
-        <div class="gallery-label">検査入力（立位）</div>
-      </div>
-      <div class="gallery-item">
         <img src="images/diagnosis-result.png" alt="診断結果 - 原因部位と歪みパターンを自動判定" loading="lazy">
         <div class="gallery-label">AI診断結果</div>
       </div>
       <div class="gallery-item">
+        <img src="images/seated-exam.png" alt="座位検査 - 立位との比較でリアルタイムに足部の影響を判定" loading="lazy">
+        <div class="gallery-label">座位検査（リアルタイム比較）</div>
+      </div>
+      <div class="gallery-item">
         <img src="images/selfcare.png" alt="セルフケア提案 - AIが運動メニューを自動生成" loading="lazy">
-        <div class="gallery-label">セルフケア提案</div>
+        <div class="gallery-label">AIセルフケア提案</div>
       </div>
       <div class="gallery-item">
         <img src="images/pdf-output.png" alt="PDF出力 - 患者用レポート・施術提案書" loading="lazy">
-        <div class="gallery-label">PDF出力</div>
+        <div class="gallery-label">PDF・施術提案書出力</div>
+      </div>
+      <div class="gallery-item">
+        <img src="images/standing-exam.png" alt="立位検査 - 3つのランドマークを左右評価" loading="lazy">
+        <div class="gallery-label">立位検査入力</div>
+      </div>
+      <div class="gallery-item">
+        <img src="images/patient-info.png" alt="患者情報 - 主訴・痛みレベル(NRS)入力" loading="lazy">
+        <div class="gallery-label">患者情報・NRS入力</div>
       </div>
       <div class="gallery-item">
         <img src="images/history.png" alt="検査履歴 - 患者別の検査記録を時系列で管理" loading="lazy">
-        <div class="gallery-label">検査履歴</div>
-      </div>
-      <div class="gallery-item">
-        <img src="images/patients.png" alt="患者一覧 - 登録患者を検索・管理" loading="lazy">
-        <div class="gallery-label">患者一覧</div>
+        <div class="gallery-label">検査履歴一覧</div>
       </div>
     </div>
   </div>
@@ -1919,14 +1961,14 @@ img {
 <script>
 // ===== デモスライドショー =====
 const slides = [
-  { src: "images/patient-info.png", caption: "Step1: 患者情報 - 主訴・痛みレベル(NRS)を入力" },
-  { src: "images/standing-exam.png", caption: "Step2: 立位検査 - 3つのランドマークの左右差を評価" },
-  { src: "images/diagnosis-result.png", caption: "Step3: 診断結果 - 原因部位・歪みパターンを自動判定" },
-  { src: "images/selfcare.png", caption: "AIがセルフケアメニューを自動提案" },
-  { src: "images/pdf-output.png", caption: "患者用レポート・施術提案書をPDF出力" },
-  { src: "images/history.png", caption: "検査履歴 - 患者の経過を時系列で管理" },
-  { src: "images/patients.png", caption: "患者一覧 - 全患者の情報を一元管理" },
-  { src: "images/dashboard.png", caption: "ダッシュボード - 検査数・患者数・月別推移" },
+  { src: "images/dashboard.png", caption: "ダッシュボード - 検査数・患者数・月別推移をひと目で確認" },
+  { src: "images/diagnosis-result.png", caption: "AI診断結果 - 足部の影響・原因部位を自動で特定" },
+  { src: "images/selfcare.png", caption: "AIセルフケア提案 - 検査結果から運動メニューを自動生成" },
+  { src: "images/seated-exam.png", caption: "座位検査 - 立位との比較でリアルタイムに足部の影響を判定" },
+  { src: "images/pdf-output.png", caption: "PDF出力 - 患者用レポート・施術提案書をワンタップで生成" },
+  { src: "images/standing-exam.png", caption: "立位検査 - 3つのランドマークの左右差をワンタップ記録" },
+  { src: "images/patient-info.png", caption: "患者情報 - 主訴・痛みレベル(NRS)・年齢・性別を入力" },
+  { src: "images/history.png", caption: "検査履歴 - 患者別の検査データを時系列で管理" },
 ];
 
 let currentSlide = 0;
