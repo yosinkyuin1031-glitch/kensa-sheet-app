@@ -1093,7 +1093,17 @@ img {
   }
 
   .hero h1 {
-    font-size: 26px;
+    font-size: 24px;
+  }
+
+  .hero .cta-btn {
+    display: block;
+    margin: 0 auto;
+  }
+
+  .hero a[target="_blank"] {
+    margin-left: 0 !important;
+    margin-top: 12px !important;
   }
 
   .ba-content {
@@ -1174,20 +1184,89 @@ img {
   <div class="container hero-inner">
     <div class="hero-badge">整体院 / 整骨院 / 鍼灸院 向け</div>
     <h1>
-      検査が<span class="accent">3分</span>で終わる。<br>
-      患者が<span class="accent">納得</span>する。<br>
-      リピートに<span class="accent">つながる</span>。
+      この検査で、<span class="accent">月商424万円</span>。<br>
+      一人治療院、<span class="accent">週4日</span>稼働。
     </h1>
     <p class="lead">
-      身体の歪みを数値化し、人体図で可視化。<br>
-      ビフォーアフター比較で患者に「変化」を伝える検査アプリ。
+      重症専門の整体院を経営する開発者自身が、<br>
+      現場で使い続けて結果を出している検査アプリ。<br>
+      身体の歪みを数値化し、人体図で可視化。患者が「納得」する。
     </p>
     <a href="https://lin.ee/xaCpuaj" class="cta-btn">
       LINEで申し込む
       <span class="cta-btn-sub">先着5名 モニター限定 3,980円/月</span>
     </a>
-    <div class="hero-screenshot">
-      <img src="images/dashboard.png" alt="検査アプリ ダッシュボード画面 - 検査数・患者数・月別推移をひと目で確認" loading="lazy">
+    <a href="https://kensa-sheet-app.vercel.app" target="_blank" style="display:inline-block;background:transparent;border:2px solid rgba(255,255,255,0.5);color:#fff;font-size:15px;font-weight:600;padding:14px 36px;border-radius:8px;margin-left:12px;transition:background 0.2s;vertical-align:middle;">
+      デモを触ってみる
+    </a>
+    <!-- ヒーロー：ビフォーアフター人体図 -->
+    <div class="hero-screenshot" style="max-width:600px;">
+      <div style="display:flex;align-items:center;gap:8px;justify-content:center;">
+        <div style="text-align:center;flex:1;">
+          <div style="font-size:12px;color:#94a3b8;margin-bottom:6px;">施術前</div>
+          <svg viewBox="0 0 200 340" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;background:#1e293b;border-radius:8px;padding:8px;">
+            <defs>
+              <linearGradient id="hSG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fde8d0"/><stop offset="50%" stop-color="#f5d5b8"/><stop offset="100%" stop-color="#e8c4a0"/></linearGradient>
+              <radialGradient id="hHG" cx="50%" cy="40%"><stop offset="0%" stop-color="#fde8d0"/><stop offset="80%" stop-color="#f0c8a0"/></radialGradient>
+              <radialGradient id="hJG"><stop offset="0%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#f59e0b"/></radialGradient>
+            </defs>
+            <g transform="translate(10,10) scale(0.6)">
+              <path d="M82,74 C82,68 115,64 150,64 C185,64 218,68 218,74 L220,150 L218,242 C216,258 196,264 150,264 C104,264 84,258 82,242 L80,150 Z" fill="url(#hSG)" stroke="#c4956e" stroke-width="1.2"/>
+              <path d="M138,52 Q150,58 162,52 L162,66 Q150,68 138,66 Z" fill="url(#hSG)" stroke="#c4956e" stroke-width="1"/>
+              <circle cx="150" cy="54" r="4.5" fill="url(#hJG)" stroke="#d97706" stroke-width="1.3"/>
+              <g transform="rotate(4, 150, 28)">
+                <ellipse cx="150" cy="28" rx="22" ry="26" fill="url(#hHG)" stroke="#c4956e" stroke-width="1.2"/>
+                <path d="M128,18 C128,6 172,6 172,18 L172,28 C172,22 128,22 128,28 Z" fill="#4a2c1a" opacity="0.5"/>
+              </g>
+              <g transform="translate(0,14)"><ellipse cx="82" cy="76" rx="8" ry="6" fill="url(#hJG)" stroke="#d97706" stroke-width="1.3"/><path d="M78,82 C68,96 60,122 56,148 L48,148 C54,118 64,92 76,78 Z" fill="url(#hSG)" stroke="#c4956e" stroke-width="1.1"/><path d="M50,156 L46,222 L38,222 L44,156 Z" fill="url(#hSG)" stroke="#c4956e" stroke-width="1.1"/></g>
+              <g transform="translate(0,-14)"><ellipse cx="218" cy="76" rx="8" ry="6" fill="url(#hJG)" stroke="#d97706" stroke-width="1.3"/><path d="M222,82 C232,96 240,122 244,148 L252,148 C246,118 236,92 224,78 Z" fill="url(#hSG)" stroke="#c4956e" stroke-width="1.1"/><path d="M250,156 L254,222 L262,222 L256,156 Z" fill="url(#hSG)" stroke="#c4956e" stroke-width="1.1"/></g>
+              <path d="M118,266 C116,290 114,320 113,350 L112,370 L140,370 L139,350 C138,320 138,290 140,266 Z" fill="url(#hSG)" stroke="#c4956e" stroke-width="1.1"/>
+              <path d="M160,266 C162,290 162,320 161,350 L160,370 L188,370 L187,350 C186,320 184,290 182,266 Z" fill="url(#hSG)" stroke="#c4956e" stroke-width="1.1"/>
+              <!-- ランドマーク：ずれ -->
+              <line x1="78" y1="92" x2="222" y2="64" stroke="#e74c3c" stroke-width="2.5" stroke-dasharray="6,3" opacity="0.9"/>
+              <circle cx="78" cy="92" r="6" fill="#f97316" stroke="white" stroke-width="2"/><circle cx="222" cy="64" r="6" fill="#3b82f6" stroke="white" stroke-width="2"/>
+              <line x1="106" y1="169" x2="194" y2="141" stroke="#e74c3c" stroke-width="2.5" stroke-dasharray="6,3" opacity="0.9"/>
+              <circle cx="106" cy="169" r="6" fill="#f97316" stroke="white" stroke-width="2"/><circle cx="194" cy="141" r="6" fill="#3b82f6" stroke="white" stroke-width="2"/>
+              <line x1="102" y1="232" x2="198" y2="232" stroke="#22c55e" stroke-width="2.5" opacity="0.8"/>
+              <circle cx="102" cy="232" r="6" fill="#22c55e" stroke="white" stroke-width="2"/><circle cx="198" cy="232" r="6" fill="#22c55e" stroke="white" stroke-width="2"/>
+            </g>
+            <rect x="10" y="295" rx="6" width="180" height="34" fill="rgba(239,68,68,0.15)" stroke="rgba(239,68,68,0.3)" stroke-width="1"/>
+            <text x="100" y="310" text-anchor="middle" font-size="9" fill="#fca5a5" font-weight="600">ずれ箇所: 6/9</text>
+            <text x="100" y="323" text-anchor="middle" font-size="9" fill="#fca5a5" font-weight="600">NRS痛みレベル: 7/10</text>
+          </svg>
+        </div>
+        <div style="font-size:28px;color:rgba(255,255,255,0.6);flex-shrink:0;">→</div>
+        <div style="text-align:center;flex:1;">
+          <div style="font-size:12px;color:#94a3b8;margin-bottom:6px;">施術後</div>
+          <svg viewBox="0 0 200 340" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;background:#1e293b;border-radius:8px;padding:8px;">
+            <defs>
+              <linearGradient id="hSG2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fde8d0"/><stop offset="50%" stop-color="#f5d5b8"/><stop offset="100%" stop-color="#e8c4a0"/></linearGradient>
+              <radialGradient id="hHG2" cx="50%" cy="40%"><stop offset="0%" stop-color="#fde8d0"/><stop offset="80%" stop-color="#f0c8a0"/></radialGradient>
+              <radialGradient id="hJG2"><stop offset="0%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#f59e0b"/></radialGradient>
+            </defs>
+            <g transform="translate(10,10) scale(0.6)">
+              <path d="M82,74 C82,68 115,64 150,64 C185,64 218,68 218,74 L220,150 L218,242 C216,258 196,264 150,264 C104,264 84,258 82,242 L80,150 Z" fill="url(#hSG2)" stroke="#c4956e" stroke-width="1.2"/>
+              <path d="M138,52 Q150,58 162,52 L162,66 Q150,68 138,66 Z" fill="url(#hSG2)" stroke="#c4956e" stroke-width="1"/>
+              <circle cx="150" cy="54" r="4.5" fill="url(#hJG2)" stroke="#d97706" stroke-width="1.3"/>
+              <g><ellipse cx="150" cy="28" rx="22" ry="26" fill="url(#hHG2)" stroke="#c4956e" stroke-width="1.2"/><path d="M128,18 C128,6 172,6 172,18 L172,28 C172,22 128,22 128,28 Z" fill="#4a2c1a" opacity="0.5"/></g>
+              <g><ellipse cx="82" cy="76" rx="8" ry="6" fill="url(#hJG2)" stroke="#d97706" stroke-width="1.3"/><path d="M78,82 C68,96 60,122 56,148 L48,148 C54,118 64,92 76,78 Z" fill="url(#hSG2)" stroke="#c4956e" stroke-width="1.1"/><path d="M50,156 L46,222 L38,222 L44,156 Z" fill="url(#hSG2)" stroke="#c4956e" stroke-width="1.1"/></g>
+              <g><ellipse cx="218" cy="76" rx="8" ry="6" fill="url(#hJG2)" stroke="#d97706" stroke-width="1.3"/><path d="M222,82 C232,96 240,122 244,148 L252,148 C246,118 236,92 224,78 Z" fill="url(#hSG2)" stroke="#c4956e" stroke-width="1.1"/><path d="M250,156 L254,222 L262,222 L256,156 Z" fill="url(#hSG2)" stroke="#c4956e" stroke-width="1.1"/></g>
+              <path d="M118,266 C116,290 114,320 113,350 L112,370 L140,370 L139,350 C138,320 138,290 140,266 Z" fill="url(#hSG2)" stroke="#c4956e" stroke-width="1.1"/>
+              <path d="M160,266 C162,290 162,320 161,350 L160,370 L188,370 L187,350 C186,320 184,290 182,266 Z" fill="url(#hSG2)" stroke="#c4956e" stroke-width="1.1"/>
+              <!-- ランドマーク：ほぼ均等 -->
+              <line x1="78" y1="78" x2="222" y2="78" stroke="#22c55e" stroke-width="2.5" opacity="0.9"/>
+              <circle cx="78" cy="78" r="6" fill="#22c55e" stroke="white" stroke-width="2"/><circle cx="222" cy="78" r="6" fill="#22c55e" stroke="white" stroke-width="2"/>
+              <line x1="106" y1="155" x2="194" y2="155" stroke="#22c55e" stroke-width="2.5" opacity="0.9"/>
+              <circle cx="106" cy="155" r="6" fill="#22c55e" stroke="white" stroke-width="2"/><circle cx="194" cy="155" r="6" fill="#22c55e" stroke="white" stroke-width="2"/>
+              <line x1="102" y1="232" x2="198" y2="232" stroke="#22c55e" stroke-width="2.5" opacity="0.8"/>
+              <circle cx="102" cy="232" r="6" fill="#22c55e" stroke="white" stroke-width="2"/><circle cx="198" cy="232" r="6" fill="#22c55e" stroke="white" stroke-width="2"/>
+            </g>
+            <rect x="10" y="295" rx="6" width="180" height="34" fill="rgba(34,197,94,0.15)" stroke="rgba(34,197,94,0.3)" stroke-width="1"/>
+            <text x="100" y="310" text-anchor="middle" font-size="9" fill="#86efac" font-weight="600">ずれ箇所: 1/9</text>
+            <text x="100" y="323" text-anchor="middle" font-size="9" fill="#86efac" font-weight="600">NRS痛みレベル: 2/10</text>
+          </svg>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -1200,10 +1279,23 @@ img {
       なぜ、このアプリを作ったのか
     </h2>
     <div style="max-width:680px;margin:0 auto;">
+      <!-- 実績数字 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+        <div style="background:linear-gradient(135deg,#0f172a,#1e3a5f);border-radius:12px;padding:24px 16px;text-align:center;">
+          <div style="font-size:36px;font-weight:800;color:#60a5fa;line-height:1;">424<span style="font-size:16px;font-weight:400;color:#94a3b8;">万円</span></div>
+          <div style="font-size:12px;color:#94a3b8;margin-top:6px;">一人治療院の月商最高記録</div>
+        </div>
+        <div style="background:linear-gradient(135deg,#0f172a,#1e3a5f);border-radius:12px;padding:24px 16px;text-align:center;">
+          <div style="font-size:36px;font-weight:800;color:#22c55e;line-height:1;">200<span style="font-size:16px;font-weight:400;color:#94a3b8;">万円</span></div>
+          <div style="font-size:12px;color:#94a3b8;margin-top:6px;">週4日稼働で安定売上</div>
+        </div>
+      </div>
       <div style="background:#f0f9ff;border:2px solid #bae6fd;border-radius:16px;padding:32px;margin-bottom:24px;">
         <p style="font-size:15px;color:#0369a1;font-weight:700;margin-bottom:12px;">大口神経整体院 院長 / 開発者</p>
         <p style="font-size:22px;font-weight:800;color:#1a1a2e;margin-bottom:16px;">大口 陽平</p>
         <p style="font-size:14px;color:#475569;line-height:2;">
+          重症専門の一人治療院として、この検査を武器に月商424万円を達成しました。<br>
+          現在は週4日稼働で月200万円を安定して出しています。<br><br>
           神経整体・構造医学・東洋医学・仙腸関節療法など、さまざまな治療法を学んできました。<br>
           その中で感じたのは、治療家のほとんどは「感覚系」で治療しているということ。<br>
           感覚系の治療で良くなっても、患者さんからすると<strong>「なぜ良くなったのか」がわからない</strong>。
@@ -2153,7 +2245,7 @@ img {
 
     <div class="pricing-deadline">
       <p>先着5名限定 / 2026年4月7日(月)締切</p>
-      <p class="sub">モニター枠が埋まり次第、通常価格に切り替わります。</p>
+      <p class="sub">モニター終了後は9,800円/月に値上げ予定。今なら<strong style="color:#dc2626;">月5,820円お得</strong>です。</p>
     </div>
 
     <div class="pricing-cards">
@@ -2187,6 +2279,11 @@ img {
       LINEでモニター申し込み
       <span class="cta-btn-sub">先着5名 残りわずか</span>
     </a>
+    <div style="margin-top:16px;">
+      <a href="https://kensa-sheet-app.vercel.app" target="_blank" style="display:inline-block;border:2px solid #2563eb;color:#2563eb;font-size:15px;font-weight:600;padding:12px 32px;border-radius:8px;transition:background 0.2s;">
+        まずはデモを触ってみる
+      </a>
+    </div>
 
     <!-- Stripe決済フォーム -->
     <div class="stripe-checkout-section">
@@ -2249,13 +2346,18 @@ img {
 <!-- CTA -->
 <section class="cta-section">
   <div class="container">
-    <h2>まずはLINEからお問い合わせください</h2>
-    <p>モニター枠は先着5名限定。4月7日(月)で締め切ります。</p>
+    <h2>この検査で、あなたの院も変わる</h2>
+    <p>開発者自身が月商424万円を出した検査システム。モニター枠は先着5名限定。</p>
     <a href="https://lin.ee/xaCpuaj" class="cta-btn">
       LINEで申し込む
-      <span class="cta-btn-sub">モニター限定 3,980円/月</span>
+      <span class="cta-btn-sub">モニター限定 3,980円/月（通常9,800円）</span>
     </a>
-    <p class="cta-deadline">申し込み締切：2026年4月7日(月)</p>
+    <div style="margin-top:16px;">
+      <a href="https://kensa-sheet-app.vercel.app" target="_blank" style="display:inline-block;border:2px solid rgba(255,255,255,0.5);color:#fff;font-size:15px;font-weight:600;padding:12px 32px;border-radius:8px;">
+        デモを触ってみる
+      </a>
+    </div>
+    <p class="cta-deadline">申し込み締切：2026年4月7日(月) / 通常価格9,800円に値上げ予定</p>
   </div>
 </section>
 
