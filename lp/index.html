@@ -809,6 +809,179 @@ img {
 .stripe-or::before { left: 0; }
 .stripe-or::after { right: 0; }
 
+/* ========== ポジショニング ========== */
+.positioning-section {
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  color: #fff;
+  text-align: center;
+}
+
+.positioning-section .section-title { color: #fff; }
+.positioning-section .section-title span { color: rgba(255,255,255,0.7); }
+
+.positioning-box {
+  background: rgba(255,255,255,0.12);
+  border: 2px solid rgba(255,255,255,0.25);
+  border-radius: 16px;
+  padding: 32px 40px;
+  max-width: 720px;
+  margin: 0 auto 32px;
+  font-size: 16px;
+  line-height: 2;
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  max-width: 800px;
+  margin: 0 auto 32px;
+}
+
+.cat-card {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 12px;
+  padding: 24px 16px;
+  text-align: center;
+}
+
+.cat-card .cat-label {
+  font-size: 12px;
+  opacity: 0.7;
+  margin-bottom: 6px;
+}
+
+.cat-card h4 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.cat-card .cat-price {
+  font-size: 18px;
+  font-weight: 800;
+  color: #fbbf24;
+  margin-bottom: 6px;
+}
+
+.cat-card p {
+  font-size: 12px;
+  opacity: 0.8;
+  line-height: 1.6;
+}
+
+/* ========== 料金比較テーブル ========== */
+.compare-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  margin: 0 auto;
+  max-width: 800px;
+}
+
+.compare-table th {
+  background: #2563eb;
+  color: #fff;
+  padding: 14px 16px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.compare-table td {
+  padding: 14px 16px;
+  font-size: 13px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #334155;
+}
+
+.compare-table tr:nth-child(even) td { background: #f8fafc; }
+.compare-table tr:last-child td { border-bottom: none; }
+
+.compare-table tr.highlight td {
+  background: #eff6ff;
+  font-weight: 700;
+  color: #2563eb;
+  font-size: 14px;
+}
+
+/* ========== ワークフロー ========== */
+.workflow-steps {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 800px;
+  margin: 0 auto;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.workflow-step {
+  flex: 1;
+  min-width: 120px;
+  max-width: 160px;
+  text-align: center;
+}
+
+.workflow-step .step-circle {
+  width: 48px;
+  height: 48px;
+  background: #2563eb;
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 800;
+  margin: 0 auto 12px;
+}
+
+.workflow-step h4 {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.workflow-step p {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.workflow-step img {
+  width: 100%;
+  border-radius: 8px;
+  margin-top: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.workflow-arrow {
+  display: flex;
+  align-items: center;
+  padding-top: 12px;
+  color: #2563eb;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.workflow-note {
+  text-align: center;
+  margin-top: 32px;
+  padding: 16px 24px;
+  background: #eff6ff;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e40af;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 /* ========== FAQ ========== */
 .faq {
   background: #f8fafc;
@@ -950,6 +1123,29 @@ img {
     grid-template-columns: repeat(2, 1fr);
   }
 
+  .category-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .workflow-steps {
+    gap: 4px;
+  }
+
+  .workflow-step {
+    min-width: 80px;
+  }
+
+  .workflow-arrow {
+    font-size: 14px;
+  }
+
+  .compare-table th,
+  .compare-table td {
+    padding: 10px 8px;
+    font-size: 11px;
+  }
+
   .cta-section h2 {
     font-size: 22px;
   }
@@ -1046,6 +1242,41 @@ img {
   </div>
 </section>
 
+<!-- ポジショニング -->
+<section class="section positioning-section">
+  <div class="container">
+    <h2 class="section-title">
+      <span>POSITIONING</span>
+      「第4のカテゴリ」という新しい立ち位置
+    </h2>
+    <div class="category-grid">
+      <div class="cat-card">
+        <div class="cat-label">カテゴリ 1</div>
+        <h4>AI姿勢分析アプリ</h4>
+        <div class="cat-price">月1〜3万円</div>
+        <p>シセイカルテ、Sportip Proなど。カメラ撮影型で施術者の検査手技は記録できない。</p>
+      </div>
+      <div class="cat-card">
+        <div class="cat-label">カテゴリ 2</div>
+        <h4>電子カルテシステム</h4>
+        <div class="cat-price">月8,000〜15,000円</div>
+        <p>RIPCLE、ほねぺんなど。汎用カルテで検査に特化した機能がない。</p>
+      </div>
+      <div class="cat-card">
+        <div class="cat-label">カテゴリ 3</div>
+        <h4>紙の検査シート</h4>
+        <div class="cat-price">0円</div>
+        <p>データ蓄積・比較・共有が不可能。過去データとの比較は手作業。</p>
+      </div>
+    </div>
+    <div class="positioning-box">
+      カメラ撮影でもない、汎用カルテでもない、紙でもない。<br>
+      施術者が実際に触れて確認した左右差・ランドマークの変位を<br>
+      段階的に記録し、AIが原因を特定する<strong>新しい検査ツール</strong>。
+    </div>
+  </div>
+</section>
+
 <!-- 機能紹介 -->
 <section class="section" style="background:#f8fafc;">
   <div class="container">
@@ -1117,6 +1348,55 @@ img {
       </div>
       <div class="demo-slideshow-caption" id="slideCaption">Step1: 患者情報 - 主訴・痛みレベル(NRS)を入力</div>
       <div class="demo-slideshow-nav" id="slideNav"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ワークフロー -->
+<section class="section" style="background:#f8fafc;">
+  <div class="container">
+    <h2 class="section-title">
+      <span>WORKFLOW</span>
+      最短5分で検査からPDF出力まで完了
+    </h2>
+    <div class="workflow-steps">
+      <div class="workflow-step">
+        <div class="step-circle">1</div>
+        <h4>患者情報入力</h4>
+        <p>氏名・年齢・主訴・NRS</p>
+        <img src="images/patient-info.png" alt="患者情報入力画面" loading="lazy">
+      </div>
+      <div class="workflow-arrow">→</div>
+      <div class="workflow-step">
+        <div class="step-circle">2</div>
+        <h4>3段階検査</h4>
+        <p>ワンタップで記録</p>
+        <img src="images/standing-exam.png" alt="立位検査画面" loading="lazy">
+      </div>
+      <div class="workflow-arrow">→</div>
+      <div class="workflow-step">
+        <div class="step-circle">3</div>
+        <h4>AI診断結果</h4>
+        <p>原因部位を自動特定</p>
+        <img src="images/diagnosis-result.png" alt="診断結果画面" loading="lazy">
+      </div>
+      <div class="workflow-arrow">→</div>
+      <div class="workflow-step">
+        <div class="step-circle">4</div>
+        <h4>セルフケア提案</h4>
+        <p>AIが自動生成</p>
+        <img src="images/selfcare.png" alt="セルフケア提案画面" loading="lazy">
+      </div>
+      <div class="workflow-arrow">→</div>
+      <div class="workflow-step">
+        <div class="step-circle">5</div>
+        <h4>PDF出力</h4>
+        <p>患者に資料を渡す</p>
+        <img src="images/pdf-output.png" alt="PDF出力画面" loading="lazy">
+      </div>
+    </div>
+    <div class="workflow-note">
+      AI姿勢分析はカメラ任せ。このアプリは「施術者の手で確認した結果」をデジタル化します。
     </div>
   </div>
 </section>
@@ -1456,12 +1736,28 @@ img {
     </h2>
     <div class="gallery-grid">
       <div class="gallery-item">
-        <img src="images/standing-exam.png" alt="立位検査画面 - 3つのランドマークを左右評価" loading="lazy">
-        <div class="gallery-label">検査入力画面</div>
+        <img src="images/dashboard.png" alt="ダッシュボード - 検査数・患者数・月別推移" loading="lazy">
+        <div class="gallery-label">ダッシュボード</div>
+      </div>
+      <div class="gallery-item">
+        <img src="images/patient-info.png" alt="患者情報 - 主訴・痛みレベル(NRS)入力" loading="lazy">
+        <div class="gallery-label">患者情報入力</div>
+      </div>
+      <div class="gallery-item">
+        <img src="images/standing-exam.png" alt="立位検査 - 3つのランドマークを左右評価" loading="lazy">
+        <div class="gallery-label">検査入力（立位）</div>
       </div>
       <div class="gallery-item">
         <img src="images/diagnosis-result.png" alt="診断結果 - 原因部位と歪みパターンを自動判定" loading="lazy">
-        <div class="gallery-label">診断結果</div>
+        <div class="gallery-label">AI診断結果</div>
+      </div>
+      <div class="gallery-item">
+        <img src="images/selfcare.png" alt="セルフケア提案 - AIが運動メニューを自動生成" loading="lazy">
+        <div class="gallery-label">セルフケア提案</div>
+      </div>
+      <div class="gallery-item">
+        <img src="images/pdf-output.png" alt="PDF出力 - 患者用レポート・施術提案書" loading="lazy">
+        <div class="gallery-label">PDF出力</div>
       </div>
       <div class="gallery-item">
         <img src="images/history.png" alt="検査履歴 - 患者別の検査記録を時系列で管理" loading="lazy">
@@ -1472,6 +1768,24 @@ img {
         <div class="gallery-label">患者一覧</div>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- 料金比較 -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-title">
+      <span>COMPARE</span>
+      他サービスとの料金比較
+    </h2>
+    <table class="compare-table">
+      <tr><th>サービス</th><th>月額</th><th>できること</th></tr>
+      <tr><td>シセイカルテ（AI姿勢分析）</td><td>推定10,000〜30,000円</td><td>カメラ撮影型。施術者の検査手技は記録不可</td></tr>
+      <tr><td>Sportip Pro（AI姿勢解析）</td><td>推定15,000〜30,000円</td><td>姿勢解析+予約+カルテ統合。高機能だが高額</td></tr>
+      <tr><td>RIPCLE（電子カルテ）</td><td>8,800円〜</td><td>汎用カルテ。検査特化の機能なし</td></tr>
+      <tr><td>紙の検査シート</td><td>0円</td><td>データ蓄積・比較・共有が不可能</td></tr>
+      <tr class="highlight"><td>検査シート作成アプリ</td><td>3,980円（モニター）</td><td>段階的原因特定 + PDF出力 + カルテ + NRS記録 + クラウド</td></tr>
+    </table>
   </div>
 </section>
 
