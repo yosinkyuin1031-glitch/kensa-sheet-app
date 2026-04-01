@@ -63,7 +63,6 @@ module.exports = async function handler(req, res) {
         owner_name: clinicName,
         email: email,
         plan: selectedPlan,
-        status: 'active',
         max_staff: limits.max_staff,
         max_exams_per_month: limits.max_exams_per_month
       })
