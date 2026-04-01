@@ -1196,10 +1196,10 @@ img {
       LINEで申し込む
       <span class="cta-btn-sub">先着5名 モニター限定 3,980円/月</span>
     </a>
-    <a href="https://lin.ee/TC4uukz" style="display:inline-block;background:transparent;border:2px solid rgba(255,255,255,0.5);color:#fff;font-size:15px;font-weight:600;padding:14px 36px;border-radius:8px;margin-left:12px;transition:background 0.2s;vertical-align:middle;">
-      無料デモを試す
-      <span style="display:block;font-size:11px;font-weight:400;opacity:0.7;margin-top:2px;">LINEでデモアカウント発行</span>
-    </a>
+    <button onclick="tryDemo()" style="display:inline-block;background:transparent;border:2px solid rgba(255,255,255,0.5);color:#fff;font-size:15px;font-weight:600;padding:14px 36px;border-radius:8px;margin-left:12px;transition:background 0.2s;vertical-align:middle;cursor:pointer;font-family:inherit;">
+      無料でデモを試す
+      <span style="display:block;font-size:11px;font-weight:400;opacity:0.7;margin-top:2px;">アカウント登録不要</span>
+    </button>
     <!-- ヒーロー：ビフォーアフター人体図 -->
     <div class="hero-screenshot" style="max-width:600px;">
       <div style="display:flex;align-items:center;gap:8px;justify-content:center;">
@@ -2284,10 +2284,10 @@ img {
       <span class="cta-btn-sub">先着5名 残りわずか</span>
     </a>
     <div style="margin-top:16px;">
-      <a href="https://lin.ee/TC4uukz" style="display:inline-block;border:2px solid #2563eb;color:#2563eb;font-size:15px;font-weight:600;padding:12px 32px;border-radius:8px;transition:background 0.2s;">
-        まずは無料デモを試す
-        <span style="display:block;font-size:11px;font-weight:400;color:#64748b;">LINEでデモアカウントを発行します</span>
-      </a>
+      <button onclick="tryDemo()" style="display:inline-block;border:2px solid #2563eb;color:#2563eb;font-size:15px;font-weight:600;padding:12px 32px;border-radius:8px;cursor:pointer;background:transparent;font-family:inherit;">
+        まずは無料でデモを試す
+        <span style="display:block;font-size:11px;font-weight:400;color:#64748b;">アカウント登録不要</span>
+      </button>
     </div>
 
     <!-- Stripe決済フォーム -->
@@ -2358,10 +2358,10 @@ img {
       <span class="cta-btn-sub">モニター限定 3,980円/月（通常9,800円）</span>
     </a>
     <div style="margin-top:16px;">
-      <a href="https://lin.ee/TC4uukz" style="display:inline-block;border:2px solid rgba(255,255,255,0.5);color:#fff;font-size:15px;font-weight:600;padding:12px 32px;border-radius:8px;">
-        無料デモを試す
-        <span style="display:block;font-size:11px;font-weight:400;opacity:0.7;">LINEでデモアカウント発行</span>
-      </a>
+      <button onclick="tryDemo()" style="display:inline-block;border:2px solid rgba(255,255,255,0.5);color:#fff;font-size:15px;font-weight:600;padding:12px 32px;border-radius:8px;cursor:pointer;background:transparent;font-family:inherit;">
+        無料でデモを試す
+        <span style="display:block;font-size:11px;font-weight:400;opacity:0.7;">アカウント登録不要</span>
+      </button>
     </div>
     <p class="cta-deadline">申し込み締切：2026年4月7日(月) / 通常価格9,800円に値上げ予定</p>
   </div>
@@ -2483,6 +2483,56 @@ async function handleStripeCheckout() {
     alert('通信エラーが発生しました。LINEからお申し込みください。');
     btn.disabled = false;
     btn.textContent = '月額 3,980円で申し込む';
+  }
+}
+
+// ===== デモログイン =====
+let _demoSupabase = null;
+async function _getDemoClient() {
+  if (_demoSupabase) return _demoSupabase;
+  // Supabase JS CDN読み込み
+  if (!window.supabase) {
+    await new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+      s.onload = resolve;
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+  let url = 'https://vzkfkazjylrkspqrnhnx.supabase.co';
+  let key = 'sb_publishable_H1Ch2D2XIuSQMzNL-ns8zg_gAqrx7wL';
+  try {
+    const r = await fetch('/api/config');
+    const c = await r.json();
+    if (c.supabaseUrl) url = c.supabaseUrl.trim();
+    if (c.supabaseAnonKey) key = c.supabaseAnonKey.trim();
+  } catch(e) {}
+  _demoSupabase = window.supabase.createClient(url, key);
+  return _demoSupabase;
+}
+
+async function tryDemo() {
+  const btn = event.currentTarget;
+  const origHTML = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span style="opacity:0.7;">ログイン中...</span>';
+
+  try {
+    const client = await _getDemoClient();
+    const { data, error } = await client.auth.signInWithPassword({
+      email: 'demo@kensa-app.com',
+      password: 'demo1234'
+    });
+
+    if (error) throw error;
+
+    // アプリに遷移（セッションはSupabaseが自動保存済み）
+    window.location.href = '/';
+  } catch(e) {
+    alert('デモアカウントにログインできませんでした。LINEからお問い合わせください。');
+    btn.disabled = false;
+    btn.innerHTML = origHTML;
   }
 }
 </script>
