@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>導入ガイド一覧 | ClinicDX</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+      background: #14252A;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    .header {
+      text-align: center;
+      padding: 48px 20px 32px;
+    }
+    .header h1 {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .header h1 span { color: #f59e0b; }
+    .header p {
+      font-size: 15px;
+      opacity: 0.75;
+      max-width: 480px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    .cards {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 20px 40px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      width: 100%;
+    }
+    @media (min-width: 560px) {
+      .cards { grid-template-columns: 1fr 1fr; }
+    }
+
+    .card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 28px 24px;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: #f59e0b;
+    }
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      background: rgba(245,158,11,0.15);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin-bottom: 16px;
+    }
+    .card h2 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .card p {
+      font-size: 13px;
+      opacity: 0.65;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    .card .btn {
+      display: inline-block;
+      background: #f59e0b;
+      color: #14252A;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 10px 24px;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+    .card .btn:hover { background: #d97706; }
+
+    .footer {
+      margin-top: auto;
+      text-align: center;
+      padding: 32px 20px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .footer p {
+      font-size: 13px;
+      opacity: 0.5;
+      margin-bottom: 8px;
+      line-height: 1.7;
+    }
+    .footer a {
+      color: #f59e0b;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1><span>ClinicDX</span> 導入ガイド</h1>
+    <p>ご購入いただきありがとうございます。<br>ご利用のアプリのガイドをご確認ください。</p>
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card-icon">🗺️</div>
+      <h2>カラダマップ 導入ガイド</h2>
+      <p>患者管理・検査記録・レポート機能の使い方</p>
+      <a href="/docs/%E3%82%AB%E3%83%A9%E3%83%80%E3%83%9E%E3%83%83%E3%83%97_%E3%82%AA%E3%83%B3%E3%83%9C%E3%83%BC%E3%83%87%E3%82%A3%E3%83%B3%E3%82%B0%E3%82%AC%E3%82%A4%E3%83%89.pdf" class="btn" target="_blank">PDFを見る</a>
+    </div>
+
+    <div class="card">
+      <div class="card-icon">📈</div>
+      <h2>MEO勝ち上げ君 導入ガイド</h2>
+      <p>Google連携・AI投稿・MEO順位管理の使い方</p>
+      <a href="/docs/MEO%E5%8B%9D%E3%81%A1%E4%B8%8A%E3%81%92%E5%90%9B_%E3%82%AA%E3%83%B3%E3%83%9C%E3%83%BC%E3%83%87%E3%82%A3%E3%83%B3%E3%82%B0%E3%82%AC%E3%82%A4%E3%83%89.pdf" class="btn" target="_blank">PDFを見る</a>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>ご不明な点がございましたらお気軽にお問い合わせください。</p>
+    <p><a href="mailto:yosinkyuin1031@gmail.com">yosinkyuin1031@gmail.com</a></p>
+    <p style="margin-top: 16px;">&copy; 2026 大口神経整体院</p>
+  </div>
+
+</body>
+</html>
