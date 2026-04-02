@@ -172,18 +172,6 @@
       }
     });
 
-    // デモモード: ?demo=true でログイン画面スキップ
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('demo') === 'true') {
-      try {
-        await SupabaseAuth.login('demo@kensa-app.com', 'demo1234');
-        showMainApp();
-        return;
-      } catch(e) {
-        console.error('デモ自動ログインエラー:', e);
-      }
-    }
-
     // セッション確認
     const session = await SupabaseAuth.getSession();
     if (session) {
