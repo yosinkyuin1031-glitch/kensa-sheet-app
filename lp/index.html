@@ -1889,53 +1889,8 @@ async function handleStripeCheckout() {
 }
 
 // ===== デモログイン =====
-let _demoSupabase = null;
-async function _getDemoClient() {
-  if (_demoSupabase) return _demoSupabase;
-  // Supabase JS CDN読み込み
-  if (!window.supabase) {
-    await new Promise((resolve, reject) => {
-      const s = document.createElement('script');
-      s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
-      s.onload = resolve;
-      s.onerror = reject;
-      document.head.appendChild(s);
-    });
-  }
-  let url = 'https://vzkfkazjylrkspqrnhnx.supabase.co';
-  let key = 'sb_publishable_H1Ch2D2XIuSQMzNL-ns8zg_gAqrx7wL';
-  try {
-    const r = await fetch('/api/config');
-    const c = await r.json();
-    if (c.supabaseUrl) url = c.supabaseUrl.trim();
-    if (c.supabaseAnonKey) key = c.supabaseAnonKey.trim();
-  } catch(e) {}
-  _demoSupabase = window.supabase.createClient(url, key);
-  return _demoSupabase;
-}
-
-async function tryDemo() {
-  const btn = event.currentTarget;
-  const origHTML = btn.innerHTML;
-  btn.disabled = true;
-  btn.innerHTML = '<span style="opacity:0.7;">ログイン中...</span>';
-
-  try {
-    const client = await _getDemoClient();
-    const { data, error } = await client.auth.signInWithPassword({
-      email: 'demo@kensa-app.com',
-      password: 'demo1234'
-    });
-
-    if (error) throw error;
-
-    // アプリに遷移（セッションはSupabaseが自動保存済み）
-    window.location.href = '/';
-  } catch(e) {
-    alert('デモアカウントにログインできませんでした。LINEからお問い合わせください。');
-    btn.disabled = false;
-    btn.innerHTML = origHTML;
-  }
+function tryDemo() {
+  window.location.href = '/?demo=true';
 }
 </script>
 

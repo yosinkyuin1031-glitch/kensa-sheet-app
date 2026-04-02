@@ -51,6 +51,55 @@
       document.getElementById('loginForm').style.display = 'block';
     });
 
+    // パスワードリセット表示
+    document.getElementById('showResetPassword').addEventListener('click', (e) => {
+      e.preventDefault();
+      document.getElementById('loginForm').style.display = 'none';
+      document.getElementById('signupForm').style.display = 'none';
+      document.getElementById('resetPasswordForm').style.display = 'block';
+      document.getElementById('resetError').style.display = 'none';
+      document.getElementById('resetSuccess').style.display = 'none';
+      document.getElementById('resetEmail').value = document.getElementById('loginEmail').value || '';
+    });
+    document.getElementById('backToLogin').addEventListener('click', (e) => {
+      e.preventDefault();
+      document.getElementById('resetPasswordForm').style.display = 'none';
+      document.getElementById('loginForm').style.display = 'block';
+    });
+
+    // パスワードリセット送信
+    document.getElementById('resetBtn').addEventListener('click', async () => {
+      const email = document.getElementById('resetEmail').value.trim();
+      const errorDiv = document.getElementById('resetError');
+      const successDiv = document.getElementById('resetSuccess');
+      errorDiv.style.display = 'none';
+      successDiv.style.display = 'none';
+
+      if (!email) {
+        errorDiv.textContent = 'メールアドレスを入力してください';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      try {
+        document.getElementById('resetBtn').disabled = true;
+        document.getElementById('resetBtn').textContent = '送信中...';
+        await SupabaseAuth.resetPassword(email);
+        successDiv.textContent = 'リセット用メールを送信しました。メールを確認してパスワードを再設定してください。';
+        successDiv.style.display = 'block';
+        document.getElementById('resetBtn').textContent = '送信完了';
+      } catch (err) {
+        errorDiv.textContent = err.message;
+        errorDiv.style.display = 'block';
+        document.getElementById('resetBtn').disabled = false;
+        document.getElementById('resetBtn').textContent = 'リセットメールを送信';
+      }
+    });
+
+    // Enterキーでリセット送信
+    document.getElementById('resetEmail').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') document.getElementById('resetBtn').click();
+    });
+
     // ログインボタン
     document.getElementById('loginBtn').addEventListener('click', async () => {
       const email = document.getElementById('loginEmail').value.trim();
@@ -122,6 +171,18 @@
         document.getElementById('authScreen').style.display = 'flex';
       }
     });
+
+    // デモモード: ?demo=true でログイン画面スキップ
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('demo') === 'true') {
+      try {
+        await SupabaseAuth.login('demo@kensa-app.com', 'demo1234');
+        showMainApp();
+        return;
+      } catch(e) {
+        console.error('デモ自動ログインエラー:', e);
+      }
+    }
 
     // セッション確認
     const session = await SupabaseAuth.getSession();
@@ -251,7 +312,7 @@
           String(now.getMonth() + 1).padStart(2, '0') +
           String(now.getDate()).padStart(2, '0');
         a.href = url;
-        a.download = `検査アプリ_バックアップ_${dateStr}.json`;
+        a.download = `カラダマップ_バックアップ_${dateStr}.json`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -278,7 +339,7 @@
 
           // バリデーション
           if (!imported || !imported.appName || (imported.appName !== 'KensaApp' && imported.appName !== 'BodyCheckPro') || !Array.isArray(imported.data)) {
-            alert('このファイルは検査アプリのバックアップデータではありません');
+            alert('このファイルはカラダマップのバックアップデータではありません');
             return;
           }
 
@@ -836,17 +897,21 @@
     });
   }
 
-  // ===== NRS痛みスケール =====
+  // ===== 痛みスライダー =====
   function setupNRSButtons() {
-    const container = document.getElementById('nrsScale');
-    if (!container) return;
-    container.querySelectorAll('.nrs-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        container.querySelectorAll('.nrs-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        painLevel = parseInt(btn.dataset.nrs);
-      });
-    });
+    const slider = document.getElementById('painSlider');
+    const valueDisplay = document.getElementById('painValue');
+    if (!slider || !valueDisplay) return;
+    function updateSlider() {
+      const val = parseInt(slider.value);
+      painLevel = val;
+      valueDisplay.textContent = val;
+      const pct = (val / 10) * 100;
+      slider.style.background = `linear-gradient(to right, #4f46e5 0%, #4f46e5 ${pct}%, #e5e7eb ${pct}%, #e5e7eb 100%)`;
+      valueDisplay.style.color = val <= 3 ? '#4f46e5' : val <= 6 ? '#f59e0b' : '#ef4444';
+    }
+    slider.addEventListener('input', updateSlider);
+    updateSlider();
   }
 
   // ===== 主訴テキスト入力 =====
@@ -2936,7 +3001,10 @@
     medicalHistory = '';
 
     document.querySelectorAll('.landmark-btn').forEach(btn => btn.classList.remove('selected'));
-    document.querySelectorAll('.nrs-btn').forEach(btn => btn.classList.remove('active'));
+    const painSliderEl = document.getElementById('painSlider');
+    const painValueEl = document.getElementById('painValue');
+    if (painSliderEl) { painSliderEl.value = 0; painSliderEl.style.background = 'linear-gradient(to right, #4f46e5 0%, #e5e7eb 0%)'; }
+    if (painValueEl) { painValueEl.textContent = '0'; painValueEl.style.color = '#4f46e5'; }
     const chiefInput = document.getElementById('chiefComplaintText');
     if (chiefInput) chiefInput.value = '';
     document.getElementById('patientName').value = '';
@@ -3100,13 +3168,18 @@
       }
     }
 
-    // NRSボタンの復元
+    // 痛みスライダーの復元
     if (entry.painLevel != null) {
-      const nrsContainer = document.getElementById('nrsScale');
-      if (nrsContainer) {
-        nrsContainer.querySelectorAll('.nrs-btn').forEach(btn => {
-          btn.classList.toggle('active', parseInt(btn.dataset.nrs) === entry.painLevel);
-        });
+      const painSliderEl = document.getElementById('painSlider');
+      const painValueEl = document.getElementById('painValue');
+      if (painSliderEl) {
+        painSliderEl.value = entry.painLevel;
+        const pct = (entry.painLevel / 10) * 100;
+        painSliderEl.style.background = `linear-gradient(to right, #4f46e5 0%, #4f46e5 ${pct}%, #e5e7eb ${pct}%, #e5e7eb 100%)`;
+      }
+      if (painValueEl) {
+        painValueEl.textContent = entry.painLevel;
+        painValueEl.style.color = entry.painLevel <= 3 ? '#4f46e5' : entry.painLevel <= 6 ? '#f59e0b' : '#ef4444';
       }
     }
 
