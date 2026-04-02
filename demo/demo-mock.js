@@ -1,4 +1,8 @@
-// ===== デモ用モック: Supabase不要、localStorage完結 =====
+// ===== デモ用モック: Supabase不要、セッション限定 =====
+// データは保存されません（ページを閉じるとリセット）
+
+// 起動時にデモデータをクリア
+localStorage.removeItem('karadamap_demo_data');
 
 // SupabaseAuth モック
 const SupabaseAuth = {
@@ -73,41 +77,9 @@ const Storage = {
     return null;
   },
 
-  async save(examData, diagnosisResult, patientName, memo, detailData, contractionResult, weightBalance, patientId, painLevel, chiefComplaints, extraFields) {
-    if (!patientId) {
-      patientId = await this.findPatientIdByName(patientName || '名前未入力');
-      if (!patientId) patientId = crypto.randomUUID();
-    }
-
-    const causeInfo = InspectionLogic.causeLabels[diagnosisResult.primaryCause] || {};
-    const entry = {
-      id: crypto.randomUUID(),
-      date: new Date().toISOString(),
-      patientId,
-      patientName: patientName || '名前未入力',
-      memo: memo || '',
-      examData,
-      diagnosisResult,
-      detailData: detailData || null,
-      contractionResult: contractionResult || null,
-      weightBalance: weightBalance || null,
-      painLevel: painLevel != null ? painLevel : null,
-      chiefComplaints: chiefComplaints || [],
-      summary: `${causeInfo.icon || ''} ${causeInfo.label || ''}`.trim()
-    };
-    if (extraFields) {
-      entry.patientAge = extraFields.age;
-      entry.patientGender = extraFields.gender;
-      entry.patientOccupation = extraFields.occupation;
-      entry.visitType = extraFields.visitType;
-      entry.medicalHistory = extraFields.medicalHistory;
-      entry.symptomDetail = extraFields.symptomDetail;
-    }
-
-    const all = this._loadAll();
-    all.unshift(entry);
-    this._saveAll(all);
-    return true;
+  async save() {
+    alert('デモ版ではデータの保存はできません。\n製品版では患者カルテとして保存・管理が可能です。');
+    return false;
   },
 
   async delete(id) {
