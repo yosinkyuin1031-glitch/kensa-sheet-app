@@ -330,12 +330,45 @@
   <div id="printContainer" class="print-container"></div>
 
   <!-- デモ用モック（Supabase不要） -->
-  <script src="demo-mock.js?v=20260402"></script>
+  <script src="demo-mock.js?v=20260403"></script>
   <!-- 本体ロジック（親ディレクトリから読み込み） -->
-  <script src="../js/inspection.js?v=20260402"></script>
-  <script src="../js/bodyDiagram.js?v=20260402"></script>
-  <script src="../js/selfcare.js?v=20260402"></script>
-  <script src="../js/pdf.js?v=20260402"></script>
-  <script src="../js/app.js?v=20260402"></script>
+  <script src="../js/inspection.js?v=20260403"></script>
+  <script src="../js/bodyDiagram.js?v=20260403"></script>
+  <script src="../js/selfcare.js?v=20260403"></script>
+  <script src="../js/pdf.js?v=20260403"></script>
+  <script src="../js/app.js?v=20260403"></script>
+  <!-- デモ用フォールバック：万が一app.jsの初期化が失敗した場合のウィザード制御 -->
+  <script>
+  (function() {
+    // app.jsの初期化完了を3秒待って、もしウィザードが動いてなければ手動セットアップ
+    setTimeout(function() {
+      var nextBtns = document.querySelectorAll('.wizard-next');
+      var panels = document.querySelectorAll('.wizard-panel');
+      var steps = document.querySelectorAll('.wizard-step');
+      // すでにイベントがバインドされているかチェック（Step0のボタンがクリック可能か）
+      var testBtn = document.querySelector('.wizard-panel[data-panel="0"] .wizard-next');
+      if (!testBtn) return;
+      // フォールバック: ボタンに直接onclickを設定
+      var currentStep = 0;
+      function goStep(s) {
+        currentStep = s;
+        panels.forEach(function(p) { p.classList.toggle('active', parseInt(p.dataset.panel) === s); });
+        steps.forEach(function(el) {
+          var n = parseInt(el.dataset.step);
+          el.classList.toggle('active', n === s);
+          el.classList.toggle('completed', n < s);
+        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      nextBtns.forEach(function(btn) {
+        btn.onclick = function() { if (!btn.disabled) goStep(currentStep + 1); };
+      });
+      document.querySelectorAll('.wizard-prev').forEach(function(btn) {
+        btn.onclick = function() { goStep(currentStep - 1); };
+      });
+      console.log('[demo-fallback] wizard navigation initialized');
+    }, 3000);
+  })();
+  </script>
 </body>
 </html>
