@@ -502,7 +502,7 @@ const PdfExport = {
       doc.setPage(i);
       doc.setFontSize(7);
       doc.setTextColor(148, 163, 184);
-      doc.text(`検査アプリ - ${reportType} - ${i}/${pageCount}ページ`, 105, 290, { align: 'center' });
+      doc.text(`カラダマップ - ${reportType} - ${i}/${pageCount}ページ`, 105, 290, { align: 'center' });
     }
   },
 

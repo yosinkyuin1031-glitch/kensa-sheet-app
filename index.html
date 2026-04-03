@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>検査アプリ - 段階的原因特定システム</title>
-  <link rel="stylesheet" href="css/style.css?v=20260330k">
+  <title>カラダマップ - 3分で、体の"いま"を見える化</title>
+  <link rel="stylesheet" href="css/style.css?v=20260401d">
   <script>
     // Service Worker強制リセット（古いキャッシュを自動削除）
     if ('serviceWorker' in navigator) {
@@ -19,19 +19,19 @@
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="検査アプリ">
+  <meta name="apple-mobile-web-app-title" content="カラダマップ">
   <link rel="apple-touch-icon" href="icons/icon.svg">
   <meta name="theme-color" content="#2563eb">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
-  <script src="js/supabase-cdn.min.js?v=20260330k"></script>
+  <script src="js/supabase-cdn.min.js?v=20260401d"></script>
 </head>
 <body data-view="practitioner">
   <!-- ===== ログイン画面 ===== -->
   <div id="authScreen" class="auth-screen">
     <div class="auth-container">
       <div class="auth-header">
-        <h1>検査アプリ</h1>
-        <p>段階的原因特定システム</p>
+        <h1>カラダマップ</h1>
+        <p>3分で、体の"いま"を見える化</p>
       </div>
 
       <!-- ログインフォーム -->
@@ -48,6 +48,23 @@
         <div id="loginError" class="auth-error" style="display:none;"></div>
         <button type="button" id="loginBtn" class="btn btn-primary auth-btn">ログイン</button>
         <p class="auth-switch">アカウントをお持ちでない方は <a href="#" id="showSignup">新規登録</a></p>
+        <p class="auth-switch" style="margin-top:4px;"><a href="#" id="showResetPassword">パスワードをお忘れの方はこちら</a></p>
+      </div>
+
+      <!-- パスワードリセットフォーム -->
+      <div id="resetPasswordForm" class="auth-form" style="display:none;">
+        <h2>パスワードリセット</h2>
+        <p style="font-size:13px;color:#666;margin-bottom:16px;line-height:1.6;">
+          登録メールアドレスを入力してください。<br>パスワード再設定用のメールをお送りします。
+        </p>
+        <div class="auth-field">
+          <label for="resetEmail">メールアドレス</label>
+          <input type="email" id="resetEmail" placeholder="example@clinic.com" autocomplete="email">
+        </div>
+        <div id="resetError" class="auth-error" style="display:none;"></div>
+        <div id="resetSuccess" class="auth-success" style="display:none;"></div>
+        <button type="button" id="resetBtn" class="btn btn-primary auth-btn">リセットメールを送信</button>
+        <p class="auth-switch"><a href="#" id="backToLogin">← ログインに戻る</a></p>
       </div>
 
       <!-- 新規登録フォーム -->
@@ -83,8 +100,8 @@
     <div class="header-inner">
       <div class="header-top">
         <div>
-          <h1 class="app-title">検査アプリ</h1>
-          <p class="header-subtitle">段階的原因特定システム</p>
+          <h1 class="app-title">カラダマップ</h1>
+          <p class="header-subtitle">3分で、体の"いま"を見える化</p>
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
           <button type="button" id="settingsBtn" class="btn btn-sm btn-secondary" style="font-size:11px;padding:4px 8px;">設定</button>
@@ -182,25 +199,22 @@
             </div>
           </div>
           <div class="form-group">
-            <label>痛みレベル（PS）</label>
-            <p class="field-hint">現在の痛みを0〜10で選択してください</p>
-            <div class="nrs-scale" id="nrsScale">
-              <button type="button" class="nrs-btn" data-nrs="0">0</button>
-              <button type="button" class="nrs-btn" data-nrs="1">1</button>
-              <button type="button" class="nrs-btn" data-nrs="2">2</button>
-              <button type="button" class="nrs-btn" data-nrs="3">3</button>
-              <button type="button" class="nrs-btn" data-nrs="4">4</button>
-              <button type="button" class="nrs-btn" data-nrs="5">5</button>
-              <button type="button" class="nrs-btn" data-nrs="6">6</button>
-              <button type="button" class="nrs-btn" data-nrs="7">7</button>
-              <button type="button" class="nrs-btn" data-nrs="8">8</button>
-              <button type="button" class="nrs-btn" data-nrs="9">9</button>
-              <button type="button" class="nrs-btn" data-nrs="10">10</button>
-            </div>
-            <div class="nrs-labels">
-              <span>痛みなし</span>
-              <span>中程度</span>
-              <span>最大の痛み</span>
+            <label>痛みの強さ</label>
+            <div class="pain-slider-container" id="nrsScale">
+              <div class="pain-slider-row">
+                <span class="pain-emoji">&#128522;</span>
+                <input type="range" id="painSlider" min="0" max="10" step="1" value="0" class="pain-slider">
+                <span class="pain-emoji">&#128547;</span>
+              </div>
+              <div class="pain-value-display">
+                <span class="pain-value" id="painValue">0</span>
+                <span class="pain-max">/ 10</span>
+              </div>
+              <div class="pain-labels">
+                <span>軽い</span>
+                <span>日常に支障</span>
+                <span>動けない</span>
+              </div>
             </div>
           </div>
           <div class="form-group">
@@ -542,7 +556,7 @@
     </section>
   </main>
 
-  <footer class="app-footer"><p>検査アプリ v2.0</p></footer>
+  <footer class="app-footer"><p>カラダマップ v2.0</p></footer>
 
   <!-- カスタム設定モーダル -->
   <div id="customSettingsModal" class="custom-modal-overlay" style="display:none;">
@@ -575,7 +589,7 @@
     <div class="tutorial-card">
       <div class="tutorial-step" data-tutorial-step="0">
         <div class="tutorial-icon">👋</div>
-        <h2>検査アプリへようこそ</h2>
+        <h2>カラダマップへようこそ</h2>
         <p>このアプリは<strong>3ステップの検査</strong>で身体の歪みの原因を特定します。</p>
         <ul class="tutorial-list">
           <li>立位・座位・上半身の3段階で比較</li>
@@ -624,13 +638,13 @@
   <!-- 印刷用コンテナ（通常は非表示、印刷時のみ表示） -->
   <div id="printContainer" class="print-container"></div>
 
-  <script src="js/supabase.js?v=20260330k"></script>
-  <script src="js/inspection.js?v=20260330k"></script>
-  <script src="js/bodyDiagram.js?v=20260330k"></script>
-  <script src="js/selfcare.js?v=20260330k"></script>
-  <script src="js/storage.js?v=20260330k"></script>
-  <script src="js/pdf.js?v=20260330k"></script>
-  <script src="js/app.js?v=20260330k"></script>
+  <script src="js/supabase.js?v=20260401d"></script>
+  <script src="js/inspection.js?v=20260401d"></script>
+  <script src="js/bodyDiagram.js?v=20260401d"></script>
+  <script src="js/selfcare.js?v=20260401d"></script>
+  <script src="js/storage.js?v=20260401d"></script>
+  <script src="js/pdf.js?v=20260401d"></script>
+  <script src="js/app.js?v=20260401d"></script>
   <script>
     // フォールバック：app.jsでエラーが出た場合のログイン処理
     window.addEventListener('load', function() {

@@ -4,11 +4,11 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const PLAN_PRICES = {
   standard: {
     amount: 3980,
-    name: '検査シートアプリ スタンダードプラン'
+    name: 'カラダマップ スタンダードプラン'
   },
   advanced: {
     amount: 5980,
-    name: '検査シートアプリ アドバンスドプラン'
+    name: 'カラダマップ アドバンスドプラン'
   }
 };
 

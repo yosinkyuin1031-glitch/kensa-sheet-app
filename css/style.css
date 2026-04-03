@@ -40,7 +40,7 @@ body {
 .header {
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
   color: white;
-  padding: 14px 16px;
+  padding: 8px 16px;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -59,7 +59,7 @@ body {
 }
 
 .app-title {
-  font-size: 1.15rem;
+  font-size: 0.95rem;
   font-weight: 700;
   letter-spacing: 0.02em;
 }
@@ -763,54 +763,71 @@ body[data-view="patient"] .patient-treatment-hint p {
   box-shadow: 0 0 0 3px var(--primary-light);
 }
 
-/* NRS痛みスケール */
-.nrs-scale {
+/* 痛みスライダー */
+.pain-slider-container {
+  margin-top: 8px;
+}
+.pain-slider-row {
   display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-  margin-bottom: 4px;
+  align-items: center;
+  gap: 12px;
 }
-.nrs-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  border: 2px solid #e2e8f0;
-  background: white;
-  font-size: 14px;
-  font-weight: 600;
-  color: #64748b;
+.pain-emoji {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+.pain-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 9999px;
+  background: linear-gradient(to right, #4f46e5 0%, #e5e7eb 0%);
+  outline: none;
   cursor: pointer;
-  transition: all 0.2s;
 }
-.nrs-btn:hover {
-  border-color: #94a3b8;
-  background: #f8fafc;
+.pain-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #4f46e5;
+  border: 3px solid white;
+  box-shadow: 0 2px 8px rgba(79,70,229,0.4);
+  cursor: pointer;
 }
-.nrs-btn.active {
-  color: white;
-  border-color: transparent;
+.pain-slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #4f46e5;
+  border: 3px solid white;
+  box-shadow: 0 2px 8px rgba(79,70,229,0.4);
+  cursor: pointer;
 }
-.nrs-btn[data-nrs="0"].active,
-.nrs-btn[data-nrs="1"].active,
-.nrs-btn[data-nrs="2"].active { background: #22c55e; }
-.nrs-btn[data-nrs="3"].active,
-.nrs-btn[data-nrs="4"].active { background: #eab308; }
-.nrs-btn[data-nrs="5"].active,
-.nrs-btn[data-nrs="6"].active { background: #f97316; }
-.nrs-btn[data-nrs="7"].active,
-.nrs-btn[data-nrs="8"].active { background: #ef4444; }
-.nrs-btn[data-nrs="9"].active,
-.nrs-btn[data-nrs="10"].active { background: #dc2626; }
-.nrs-labels {
-  position: relative;
-  height: 1.4em;
+.pain-value-display {
+  text-align: center;
+  margin-top: 12px;
+}
+.pain-value {
+  font-size: 32px;
+  font-weight: 900;
+  color: #4f46e5;
+}
+.pain-max {
+  font-size: 14px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+.pain-labels {
+  display: flex;
+  justify-content: space-between;
   font-size: 11px;
   color: #94a3b8;
-  margin-top: 2px;
+  margin-top: 8px;
+  padding: 0 4px;
 }
-.nrs-labels span:nth-child(1) { position: absolute; left: 0; }
-.nrs-labels span:nth-child(2) { position: absolute; left: 45.5%; transform: translateX(-50%); }
-.nrs-labels span:nth-child(3) { position: absolute; right: 0; }
 .field-hint {
   font-size: 12px;
   color: #94a3b8;
@@ -4049,6 +4066,16 @@ select:focus {
   border-radius: 8px;
   font-size: 0.85rem;
   margin-bottom: 12px;
+}
+
+.auth-success {
+  background: #e8f5e9;
+  color: #2e7d32;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 12px;
+  line-height: 1.5;
 }
 
 .auth-btn {

@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>よくあるご質問 | ClinicApps</title>
+  <meta name="description" content="カラダマップ・MEO勝ち上げ君の料金・契約・サポート・導入に関するよくあるご質問をまとめました。">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #14252A;
+      color: #e2e8f0;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 40px 20px 60px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      font-size: 14px;
+      color: #94a3b8;
+    }
+
+    .category {
+      margin-bottom: 36px;
+    }
+
+    .category-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #f59e0b;
+      padding: 10px 0;
+      margin-bottom: 12px;
+      border-bottom: 2px solid rgba(245, 158, 11, 0.3);
+      letter-spacing: 0.5px;
+    }
+
+    .faq-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .faq-item {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+
+    .faq-item:hover {
+      border-color: rgba(245, 158, 11, 0.3);
+    }
+
+    .faq-question {
+      width: 100%;
+      background: none;
+      border: none;
+      color: #fff;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: left;
+      padding: 16px 48px 16px 18px;
+      cursor: pointer;
+      position: relative;
+      line-height: 1.6;
+    }
+
+    .faq-question::before {
+      content: 'Q.';
+      color: #f59e0b;
+      font-weight: 800;
+      margin-right: 8px;
+    }
+
+    .faq-question::after {
+      content: '';
+      position: absolute;
+      right: 18px;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      border-right: 2px solid #94a3b8;
+      border-bottom: 2px solid #94a3b8;
+      transform: translateY(-60%) rotate(45deg);
+      transition: transform 0.25s;
+    }
+
+    .faq-item.open .faq-question::after {
+      transform: translateY(-30%) rotate(-135deg);
+    }
+
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+
+    .faq-answer-inner {
+      padding: 0 18px 16px 18px;
+      font-size: 13.5px;
+      color: #cbd5e1;
+      line-height: 1.8;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      padding-top: 14px;
+      margin-top: 0;
+    }
+
+    .faq-answer-inner::before {
+      content: 'A.';
+      color: #f59e0b;
+      font-weight: 700;
+      margin-right: 6px;
+    }
+
+    .cta-section {
+      text-align: center;
+      margin-top: 52px;
+      padding: 32px 20px;
+      background: rgba(245, 158, 11, 0.08);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      border-radius: 14px;
+    }
+
+    .cta-section p {
+      font-size: 14px;
+      color: #94a3b8;
+      margin-bottom: 18px;
+    }
+
+    .cta-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #06c755;
+      color: #fff;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 14px 32px;
+      border: none;
+      border-radius: 50px;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .cta-button:hover {
+      background: #05b04c;
+      transform: translateY(-1px);
+    }
+
+    .cta-button svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+
+    @media (max-width: 480px) {
+      .container { padding: 28px 16px 48px; }
+      .header h1 { font-size: 22px; }
+      .faq-question { font-size: 13.5px; padding: 14px 42px 14px 14px; }
+      .faq-answer-inner { font-size: 13px; padding: 0 14px 14px; padding-top: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>よくあるご質問</h1>
+      <p>お申し込み前にご確認ください</p>
+    </div>
+
+    <div class="category">
+      <div class="category-title">料金・契約について</div>
+      <div class="faq-list">
+        <div class="faq-item">
+          <button class="faq-question">料金はどうなっていますか？</button>
+          <div class="faq-answer"><div class="faq-answer-inner">カラダマップは月額3,980円（初期費用11,000円）、MEO勝ち上げ君は月額3,980円（初期費用11,000円）です。年払いの場合は10ヶ月分のお支払いで12ヶ月ご利用いただけます。</div></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">最低契約期間はありますか？</button>
+          <div class="faq-answer"><div class="faq-answer-inner">最低契約期間は6ヶ月です。6ヶ月経過後は月単位で自動更新となります。</div></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">途中解約はできますか？</button>
+          <div class="faq-answer"><div class="faq-answer-inner">最低利用期間（6ヶ月）以内の途中解約はお受けできません。残期間分の月額料金をお支払いいただきます。6ヶ月経過後は翌月末日をもって解約できます。</div></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">支払い方法は何がありますか？</button>
+          <div class="faq-answer"><div class="faq-answer-inner">クレジットカード（Visa・Mastercard・American Express・JCB）による月額自動決済です。</div></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">初期費用は必ずかかりますか？</button>
+          <div class="faq-answer"><div class="faq-answer-inner">通常は初期費用11,000円がかかります。モニター期間中にお申し込みの方は初期費用が無料になる場合があります。詳細はLINEにてお問い合わせください。</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="category">
+      <div class="category-title">サポート・解約について</div>
+      <div class="faq-list">
+        <div class="faq-item">
+          <button class="faq-question">サポートはどのように受けられますか？</button>
+          <div class="faq-answer"><div class="faq-answer-inner">LINE公式アカウントにてサポートを行っています。平日10:00〜18:00に対応しています。</div></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">解約するにはどうすればいいですか？</button>
+          <div class="faq-answer"><div class="faq-answer-inner">更新日の1ヶ月前までにLINEまたはメールにてご連絡ください。6ヶ月の最低利用期間経過後に解約可能です。</div></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">障害や不具合が発生した場合は？</button>
+          <div class="faq-answer"><div class="faq-answer-inner">LINEサポートまでご連絡ください。内容を確認の上、迅速に対応いたします。</div></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">データはどうなりますか？</button>
+          <div class="faq-answer"><div class="faq-answer-inner">解約後はデータにアクセスできなくなります。解約前に必ずバックアップをお取りください。</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="category">
+      <div class="category-title">導入・初期設定について</div>
+      <div class="faq-list">
+        <div class="faq-item">
+          <button class="faq-question">導入までどのくらい時間がかかりますか？</button>
+          <div class="faq-answer"><div class="faq-answer-inner">決済完了後、原則24時間以内にアカウントを発行しご案内メールをお送りします。</div></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">パソコンが苦手でも使えますか？</button>
+          <div class="faq-answer"><div class="faq-answer-inner">はい、使えます。直感的な操作画面を設計しており、LINEサポートで初期設定もサポートします。</div></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">スマートフォンでも使えますか？</button>
+          <div class="faq-answer"><div class="faq-answer-inner">PCブラウザでの利用を推奨していますが、スマートフォンのブラウザからもアクセス可能です。</div></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">複数のスタッフで使えますか？</button>
+          <div class="faq-answer"><div class="faq-answer-inner">現在は1院1アカウントでのご提供となっています。複数アカウントが必要な場合はご相談ください。</div></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">既存のデータを移行できますか？</button>
+          <div class="faq-answer"><div class="faq-answer-inner">現在は自動でのデータ移行には対応していません。手動での入力が必要です。</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta-section">
+      <p>解決しない場合はお気軽にご連絡ください</p>
+      <a href="https://lin.ee/182seszw" class="cta-button">
+        <svg viewBox="0 0 24 24"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+        LINEでお問い合わせ
+      </a>
+    </div>
+  </div>
+
+  <script>
+    document.querySelectorAll('.faq-question').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var item = this.parentElement;
+        var answer = item.querySelector('.faq-answer');
+        var isOpen = item.classList.contains('open');
+
+        if (isOpen) {
+          answer.style.maxHeight = '0';
+          item.classList.remove('open');
+        } else {
+          answer.style.maxHeight = answer.scrollHeight + 'px';
+          item.classList.add('open');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

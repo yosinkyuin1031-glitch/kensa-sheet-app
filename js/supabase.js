@@ -129,6 +129,16 @@ const SupabaseAuth = {
     return data;
   },
 
+  // パスワードリセット
+  async resetPassword(email) {
+    const { error } = await this.client.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/',
+    });
+    if (error) {
+      throw new Error(error.message);
+    }
+  },
+
   // ログアウト
   async logout() {
     await this.client.auth.signOut();

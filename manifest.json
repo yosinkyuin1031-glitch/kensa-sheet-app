@@ -1,7 +1,7 @@
 {
-  "name": "検査アプリ",
-  "short_name": "検査アプリ",
-  "description": "治療家向け段階的原因特定システム",
+  "name": "カラダマップ",
+  "short_name": "カラダマップ",
+  "description": "3分で、体の"いま"を見える化",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f8fafc",
