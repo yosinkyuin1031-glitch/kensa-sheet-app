@@ -102,7 +102,7 @@
   </div>
 
   <!-- ===== メインアプリ（認証後に表示） ===== -->
-  <div id="mainApp" style="display:none;">
+  <div id="mainApp">
   <!-- ヘッダー -->
   <header class="header">
     <div class="header-inner">
@@ -647,12 +647,92 @@
   <div id="printContainer" class="print-container"></div>
 
   <!-- デモ用モック（Supabase不要） -->
-  <script src="demo-mock.js?v=20260404"></script>
+  <script src="demo-mock.js?v=20260404b"></script>
   <!-- 本体ロジック（メイン版と完全に同じファイルを参照） -->
-  <script src="../js/inspection.js?v=20260404"></script>
-  <script src="../js/bodyDiagram.js?v=20260404"></script>
-  <script src="../js/selfcare.js?v=20260404"></script>
-  <script src="../js/pdf.js?v=20260404"></script>
-  <script src="../js/app.js?v=20260404"></script>
+  <script src="../js/inspection.js?v=20260404b"></script>
+  <script src="../js/bodyDiagram.js?v=20260404b"></script>
+  <script src="../js/selfcare.js?v=20260404b"></script>
+  <script src="../js/pdf.js?v=20260404b"></script>
+  <script src="../js/app.js?v=20260404b"></script>
+  <!-- デモ用：app.jsのinitAuthが失敗しても確実に動くようにする -->
+  <script>
+  (function() {
+    // app.jsのinitAuth完了を2秒待ち、mainAppが非表示のままならフォールバック初期化
+    setTimeout(function() {
+      var mainApp = document.getElementById('mainApp');
+      // mainAppが非表示なら強制表示
+      if (mainApp && (mainApp.style.display === 'none' || getComputedStyle(mainApp).display === 'none')) {
+        mainApp.style.display = 'block';
+      }
+      // authScreenを非表示
+      var auth = document.getElementById('authScreen');
+      if (auth) auth.style.display = 'none';
+
+      // ウィザードナビゲーションのフォールバック
+      var panels = document.querySelectorAll('.wizard-panel');
+      var steps = document.querySelectorAll('.wizard-step');
+      var currentStep = 0;
+
+      function goStep(s) {
+        if (s < 0 || s >= panels.length) return;
+        currentStep = s;
+        panels.forEach(function(p) { p.classList.toggle('active', parseInt(p.dataset.panel) === s); });
+        steps.forEach(function(el) {
+          var n = parseInt(el.dataset.step);
+          el.classList.toggle('active', n === s);
+          el.classList.toggle('completed', n < s);
+        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      // 次へ/戻るボタンが未バインドならバインド
+      document.querySelectorAll('.wizard-next').forEach(function(btn) {
+        btn.addEventListener('click', function() { if (!btn.disabled) goStep(currentStep + 1); });
+      });
+      document.querySelectorAll('.wizard-prev').forEach(function(btn) {
+        btn.addEventListener('click', function() { goStep(currentStep - 1); });
+      });
+
+      // ランドマークボタンのフォールバック
+      document.querySelectorAll('.landmark-input').forEach(function(group) {
+        var buttons = group.querySelectorAll('.landmark-btn');
+        buttons.forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            buttons.forEach(function(b) { b.classList.remove('selected'); });
+            btn.classList.add('selected');
+          });
+        });
+      });
+
+      // タブナビゲーションのフォールバック
+      document.querySelectorAll('.tab-btn').forEach(function(tab) {
+        tab.addEventListener('click', function() {
+          document.querySelectorAll('.tab-btn').forEach(function(t) { t.classList.remove('active'); });
+          tab.classList.add('active');
+          document.querySelectorAll('.tab-content').forEach(function(s) { s.classList.remove('active'); });
+          var target = document.getElementById(tab.dataset.tab + '-section');
+          if (target) target.classList.add('active');
+        });
+      });
+
+      // 痛みスライダーのフォールバック
+      var slider = document.getElementById('painSlider');
+      var painVal = document.getElementById('painValue');
+      if (slider && painVal) {
+        slider.addEventListener('input', function() { painVal.textContent = slider.value; });
+      }
+
+      // ログアウトボタン
+      var logoutBtn = document.getElementById('logoutBtn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', function() {
+          window.location.href = '/lp.html';
+        });
+      }
+
+      console.log('[demo-fallback] initialization complete');
+    }, 2000);
+  })();
+  </script>
 </body>
 </html>
