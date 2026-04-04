@@ -31,7 +31,7 @@
   <!-- デモバナー -->
   <div class="demo-banner">
     デモ版 - データはこの端末のみに保存されます
-    <a href="/lp.html">製品ページへ</a>
+    <a href="https://clinic-saas-lp.vercel.app/systems/kensa" target="_blank">製品ページへ</a>
   </div>
 
   <!-- ===== ログイン画面（非表示だがapp.jsがDOM参照するため残す） ===== -->
@@ -722,11 +722,21 @@
         slider.addEventListener('input', function() { painVal.textContent = slider.value; });
       }
 
-      // ログアウトボタン
+      // 人体ダイアグラムの初期化
+      if (typeof BodyDiagram !== 'undefined') {
+        try {
+          BodyDiagram.init('diagram-standing');
+          BodyDiagram.init('diagram-seated');
+          BodyDiagram.init('diagram-upperBody');
+          BodyDiagram.init('diagram-detailUnified');
+        } catch(e) { console.warn('[demo-fallback] diagram init error:', e); }
+      }
+
+      // ログアウトボタン→製品ページへ
       var logoutBtn = document.getElementById('logoutBtn');
       if (logoutBtn) {
         logoutBtn.addEventListener('click', function() {
-          window.location.href = '/lp.html';
+          window.location.href = 'https://clinic-saas-lp.vercel.app/systems/kensa';
         });
       }
 

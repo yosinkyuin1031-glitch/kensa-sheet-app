@@ -36,7 +36,7 @@ const SupabaseAuth = {
   async login() { return { user: this.currentUser }; },
   async signup() { return { user: this.currentUser }; },
   async resetPassword() {},
-  async logout() { window.location.href = '/lp.html'; },
+  async logout() { window.location.href = 'https://clinic-saas-lp.vercel.app/systems/kensa'; },
   async _loadClinicId() {},
   getClinicId() { return this.currentClinicId; },
   getUserId() { return this.currentUser.id; },
