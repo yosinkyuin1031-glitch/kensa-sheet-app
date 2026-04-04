@@ -6,7 +6,7 @@ localStorage.removeItem('karadamap_demo_data');
 
 // SupabaseAuth モック
 const SupabaseAuth = {
-  client: null,
+  client: { from: () => ({ select: () => ({ eq: () => ({ data: [], error: null }) }) }) },
   currentUser: { id: 'demo-user-001', email: 'demo@example.com', user_metadata: { display_name: 'デモユーザー' } },
   currentClinicId: 'demo-clinic-001',
 
@@ -15,7 +15,7 @@ const SupabaseAuth = {
   async login() { return { user: this.currentUser }; },
   async signup() { return { user: this.currentUser }; },
   async resetPassword() {},
-  async logout() { window.location.href = '/demo/'; },
+  async logout() { window.location.href = '/lp/'; },
   async _loadClinicId() {},
   getClinicId() { return this.currentClinicId; },
   getUserId() { return this.currentUser.id; },
@@ -210,18 +210,25 @@ const Storage = {
   }
 };
 
-// SelfcareDatabase モック
-if (typeof SelfcareDatabase !== 'undefined') {
-  SelfcareDatabase.loadCustomItems = async function() {};
-  SelfcareDatabase.saveCustomItem = async function() {};
-  SelfcareDatabase.deleteCustomItem = async function() {};
-  SelfcareDatabase.toggleCustomItem = async function() {};
-}
-
-// TreatmentProtocol モック
-if (typeof TreatmentProtocol !== 'undefined') {
-  TreatmentProtocol.loadCustomProtocols = async function() {};
-  TreatmentProtocol.saveCustomProtocol = async function() {};
-  TreatmentProtocol.deleteCustomProtocol = async function() {};
-  TreatmentProtocol.toggleCustomProtocol = async function() {};
-}
+// SelfcareDatabase / TreatmentProtocol モック
+// これらは selfcare.js / app.js より後にロードされるため、
+// スクリプト読み込み完了後に上書き
+(function mockDependencies() {
+  function applyMocks() {
+    if (typeof SelfcareDatabase !== 'undefined') {
+      SelfcareDatabase.loadCustomItems = async function() {};
+      SelfcareDatabase.saveCustomItem = async function() {};
+      SelfcareDatabase.deleteCustomItem = async function() {};
+      SelfcareDatabase.toggleCustomItem = async function() {};
+    }
+    if (typeof TreatmentProtocol !== 'undefined') {
+      TreatmentProtocol.loadCustomProtocols = async function() {};
+      TreatmentProtocol.saveCustomProtocol = async function() {};
+      TreatmentProtocol.deleteCustomProtocol = async function() {};
+      TreatmentProtocol.toggleCustomProtocol = async function() {};
+    }
+  }
+  applyMocks();
+  document.addEventListener('DOMContentLoaded', applyMocks);
+  window.addEventListener('load', applyMocks);
+})();
