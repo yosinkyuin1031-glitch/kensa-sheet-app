@@ -835,13 +835,6 @@
     document.getElementById('mainApp').style.display = 'block';
     document.getElementById('authScreen').style.display = 'none';
   });
-  // エラー表示
-  window.onerror = function(msg, src, line) {
-    document.title = 'ERR: ' + msg;
-  };
-  window.addEventListener('unhandledrejection', function(e) {
-    document.title = 'PROMISE ERR: ' + (e.reason ? (e.reason.message || String(e.reason)) : 'unknown');
-  });
   </script>
 </body>
 </html>
