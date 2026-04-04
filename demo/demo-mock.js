@@ -4,9 +4,24 @@
 // 起動時にデモデータをクリア
 localStorage.removeItem('karadamap_demo_data');
 
+// Supabaseクエリチェーンのモック（from().select().eq().order()... すべて対応）
+function _mockQueryChain() {
+  const chain = {
+    from: () => chain, select: () => chain, insert: () => chain,
+    update: () => chain, delete: () => chain, upsert: () => chain,
+    eq: () => chain, neq: () => chain, gt: () => chain, lt: () => chain,
+    gte: () => chain, lte: () => chain, like: () => chain, ilike: () => chain,
+    is: () => chain, in: () => chain, order: () => chain, limit: () => chain,
+    single: () => chain, maybeSingle: () => chain, range: () => chain,
+    then: (resolve) => resolve({ data: [], error: null }),
+    data: [], error: null
+  };
+  return chain;
+}
+
 // SupabaseAuth モック
 const SupabaseAuth = {
-  client: { from: () => ({ select: () => ({ eq: () => ({ data: [], error: null }) }) }) },
+  client: _mockQueryChain(),
   currentUser: { id: 'demo-user-001', email: 'demo@example.com', user_metadata: { display_name: 'デモユーザー' } },
   currentClinicId: 'demo-clinic-001',
 
