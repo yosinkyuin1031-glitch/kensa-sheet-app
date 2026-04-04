@@ -102,7 +102,7 @@
   </div>
 
   <!-- ===== メインアプリ（認証後に表示） ===== -->
-  <div id="mainApp" style="display:none;">
+  <div id="mainApp" style="display:block;">
   <!-- ヘッダー -->
   <header class="header">
     <div class="header-inner">
@@ -647,12 +647,23 @@
   <div id="printContainer" class="print-container"></div>
 
   <!-- デモ用モック（supabase.js + storage.js の代わり） -->
-  <script src="demo-mock.js?v=20260404c"></script>
+  <script src="demo-mock.js?v=20260404d"></script>
   <!-- 本体ロジック（メイン版と完全に同じファイル） -->
-  <script src="../js/inspection.js?v=20260404c"></script>
-  <script src="../js/bodyDiagram.js?v=20260404c"></script>
-  <script src="../js/selfcare.js?v=20260404c"></script>
-  <script src="../js/pdf.js?v=20260404c"></script>
-  <script src="../js/app.js?v=20260404c"></script>
+  <script src="../js/inspection.js?v=20260404d"></script>
+  <script src="../js/bodyDiagram.js?v=20260404d"></script>
+  <script src="../js/selfcare.js?v=20260404d"></script>
+  <script src="../js/pdf.js?v=20260404d"></script>
+  <script src="../js/app.js?v=20260404d"></script>
+  <script>
+  // デモ用：initAuthが失敗してもmainAppを表示＋エラー表示
+  window.addEventListener('load', function() {
+    var ma = document.getElementById('mainApp');
+    if (ma) ma.style.display = 'block';
+    document.getElementById('authScreen').style.display = 'none';
+  });
+  window.onerror = function(msg, src, line) {
+    console.error('DEMO ERROR:', msg, src, line);
+  };
+  </script>
 </body>
 </html>
