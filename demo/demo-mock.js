@@ -4,19 +4,25 @@
 // 起動時にデモデータをクリア
 localStorage.removeItem('karadamap_demo_data');
 
-// Supabaseクエリチェーンのモック（from().select().eq().order()... すべて対応）
+// Supabaseクエリチェーンのモック
+// from().select().eq().eq().order() 等すべてのメソッドチェーンに対応
+// awaitで { data: [], error: null } を返す
 function _mockQueryChain() {
-  const chain = {
-    from: () => chain, select: () => chain, insert: () => chain,
-    update: () => chain, delete: () => chain, upsert: () => chain,
-    eq: () => chain, neq: () => chain, gt: () => chain, lt: () => chain,
-    gte: () => chain, lte: () => chain, like: () => chain, ilike: () => chain,
-    is: () => chain, in: () => chain, order: () => chain, limit: () => chain,
-    single: () => chain, maybeSingle: () => chain, range: () => chain,
-    then: (resolve) => resolve({ data: [], error: null }),
-    data: [], error: null
+  const result = Promise.resolve({ data: [], error: null });
+  const handler = {
+    get(target, prop) {
+      // awaitされた時にPromiseとして振る舞う
+      if (prop === 'then') return result.then.bind(result);
+      if (prop === 'catch') return result.catch.bind(result);
+      if (prop === 'finally') return result.finally.bind(result);
+      // data/errorプロパティ直接アクセス
+      if (prop === 'data') return [];
+      if (prop === 'error') return null;
+      // それ以外のメソッド呼び出しは自身を返す（チェーン継続）
+      return () => new Proxy({}, handler);
+    }
   };
-  return chain;
+  return new Proxy({}, handler);
 }
 
 // SupabaseAuth モック
@@ -30,7 +36,7 @@ const SupabaseAuth = {
   async login() { return { user: this.currentUser }; },
   async signup() { return { user: this.currentUser }; },
   async resetPassword() {},
-  async logout() { window.location.href = '/lp/'; },
+  async logout() { window.location.href = '/lp.html'; },
   async _loadClinicId() {},
   getClinicId() { return this.currentClinicId; },
   getUserId() { return this.currentUser.id; },
@@ -225,9 +231,8 @@ const Storage = {
   }
 };
 
-// SelfcareDatabase / TreatmentProtocol モック
-// これらは selfcare.js / app.js より後にロードされるため、
-// スクリプト読み込み完了後に上書き
+// SelfcareDatabase / TreatmentProtocol のSupabase呼び出しを無効化
+// selfcare.js / inspection.js の読み込み後に上書き
 (function mockDependencies() {
   function applyMocks() {
     if (typeof SelfcareDatabase !== 'undefined') {
