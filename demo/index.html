@@ -646,40 +646,201 @@
   <!-- 印刷用コンテナ（通常は非表示、印刷時のみ表示） -->
   <div id="printContainer" class="print-container"></div>
 
-  <!-- デモ用モック（supabase.js + storage.js の代わり） -->
-  <script src="demo-mock.js?v=20260404d"></script>
-  <!-- 本体ロジック（メイン版と完全に同じファイル） -->
-  <script src="../js/inspection.js?v=20260404d"></script>
-  <script src="../js/bodyDiagram.js?v=20260404d"></script>
-  <script src="../js/selfcare.js?v=20260404d"></script>
-  <script src="../js/pdf.js?v=20260404d"></script>
-  <script src="../js/app.js?v=20260404d"></script>
+  <!-- デモ用モック（インライン埋め込み） -->
   <script>
-  // デバッグ用：エラーを画面に表示
-  var _demoErrors = [];
-  window.onerror = function(msg, src, line) {
-    _demoErrors.push('ERROR: ' + msg + ' (' + src + ':' + line + ')');
-    document.title = 'ERR: ' + msg;
+  // ===== デモ用モック: Supabase不要 =====
+  localStorage.removeItem('karadamap_demo_data');
+
+  function _mockQueryChain() {
+    var result = Promise.resolve({ data: [], error: null });
+    var handler = {
+      get: function(target, prop) {
+        if (prop === 'then') return result.then.bind(result);
+        if (prop === 'catch') return result.catch.bind(result);
+        if (prop === 'finally') return result.finally.bind(result);
+        if (prop === 'data') return [];
+        if (prop === 'error') return null;
+        return function() { return new Proxy({}, handler); };
+      }
+    };
+    return new Proxy({}, handler);
+  }
+
+  var SupabaseAuth = {
+    client: _mockQueryChain(),
+    currentUser: { id: 'demo-user-001', email: 'demo@example.com', user_metadata: { display_name: 'デモユーザー' } },
+    currentClinicId: 'demo-clinic-001',
+    init: function() { return Promise.resolve(null); },
+    getSession: function() { return Promise.resolve({ user: this.currentUser }); },
+    login: function() { return Promise.resolve({ user: this.currentUser }); },
+    signup: function() { return Promise.resolve({ user: this.currentUser }); },
+    resetPassword: function() { return Promise.resolve(); },
+    logout: function() { window.location.href = 'https://clinic-saas-lp.vercel.app/systems/kensa'; },
+    _loadClinicId: function() { return Promise.resolve(); },
+    getClinicId: function() { return this.currentClinicId; },
+    getUserId: function() { return this.currentUser.id; },
+    getDisplayName: function() { return 'デモユーザー'; }
   };
-  window.addEventListener('unhandledrejection', function(e) {
-    var msg = e.reason ? (e.reason.message || String(e.reason)) : 'unknown';
-    _demoErrors.push('PROMISE: ' + msg);
-    document.title = 'PROMISE ERR: ' + msg;
-  });
-  // 3秒後にボタンが動かなければエラー情報を表示
-  setTimeout(function() {
-    var testBtn = document.querySelector('.wizard-next');
-    if (testBtn && !testBtn.onclick && _demoErrors.length > 0) {
-      var d = document.createElement('div');
-      d.style.cssText = 'position:fixed;top:40px;left:0;right:0;background:red;color:white;padding:12px;z-index:99999;font-size:12px;white-space:pre-wrap;';
-      d.textContent = _demoErrors.join('\n');
-      document.body.prepend(d);
+
+  var Storage = {
+    _STORAGE_KEY: 'karadamap_demo_data',
+    _cache: null,
+    _loadAll: function() {
+      try { return JSON.parse(localStorage.getItem(this._STORAGE_KEY) || '[]'); }
+      catch(e) { return []; }
+    },
+    _saveAll: function(data) {
+      localStorage.setItem(this._STORAGE_KEY, JSON.stringify(data));
+      this._cache = null;
+    },
+    getAll: function() {
+      var self = this;
+      return Promise.resolve(self._loadAll().sort(function(a, b) { return (b.date || '').localeCompare(a.date || ''); }));
+    },
+    getPatientList: function() {
+      return this.getAll().then(function(history) {
+        var map = {};
+        history.forEach(function(entry) {
+          var pid = entry.patientId;
+          if (!pid) return;
+          if (!map[pid]) map[pid] = { patientId: pid, patientName: entry.patientName || '名前未入力', examCount: 0, lastDate: entry.date };
+          map[pid].examCount++;
+          if (entry.date > map[pid].lastDate) map[pid].lastDate = entry.date;
+        });
+        return Object.values(map).sort(function(a, b) { return b.lastDate.localeCompare(a.lastDate); });
+      });
+    },
+    getHistoryByPatient: function(patientId) {
+      return this.getAll().then(function(history) { return history.filter(function(e) { return e.patientId === patientId; }); });
+    },
+    searchPatients: function(query) {
+      if (!query || !query.trim()) return Promise.resolve([]);
+      var q = query.trim().toLowerCase();
+      return this.getPatientList().then(function(patients) { return patients.filter(function(p) { return p.patientName.toLowerCase().includes(q); }); });
+    },
+    findPatientIdByName: function(name) {
+      return this.getAll().then(function(history) {
+        for (var i = 0; i < history.length; i++) {
+          if (history[i].patientName === name && history[i].patientId) return history[i].patientId;
+        }
+        return null;
+      });
+    },
+    save: function() {
+      alert('デモ版ではデータの保存はできません。\n製品版では患者カルテとして保存・管理が可能です。');
+      return Promise.resolve(false);
+    },
+    delete: function(id) {
+      var all = this._loadAll().filter(function(e) { return e.id !== id; });
+      this._saveAll(all);
+      return Promise.resolve(true);
+    },
+    getById: function(id) {
+      return Promise.resolve(this._loadAll().find(function(e) { return e.id === id; }) || null);
+    },
+    renderKarteList: function(onLoad, onDelete, filterQuery) {
+      var self = this;
+      return this.getAll().then(function(history) {
+        var container = document.getElementById('kartePatientList');
+        if (!container) return;
+        if (history.length === 0) {
+          container.innerHTML = '<div class="history-empty"><p>まだカルテがありません</p><p>検査結果を保存すると、ここに患者一覧が表示されます</p></div>';
+          return;
+        }
+        var groups = {}, groupOrder = [];
+        history.forEach(function(entry) {
+          var pid = entry.patientId || 'unknown_' + entry.id;
+          if (!groups[pid]) { groups[pid] = { patientId: pid, patientName: entry.patientName || '名前未入力', entries: [], lastDate: entry.date, lastSummary: entry.summary || '' }; groupOrder.push(pid); }
+          groups[pid].entries.push(entry);
+          if (entry.date > groups[pid].lastDate) { groups[pid].lastDate = entry.date; groups[pid].lastSummary = entry.summary || ''; }
+        });
+        var patients = groupOrder.map(function(pid) { return groups[pid]; });
+        if (filterQuery && filterQuery.trim()) {
+          var q = filterQuery.trim().toLowerCase();
+          patients = patients.filter(function(p) { return p.patientName.toLowerCase().includes(q); });
+        }
+        if (patients.length === 0) { container.innerHTML = '<div class="history-empty"><p>該当する患者が見つかりません</p></div>'; return; }
+        var html = '';
+        patients.forEach(function(group) {
+          var d = new Date(group.lastDate);
+          var ds = d.getFullYear() + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + String(d.getDate()).padStart(2,'0');
+          html += '<div class="karte-patient-card" data-patient-id="' + group.patientId + '"><div class="karte-patient-icon">' + group.patientName.charAt(0) + '</div><div class="karte-patient-body"><div class="karte-patient-name">' + group.patientName + '</div><div class="karte-patient-sub"><span>検査 ' + group.entries.length + '回</span><span>最終: ' + ds + '</span></div><div class="karte-patient-last">' + group.lastSummary + '</div></div><div class="karte-patient-arrow">›</div></div>';
+        });
+        container.innerHTML = html;
+        container.querySelectorAll('.karte-patient-card').forEach(function(card) {
+          card.addEventListener('click', function() { self.renderKarteDetail(card.dataset.patientId, onLoad, onDelete); });
+        });
+        self._onLoad = onLoad;
+        self._onDelete = onDelete;
+      });
+    },
+    renderKarteDetail: function(patientId, onLoad, onDelete) {
+      var self = this;
+      var listView = document.getElementById('karteListView');
+      var detailView = document.getElementById('karteDetailView');
+      var infoDiv = document.getElementById('karteDetailPatientInfo');
+      var listDiv = document.getElementById('karteDetailList');
+      if (!listView || !detailView) return Promise.resolve();
+      return this.getHistoryByPatient(patientId).then(function(entries) {
+        entries.sort(function(a, b) { return new Date(b.date) - new Date(a.date); });
+        if (entries.length === 0) return;
+        var patientName = entries[0].patientName || '名前未入力';
+        infoDiv.innerHTML = '<div class="karte-detail-name">' + patientName + '</div><div class="karte-detail-stats"><span>検査 ' + entries.length + '回</span></div>';
+        var html = '';
+        entries.forEach(function(entry) {
+          var date = new Date(entry.date);
+          var dateStr = date.getFullYear() + '/' + String(date.getMonth()+1).padStart(2,'0') + '/' + String(date.getDate()).padStart(2,'0');
+          var timeStr = String(date.getHours()).padStart(2,'0') + ':' + String(date.getMinutes()).padStart(2,'0');
+          var causeInfo = entry.diagnosisResult ? (typeof InspectionLogic !== 'undefined' ? (InspectionLogic.causeLabels[entry.diagnosisResult.primaryCause] || {}) : {}) : {};
+          var painStr = entry.painLevel != null ? 'NRS: ' + entry.painLevel + '/10' : '';
+          var complaints = entry.chiefComplaints && entry.chiefComplaints.length > 0 ? entry.chiefComplaints.join('・') : '';
+          html += '<div class="karte-record-card"><div class="karte-record-header"><div class="karte-record-date"><span class="karte-date-main">' + dateStr + '</span><span class="karte-date-time">' + timeStr + '</span></div><div class="karte-record-badge" style="background:' + (causeInfo.color || '#94a3b8') + '">' + (causeInfo.icon || '?') + ' ' + (causeInfo.label || '未診断') + '</div></div><div class="karte-record-body">' + (complaints ? '<div class="karte-record-row">主訴: ' + complaints + '</div>' : '') + (painStr ? '<div class="karte-record-row">' + painStr + '</div>' : '') + (entry.memo ? '<div class="karte-record-row memo">メモ: ' + entry.memo + '</div>' : '') + '</div><div class="karte-record-actions"><button type="button" class="btn btn-sm btn-primary karte-load-btn" data-id="' + entry.id + '">読み込み</button><button type="button" class="btn btn-sm btn-secondary karte-delete-btn" data-id="' + entry.id + '">削除</button></div></div>';
+        });
+        listDiv.innerHTML = html;
+        listView.style.display = 'none';
+        detailView.style.display = 'block';
+        var backBtn = document.getElementById('karteBackBtn');
+        if (backBtn) backBtn.onclick = function() { detailView.style.display = 'none'; listView.style.display = 'block'; };
+        listDiv.querySelectorAll('.karte-load-btn').forEach(function(btn) { btn.addEventListener('click', function(e) { e.stopPropagation(); if (onLoad) onLoad(btn.dataset.id); }); });
+        listDiv.querySelectorAll('.karte-delete-btn').forEach(function(btn) { btn.addEventListener('click', function(e) { e.stopPropagation(); if (confirm('この検査記録を削除しますか？')) { if (onDelete) onDelete(btn.dataset.id).then(function() { self.renderKarteDetail(patientId, onLoad, onDelete); }); } }); });
+      });
     }
-  }, 3000);
-  // フォールバック表示
+  };
+
+  // SelfcareDatabase / TreatmentProtocol のSupabase呼び出しを無効化
+  window.addEventListener('DOMContentLoaded', function() {
+    if (typeof SelfcareDatabase !== 'undefined') {
+      SelfcareDatabase.loadCustomItems = function() { return Promise.resolve(); };
+      SelfcareDatabase.saveCustomItem = function() { return Promise.resolve(); };
+      SelfcareDatabase.deleteCustomItem = function() { return Promise.resolve(); };
+      SelfcareDatabase.toggleCustomItem = function() { return Promise.resolve(); };
+    }
+    if (typeof TreatmentProtocol !== 'undefined') {
+      TreatmentProtocol.loadCustomProtocols = function() { return Promise.resolve(); };
+      TreatmentProtocol.saveCustomProtocol = function() { return Promise.resolve(); };
+      TreatmentProtocol.deleteCustomProtocol = function() { return Promise.resolve(); };
+      TreatmentProtocol.toggleCustomProtocol = function() { return Promise.resolve(); };
+    }
+  });
+  </script>
+  <!-- 本体ロジック（メイン版と完全に同じファイル） -->
+  <script src="../js/inspection.js?v=20260404e"></script>
+  <script src="../js/bodyDiagram.js?v=20260404e"></script>
+  <script src="../js/selfcare.js?v=20260404e"></script>
+  <script src="../js/pdf.js?v=20260404e"></script>
+  <script src="../js/app.js?v=20260404e"></script>
+  <script>
+  // フォールバック: mainApp表示保証
   window.addEventListener('load', function() {
     document.getElementById('mainApp').style.display = 'block';
     document.getElementById('authScreen').style.display = 'none';
+  });
+  // エラー表示
+  window.onerror = function(msg, src, line) {
+    document.title = 'ERR: ' + msg;
+  };
+  window.addEventListener('unhandledrejection', function(e) {
+    document.title = 'PROMISE ERR: ' + (e.reason ? (e.reason.message || String(e.reason)) : 'unknown');
   });
   </script>
 </body>
