@@ -25,8 +25,8 @@ function _mockQueryChain() {
   return new Proxy({}, handler);
 }
 
-// SupabaseAuth モック
-const SupabaseAuth = {
+// SupabaseAuth モック（varでグローバルに公開）
+var SupabaseAuth = {
   client: _mockQueryChain(),
   currentUser: { id: 'demo-user-001', email: 'demo@example.com', user_metadata: { display_name: 'デモユーザー' } },
   currentClinicId: 'demo-clinic-001',
@@ -43,8 +43,8 @@ const SupabaseAuth = {
   getDisplayName() { return 'デモユーザー'; }
 };
 
-// Storage モック（localStorage版）
-const Storage = {
+// Storage モック（localStorage版・varでグローバルに公開）
+var Storage = {
   _STORAGE_KEY: 'karadamap_demo_data',
   _cache: null,
 
