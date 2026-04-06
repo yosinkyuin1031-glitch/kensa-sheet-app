@@ -132,16 +132,22 @@ const Storage = {
 
   // 保存
   async save(examData, diagnosisResult, patientName, memo, detailData, contractionResult, weightBalance, patientId, painLevel, chiefComplaints, extraFields) {
-    const clinicId = this._clinicId();
+    let clinicId = this._clinicId();
     const userId = this._userId();
     if (!clinicId) {
-      console.error('clinic_idが取得できません');
-      alert('エラー詳細: clinic_idが取得できません。ログアウトして再ログインしてください。');
-      return false;
+      console.error('clinic_idが取得できません。再読み込みを試みます...');
+      // clinic_idが未ロードの場合、再取得を試みる
+      await SupabaseAuth._loadClinicId();
+      clinicId = SupabaseAuth.getClinicId();
+      if (!clinicId) {
+        alert('保存エラー: 院情報が取得できません。\n一度ログアウトして再ログインしてください。');
+        return false;
+      }
+      console.log('clinic_id再取得成功:', clinicId);
     }
     if (!userId) {
       console.error('user_idが取得できません');
-      alert('エラー詳細: user_idが取得できません。ログアウトして再ログインしてください。');
+      alert('保存エラー: ユーザー情報が取得できません。\n一度ログアウトして再ログインしてください。');
       return false;
     }
 
