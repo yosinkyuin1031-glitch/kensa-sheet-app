@@ -3,9 +3,9 @@
 const InspectionLogic = {
   // ランドマーク定義
   landmarks: {
-    mastoid: { name: '乳様突起', description: '耳の後ろの骨の突起' },
-    scapulaInferior: { name: '肩甲下角', description: '肩甲骨の下端' },
-    iliacCrest: { name: '腸骨稜', description: '骨盤の上端' }
+    mastoid: { name: '乳様突起', simpleName: '首の後ろ', description: '耳の後ろの骨の突起' },
+    scapulaInferior: { name: '肩甲下角', simpleName: '肩甲骨の下', description: '肩甲骨の下端' },
+    iliacCrest: { name: '腸骨稜', simpleName: '骨盤の外側', description: '骨盤の上端' }
   },
 
   // ポジション定義
@@ -217,15 +217,15 @@ const InspectionLogic = {
   // ===== 第2段階：詳細検査ランドマーク =====
 
   upperDetailLandmarks: [
-    { key: 'acromion', name: '肩峰', area: '肩〜肘', areaShort: '肩〜腕' },
-    { key: 'mastoidDetail', name: '肘頭', area: '肘〜手首', areaShort: '前腕〜手首' },
-    { key: 'radialStyloid', name: '橈骨茎状突起', area: '前腕〜手首', areaShort: '前腕〜手首' }
+    { key: 'acromion', name: '肩峰', simpleName: '肩の先端', area: '肩〜肘', areaShort: '肩〜腕' },
+    { key: 'mastoidDetail', name: '肘頭', simpleName: '肘の先', area: '肘〜手首', areaShort: '前腕〜手首' },
+    { key: 'radialStyloid', name: '橈骨茎状突起', simpleName: '手首の外側', area: '前腕〜手首', areaShort: '前腕〜手首' }
   ],
 
   lowerDetailLandmarks: [
-    { key: 'greaterTrochanter', name: '大転子', area: '骨盤〜大腿', areaShort: '股関節〜太もも' },
-    { key: 'patellaUpper', name: '膝蓋骨上端', area: '大腿〜膝', areaShort: '太もも〜膝' },
-    { key: 'lateralMalleolus', name: '外果', area: '膝〜足首', areaShort: 'すね〜足首' }
+    { key: 'greaterTrochanter', name: '大転子', simpleName: '太ももの付け根', area: '骨盤〜大腿', areaShort: '股関節〜太もも' },
+    { key: 'patellaUpper', name: '膝蓋骨上端', simpleName: '膝のお皿の上', area: '大腿〜膝', areaShort: '太もも〜膝' },
+    { key: 'lateralMalleolus', name: '外果', simpleName: '足首の外側', area: '膝〜足首', areaShort: 'すね〜足首' }
   ],
 
   // ===== 詳細検査用ラベル（患者向け） =====

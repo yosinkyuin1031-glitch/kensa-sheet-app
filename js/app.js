@@ -2119,12 +2119,11 @@
       }
     });
 
-    // 患者用PDF
+    // 患者用PDF（画面表示と同じセルフケアロジック）
     document.getElementById('savePdfPatientBtn').addEventListener('click', () => {
       if (!diagnosisResult) return;
       const patientName = document.getElementById('patientName').value;
       const inspectionDate = document.getElementById('inspectionDate').value;
-      // Gather selfcare data for PDF
       const selfcareItems = [];
       if (contractionResult) {
         const allIssues = [
@@ -2141,10 +2140,26 @@
             for (const exercise of exercises) {
               selfcareItems.push({
                 name: exercise.name,
-                description: exercise.description || '',
+                description: exercise.description || exercise.steps ? exercise.steps.join('→') : '',
+                sets: exercise.sets || '',
                 duration: exercise.frequency || exercise.duration || ''
               });
             }
+          }
+        }
+      }
+      // 足裏ケア追加（画面表示と一致）
+      if (detailData && detailData.lowerDetail) {
+        const lateralVal = detailData.lowerDetail.lateralMalleolus;
+        if (lateralVal !== 0 && lateralVal != null && typeof SelfcareDatabase !== 'undefined') {
+          const footExercises = SelfcareDatabase.getSelfcareForArea('足裏', 'contraction');
+          for (const fe of footExercises) {
+            selfcareItems.push({
+              name: fe.name,
+              description: fe.description || (fe.steps ? fe.steps.join('→') : ''),
+              sets: fe.sets || '',
+              duration: fe.frequency || fe.duration || ''
+            });
           }
         }
       }
@@ -2349,7 +2364,8 @@
       const val = standData[key] || 0;
       const label = val === -1 ? '左が高い' : val === 1 ? '右が高い' : '均等';
       const cls = val === 0 ? 'print-even' : 'print-uneven';
-      alignmentRows += `<tr><td>${config.name}</td><td class="${cls}">${label}</td></tr>`;
+      const displayName = config.simpleName ? `${config.name}（${config.simpleName}）` : config.name;
+      alignmentRows += `<tr><td>${displayName}</td><td class="${cls}">${label}</td></tr>`;
     }
 
     // 詳細ランドマーク（あれば）
@@ -2365,7 +2381,8 @@
         const val = allDetailData[lm.key] || 0;
         const label = val === -1 ? '左が高い' : val === 1 ? '右が高い' : '均等';
         const cls = val === 0 ? 'print-even' : 'print-uneven';
-        detailRows += `<tr><td>${lm.name}</td><td class="${cls}">${label}</td></tr>`;
+        const detailDisplayName = lm.simpleName ? `${lm.name}（${lm.simpleName}）` : lm.name;
+        detailRows += `<tr><td>${detailDisplayName}</td><td class="${cls}">${label}</td></tr>`;
       }
     }
 

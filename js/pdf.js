@@ -141,10 +141,11 @@ const PdfExport = {
             const descLines = doc.splitTextToSize(exercise.description, 160);
             doc.text(descLines, 20, y + 9);
           }
-          if (exercise.sets) {
-            doc.text(`回数: ${exercise.sets}`, 20, y + 16);
-          } else if (exercise.duration) {
-            doc.text(`時間: ${exercise.duration}`, 20, y + 16);
+          const setsInfo = [];
+          if (exercise.sets) setsInfo.push(exercise.sets);
+          if (exercise.duration) setsInfo.push(exercise.duration);
+          if (setsInfo.length > 0) {
+            doc.text(setsInfo.join(' / '), 20, y + 16);
           }
           y += 28;
         }
@@ -188,11 +189,6 @@ const PdfExport = {
       y = 33;
       doc.text(`お名前: ${patientName || '-'}`, 15, y);
       doc.text(`検査日: ${inspectionDate || new Date().toLocaleDateString('ja-JP')}`, 130, y);
-      if (weightBalance) {
-        y += 6;
-        const wbLabel = weightBalance === 'right' ? '右重心' : weightBalance === 'left' ? '左重心' : '均等';
-        doc.text(`重心バランス: ${wbLabel}`, 15, y);
-      }
       y += 3;
       doc.setDrawColor(226, 232, 240);
       doc.line(15, y, 195, y);
@@ -255,7 +251,8 @@ const PdfExport = {
       doc.setTextColor(30, 41, 59);
       for (const [landmark, config] of Object.entries(InspectionLogic.landmarks)) {
         x = 15;
-        doc.text(config.name, x + 2, y);
+        const lmLabel = config.simpleName ? `${config.name}（${config.simpleName}）` : config.name;
+        doc.text(lmLabel, x + 2, y);
         x += colWidth;
         for (const step of diagnosisResult.steps) {
           const val = step.data[landmark] || 0;
@@ -395,7 +392,8 @@ const PdfExport = {
             for (const lm of InspectionLogic.upperDetailLandmarks) {
               const val = detailData.upperDetail[lm.key];
               if (val !== null && val !== undefined) {
-                doc.text(`  ${lm.name}: ${InspectionLogic.valueLabels[val.toString()]}`, 20, y);
+                const dlLabel = lm.simpleName ? `${lm.name}（${lm.simpleName}）` : lm.name;
+                doc.text(`  ${dlLabel}: ${InspectionLogic.valueLabels[val.toString()]}`, 20, y);
                 y += 5;
               }
             }
@@ -404,7 +402,8 @@ const PdfExport = {
             for (const lm of InspectionLogic.lowerDetailLandmarks) {
               const val = detailData.lowerDetail[lm.key];
               if (val !== null && val !== undefined) {
-                doc.text(`  ${lm.name}: ${InspectionLogic.valueLabels[val.toString()]}`, 20, y);
+                const dlLabel = lm.simpleName ? `${lm.name}（${lm.simpleName}）` : lm.name;
+                doc.text(`  ${dlLabel}: ${InspectionLogic.valueLabels[val.toString()]}`, 20, y);
                 y += 5;
               }
             }
