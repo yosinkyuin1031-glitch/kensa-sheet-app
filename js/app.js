@@ -2340,7 +2340,6 @@
   // ===== 表面：身体の状態シート =====
   function generatePrintPage1(patientName, inspectionDate) {
     const causeInfo = InspectionLogic.causeLabels[diagnosisResult.primaryCause] || {};
-    const wbLabel = weightBalance === 'right' ? '右重心' : weightBalance === 'left' ? '左重心' : weightBalance === 'even' ? '均等' : '未測定';
 
     // 左右差サマリー
     let alignmentRows = '';
@@ -2427,15 +2426,6 @@
             </div>
           </div>
 
-          <!-- 重心バランス（SVG） -->
-          <div class="print-section">
-            <h2 class="print-section-title">重心バランス</h2>
-            <div class="print-balance-box">
-              ${generateBalanceSVG(weightBalance)}
-              <div class="print-balance-text">${wbLabel}</div>
-            </div>
-          </div>
-
           <!-- 左右差一覧 -->
           <div class="print-section">
             <h2 class="print-section-title">左右差チェック${hasDetail ? '（基本）' : ''}</h2>
@@ -2480,7 +2470,7 @@
 
   // ===== 裏面：セルフケアシート =====
   function generatePrintPage2(patientName) {
-    // セルフケアを収集（最大4つ）
+    // セルフケアを収集（画面表示と同じロジック）
     const selfcareItems = [];
     if (contractionResult) {
       const allIssues = [
@@ -2489,15 +2479,27 @@
       ];
       const rendered = new Set();
       for (const issue of allIssues) {
-        if (selfcareItems.length >= 4) break;
         const cacheKey = `${issue.areaShort}_${issue.type}`;
         if (rendered.has(cacheKey)) continue;
         rendered.add(cacheKey);
         if (typeof SelfcareDatabase !== 'undefined') {
           const exercises = SelfcareDatabase.getSelfcareForArea(issue.areaShort, issue.type);
           for (const exercise of exercises) {
-            if (selfcareItems.length >= 4) break;
             selfcareItems.push({ exercise, side: issue.side });
+          }
+        }
+      }
+    }
+
+    // 足裏ケア（画面表示と同じロジック）
+    if (detailData && detailData.lowerDetail) {
+      const lateralVal = detailData.lowerDetail.lateralMalleolus;
+      if (lateralVal !== 0 && lateralVal != null) {
+        const footSide = lateralVal === 1 ? 'left' : 'right';
+        if (typeof SelfcareDatabase !== 'undefined') {
+          const footExercises = SelfcareDatabase.getSelfcareForArea('足裏', 'contraction');
+          for (const footExercise of footExercises) {
+            selfcareItems.push({ exercise: footExercise, side: footSide });
           }
         }
       }

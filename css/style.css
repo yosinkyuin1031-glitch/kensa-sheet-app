@@ -3236,13 +3236,9 @@ body[data-view="patient"] .patient-treatment-hint p {
   }
 
   /* ページ区切り */
-  .print-page {
-    page-break-after: always;
-    break-after: page;
-  }
-  .print-page:last-child {
-    page-break-after: auto;
-    break-after: auto;
+  .print-page-back {
+    page-break-before: always;
+    break-before: page;
   }
   .print-selfcare-card {
     break-inside: avoid;
@@ -3253,19 +3249,16 @@ body[data-view="patient"] .patient-treatment-hint p {
 .print-page {
   width: 100%;
   max-width: 210mm;
-  min-height: 280mm;
   margin: 0 auto;
   padding: 16px 20px;
   font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
   color: #1e293b;
-  page-break-after: always;
-  break-after: page;
   background: white;
 }
 
-.print-page:last-child {
-  page-break-after: auto;
-  break-after: auto;
+.print-page-back {
+  page-break-before: always;
+  break-before: page;
 }
 
 /* ヘッダー */
