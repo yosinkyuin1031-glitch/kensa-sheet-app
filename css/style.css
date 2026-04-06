@@ -2015,6 +2015,66 @@ body[data-view="patient"] .patient-treatment-hint p {
 }
 
 /* ===== Before/After Comparison Card ===== */
+/* 比較セレクター */
+.comparison-selector-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+  border: 2px solid var(--primary);
+}
+.comparison-selector-card h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 12px;
+}
+.comparison-presets {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.comparison-custom {
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+.comparison-custom-label {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  margin-bottom: 8px;
+}
+.comparison-custom-selects {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.comparison-select-group {
+  flex: 1;
+}
+.comparison-select-group label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-light);
+  margin-bottom: 4px;
+}
+.comparison-select-group select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  background: var(--card-bg);
+}
+.comparison-select-arrow {
+  font-size: 1.2rem;
+  color: var(--text-light);
+  margin-top: 16px;
+}
+
 .comparison-card {
   background: var(--card-bg);
   border-radius: var(--radius);

@@ -1065,48 +1065,92 @@
   }
 
   // ===== ビフォーアフター比較 =====
-  async function renderComparison() {
+  // 比較用の患者履歴キャッシュ
+  let comparisonHistory = [];
+
+  // 比較セレクターを表示
+  async function showComparisonSelector() {
+    const selector = document.getElementById('comparisonSelector');
     const compSection = document.getElementById('comparisonSection');
-    if (!compSection) return;
+    if (!selector) return;
 
     const patientName = document.getElementById('patientName').value;
     const pid = selectedPatientId || await Storage.findPatientIdByName(patientName);
     if (!pid) return;
 
     const history = await Storage.getHistoryByPatient(pid);
-    if (history.length === 0) return;
+    // 診断結果があるもののみ、古い順にソート
+    comparisonHistory = history
+      .filter(e => e.diagnosisResult)
+      .sort((a, b) => new Date(a.date) - new Date(b.date));
 
-    // 読み込んだエントリをスキップして「前回」を探す
-    let prevEntry = null;
-    for (const entry of history) {
-      if (loadedEntryId && entry.id === loadedEntryId) continue;
-      if (entry.diagnosisResult) {
-        prevEntry = entry;
-        break;
-      }
+    if (comparisonHistory.length < 2) {
+      alert('比較には2回以上の検査データが必要です。');
+      return;
     }
-    if (!prevEntry) return;
 
-    const prevResult = prevEntry.diagnosisResult;
-    const prevDetail = prevEntry.contractionResult;
-    const prevDate = new Date(prevEntry.date);
-    const prevDateStr = `${prevDate.getFullYear()}/${String(prevDate.getMonth() + 1).padStart(2, '0')}/${String(prevDate.getDate()).padStart(2, '0')} ${String(prevDate.getHours()).padStart(2, '0')}:${String(prevDate.getMinutes()).padStart(2, '0')}`;
-    const currDate2 = loadedEntryDate ? new Date(loadedEntryDate) : new Date();
-    const currDateStr2 = `${currDate2.getFullYear()}/${String(currDate2.getMonth() + 1).padStart(2, '0')}/${String(currDate2.getDate()).padStart(2, '0')} ${String(currDate2.getHours()).padStart(2, '0')}:${String(currDate2.getMinutes()).padStart(2, '0')}`;
+    // セレクトボックスにオプションを追加
+    const beforeSel = document.getElementById('compareSelectBefore');
+    const afterSel = document.getElementById('compareSelectAfter');
+    const formatDate = (d) => {
+      const dt = new Date(d);
+      return `${dt.getFullYear()}/${String(dt.getMonth()+1).padStart(2,'0')}/${String(dt.getDate()).padStart(2,'0')}`;
+    };
+
+    let options = '';
+    comparisonHistory.forEach((entry, idx) => {
+      const label = `${idx + 1}回目 (${formatDate(entry.date)})`;
+      options += `<option value="${idx}">${label}</option>`;
+    });
+    beforeSel.innerHTML = options;
+    afterSel.innerHTML = options;
+
+    // デフォルト: 初回 → 最新
+    beforeSel.value = '0';
+    afterSel.value = String(comparisonHistory.length - 1);
+
+    // プリセットボタンの有効/無効
+    const preset2 = document.getElementById('comparePreset2');
+    if (preset2) {
+      preset2.style.display = comparisonHistory.length >= 3 ? '' : 'none';
+    }
+
+    selector.style.display = 'block';
+    compSection.style.display = 'none';
+    selector.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // 2つのエントリを比較描画
+  function renderComparisonPair(beforeEntry, afterEntry) {
+    const compSection = document.getElementById('comparisonSection');
+    if (!compSection) return;
+
+    const formatDateTime = (d) => {
+      const dt = new Date(d);
+      return `${dt.getFullYear()}/${String(dt.getMonth()+1).padStart(2,'0')}/${String(dt.getDate()).padStart(2,'0')} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+    };
+
+    const beforeIdx = comparisonHistory.indexOf(beforeEntry) + 1;
+    const afterIdx = comparisonHistory.indexOf(afterEntry) + 1;
+    const beforeLabel = beforeIdx > 0 ? `${beforeIdx}回目` : '';
+    const afterLabel = afterIdx > 0 ? `${afterIdx}回目` : '';
 
     let html = '<div class="comparison-card">';
     html += '<div class="comparison-header">';
-    html += '<h3>前回との比較（ビフォーアフター）</h3>';
-    html += `<p class="comparison-date-info">前回: ${prevDateStr} → 今回: ${currDateStr2}</p>`;
+    html += `<h3>ビフォーアフター比較${beforeLabel && afterLabel ? `（${beforeLabel} → ${afterLabel}）` : ''}</h3>`;
+    html += `<p class="comparison-date-info">前: ${formatDateTime(beforeEntry.date)} → 後: ${formatDateTime(afterEntry.date)}</p>`;
     html += '</div>';
+
+    // 改善・悪化・変化なしのカウンター
+    let improved = 0, worsened = 0, unchanged = 0;
 
     // 基本3ランドマーク比較（立位・座位・上半身）
     const positionNames = { standing: '立位', seated: '座位', upperBody: '上半身' };
     const positions = ['standing', 'seated', 'upperBody'];
 
     for (const pos of positions) {
-      const prevData = prevEntry.examData[pos];
-      const currData = examData[pos];
+      const prevData = beforeEntry.examData[pos];
+      const currData = afterEntry.examData[pos];
       if (!prevData || !currData) continue;
 
       html += `<div class="comparison-position-block">`;
@@ -1117,33 +1161,18 @@
         const currVal = currData[lmKey] || 0;
         const prevLabel = InspectionLogic.valueLabels[prevVal.toString()];
         const currLabel = InspectionLogic.valueLabels[currVal.toString()];
+        const changeInfo = getChangeInfo(prevVal, currVal);
 
-        let changeClass = 'comparison-unchanged';
-        let changeText = '変化なし';
+        if (changeInfo.cls === 'comparison-improved') improved++;
+        else if (changeInfo.cls === 'comparison-worsened') worsened++;
+        else unchanged++;
 
-        if (prevVal !== currVal) {
-          // 改善: 前回ずれていた→正常に近づいた
-          if (currVal === 0 && prevVal !== 0) {
-            changeClass = 'comparison-improved';
-            changeText = '改善';
-          } else if (prevVal === 0 && currVal !== 0) {
-            changeClass = 'comparison-worsened';
-            changeText = '悪化';
-          } else if (Math.abs(currVal) < Math.abs(prevVal)) {
-            changeClass = 'comparison-improved';
-            changeText = '改善';
-          } else {
-            changeClass = 'comparison-worsened';
-            changeText = '悪化';
-          }
-        }
-
-        html += `<div class="comparison-row ${changeClass}">
+        html += `<div class="comparison-row ${changeInfo.cls}">
           <span class="comparison-landmark">${lmConfig.name}</span>
           <span class="comparison-prev">${prevLabel}</span>
           <span class="comparison-arrow">→</span>
           <span class="comparison-curr">${currLabel}</span>
-          <span class="comparison-change">${changeText}</span>
+          <span class="comparison-change">${changeInfo.text}</span>
         </div>`;
       }
 
@@ -1151,21 +1180,27 @@
     }
 
     // 詳細6ランドマーク比較
-    if (prevDetail && contractionResult) {
+    const prevDetail = beforeEntry.contractionResult;
+    const currDetail = afterEntry.contractionResult;
+    if (prevDetail && currDetail) {
       html += '<div class="comparison-position-block">';
       html += '<h4 class="comparison-position-title">詳細検査（上半身）</h4>';
 
       const prevUpperLandmarks = prevDetail.upper ? prevDetail.upper.landmarks : [];
-      const currUpperLandmarks = contractionResult.upper ? contractionResult.upper.landmarks : [];
+      const currUpperLandmarks = currDetail.upper ? currDetail.upper.landmarks : [];
 
-      for (let i = 0; i < currUpperLandmarks.length; i++) {
+      for (let i = 0; i < Math.max(prevUpperLandmarks.length, currUpperLandmarks.length); i++) {
         const curr = currUpperLandmarks[i];
         const prev = prevUpperLandmarks[i];
-        if (!prev) continue;
+        if (!prev || !curr) continue;
 
         const prevLabel = InspectionLogic.valueLabels[prev.value.toString()];
         const currLabel = InspectionLogic.valueLabels[curr.value.toString()];
         const changeInfo = getChangeInfo(prev.value, curr.value);
+
+        if (changeInfo.cls === 'comparison-improved') improved++;
+        else if (changeInfo.cls === 'comparison-worsened') worsened++;
+        else unchanged++;
 
         html += `<div class="comparison-row ${changeInfo.cls}">
           <span class="comparison-landmark">${curr.name}</span>
@@ -1182,16 +1217,20 @@
       html += '<h4 class="comparison-position-title">詳細検査（下半身）</h4>';
 
       const prevLowerLandmarks = prevDetail.lower ? prevDetail.lower.landmarks : [];
-      const currLowerLandmarks = contractionResult.lower ? contractionResult.lower.landmarks : [];
+      const currLowerLandmarks = currDetail.lower ? currDetail.lower.landmarks : [];
 
-      for (let i = 0; i < currLowerLandmarks.length; i++) {
+      for (let i = 0; i < Math.max(prevLowerLandmarks.length, currLowerLandmarks.length); i++) {
         const curr = currLowerLandmarks[i];
         const prev = prevLowerLandmarks[i];
-        if (!prev) continue;
+        if (!prev || !curr) continue;
 
         const prevLabel = InspectionLogic.valueLabels[prev.value.toString()];
         const currLabel = InspectionLogic.valueLabels[curr.value.toString()];
         const changeInfo = getChangeInfo(prev.value, curr.value);
+
+        if (changeInfo.cls === 'comparison-improved') improved++;
+        else if (changeInfo.cls === 'comparison-worsened') worsened++;
+        else unchanged++;
 
         html += `<div class="comparison-row ${changeInfo.cls}">
           <span class="comparison-landmark">${curr.name}</span>
@@ -1205,14 +1244,43 @@
       html += '</div>';
 
       // 収縮・伸長の変化
-      html += renderContractionComparison(prevDetail, contractionResult);
+      html += renderContractionComparison(prevDetail, currDetail);
     }
+
+    // サマリー
+    html += '<div class="comparison-position-block">';
+    html += '<h4 class="comparison-position-title">比較サマリー</h4>';
+    html += `<div style="display:flex;gap:12px;justify-content:center;padding:12px;">`;
+    html += `<span style="color:#16a34a;font-weight:700;font-size:1.1rem;">改善 ${improved}</span>`;
+    html += `<span style="color:#94a3b8;font-weight:600;">変化なし ${unchanged}</span>`;
+    html += `<span style="color:#dc2626;font-weight:700;font-size:1.1rem;">悪化 ${worsened}</span>`;
+    html += `</div>`;
+
+    // 原因の変化
+    const beforeCause = InspectionLogic.causeLabels[beforeEntry.diagnosisResult.primaryCause];
+    const afterCause = InspectionLogic.causeLabels[afterEntry.diagnosisResult.primaryCause];
+    if (beforeCause && afterCause) {
+      html += `<div style="text-align:center;padding:8px;font-size:0.9rem;">`;
+      html += `<span>原因: ${beforeCause.icon} ${beforeCause.label}</span>`;
+      html += ` → `;
+      html += `<span>${afterCause.icon} ${afterCause.label}</span>`;
+      if (beforeEntry.diagnosisResult.primaryCause !== afterEntry.diagnosisResult.primaryCause) {
+        html += ` <span style="color:var(--primary);font-weight:600;">（変化あり）</span>`;
+      }
+      html += `</div>`;
+    }
+    html += '</div>';
 
     html += '</div>'; // .comparison-card
 
     compSection.innerHTML = html;
     compSection.style.display = 'block';
     compSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // 旧互換: 前回比較（自動で前回を選ぶ）
+  async function renderComparison() {
+    await showComparisonSelector();
   }
 
   function getChangeInfo(prevVal, currVal) {
@@ -2197,14 +2265,58 @@
     const compareBtn = document.getElementById('compareBtn');
     if (compareBtn) {
       compareBtn.addEventListener('click', async () => {
+        const selector = document.getElementById('comparisonSelector');
         const compSection = document.getElementById('comparisonSection');
-        if (compSection.style.display === 'block') {
+        if (selector.style.display === 'block' || compSection.style.display === 'block') {
+          selector.style.display = 'none';
           compSection.style.display = 'none';
-          compareBtn.textContent = '前回と比較';
+          compareBtn.textContent = '比較';
         } else {
-          await renderComparison();
+          await showComparisonSelector();
           compareBtn.textContent = '比較を閉じる';
         }
+      });
+    }
+
+    // 比較プリセットボタン
+    const comparePreset1 = document.getElementById('comparePreset1');
+    if (comparePreset1) {
+      comparePreset1.addEventListener('click', () => {
+        if (comparisonHistory.length < 2) return;
+        renderComparisonPair(comparisonHistory[0], comparisonHistory[comparisonHistory.length - 1]);
+        document.getElementById('comparisonSelector').style.display = 'none';
+      });
+    }
+
+    const comparePreset2 = document.getElementById('comparePreset2');
+    if (comparePreset2) {
+      comparePreset2.addEventListener('click', () => {
+        if (comparisonHistory.length < 3) return;
+        renderComparisonPair(comparisonHistory[1], comparisonHistory[comparisonHistory.length - 1]);
+        document.getElementById('comparisonSelector').style.display = 'none';
+      });
+    }
+
+    const comparePresetPrev = document.getElementById('comparePresetPrev');
+    if (comparePresetPrev) {
+      comparePresetPrev.addEventListener('click', () => {
+        if (comparisonHistory.length < 2) return;
+        renderComparisonPair(comparisonHistory[comparisonHistory.length - 2], comparisonHistory[comparisonHistory.length - 1]);
+        document.getElementById('comparisonSelector').style.display = 'none';
+      });
+    }
+
+    const compareCustomBtn = document.getElementById('compareCustomBtn');
+    if (compareCustomBtn) {
+      compareCustomBtn.addEventListener('click', () => {
+        const beforeIdx = parseInt(document.getElementById('compareSelectBefore').value);
+        const afterIdx = parseInt(document.getElementById('compareSelectAfter').value);
+        if (beforeIdx === afterIdx) {
+          alert('異なる2つの検査を選んでください。');
+          return;
+        }
+        renderComparisonPair(comparisonHistory[beforeIdx], comparisonHistory[afterIdx]);
+        document.getElementById('comparisonSelector').style.display = 'none';
       });
     }
 

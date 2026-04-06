@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>カラダマップ - 3分で、体の"いま"を見える化</title>
-  <link rel="stylesheet" href="css/style.css?v=20260406b">
+  <link rel="stylesheet" href="css/style.css?v=20260406c">
   <script>
     // Service Worker強制リセット（古いキャッシュを自動削除）
     if ('serviceWorker' in navigator) {
@@ -23,7 +23,7 @@
   <link rel="apple-touch-icon" href="icons/icon.svg">
   <meta name="theme-color" content="#2563eb">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
-  <script src="js/supabase-cdn.min.js?v=20260406b"></script>
+  <script src="js/supabase-cdn.min.js?v=20260406c"></script>
 </head>
 <body data-view="practitioner">
   <!-- ===== ログイン画面 ===== -->
@@ -495,7 +495,32 @@
       <!-- セルフケア提案（非表示、ボタンで表示） -->
       <div id="selfcareSection" style="display:none;"></div>
 
-      <!-- ビフォーアフター比較 -->
+      <!-- ビフ���ーアフター比較 -->
+      <div id="comparisonSelector" style="display:none;">
+        <div class="comparison-selector-card">
+          <h3>比較する検査を選択</h3>
+          <div class="comparison-presets">
+            <button type="button" class="btn btn-sm btn-primary" id="comparePreset1">初回 → 最新</button>
+            <button type="button" class="btn btn-sm btn-secondary" id="comparePreset2">2回目 ��� 最新</button>
+            <button type="button" class="btn btn-sm btn-secondary" id="comparePresetPrev">前回 → 今回</button>
+          </div>
+          <div class="comparison-custom">
+            <p class="comparison-custom-label">任意の2回を選択：</p>
+            <div class="comparison-custom-selects">
+              <div class="comparison-select-group">
+                <label>ビフォー（前）</label>
+                <select id="compareSelectBefore" class="form-select"></select>
+              </div>
+              <span class="comparison-select-arrow">→</span>
+              <div class="comparison-select-group">
+                <label>アフター（後���</label>
+                <select id="compareSelectAfter" class="form-select"></select>
+              </div>
+            </div>
+            <button type="button" class="btn btn-sm btn-accent" id="compareCustomBtn">この組み合わせで比較</button>
+          </div>
+        </div>
+      </div>
       <div id="comparisonSection" style="display:none;"></div>
 
       <!-- 経過グラフ -->
@@ -513,7 +538,7 @@
           <button type="button" id="savePdfPatientBtn" class="btn btn-xs btn-secondary">患者PDF</button>
           <button type="button" id="savePdfClinicalBtn" class="btn btn-xs btn-secondary">施術者PDF</button>
           <button type="button" id="printSheetBtn" class="btn btn-xs btn-secondary" style="display:none;">印刷</button>
-          <button type="button" id="compareBtn" class="btn btn-xs btn-secondary" style="display:none;">前回比較</button>
+          <button type="button" id="compareBtn" class="btn btn-xs btn-secondary" style="display:none;">比較</button>
           <button type="button" id="showTrendBtn" class="btn btn-xs btn-secondary" style="display:none;">経過</button>
         </div>
       </div>
@@ -639,13 +664,13 @@
   <!-- 印刷用コンテナ（通常は非表示、印刷時のみ表示） -->
   <div id="printContainer" class="print-container"></div>
 
-  <script src="js/supabase.js?v=20260406b"></script>
-  <script src="js/inspection.js?v=20260406b"></script>
-  <script src="js/bodyDiagram.js?v=20260406b"></script>
-  <script src="js/selfcare.js?v=20260406b"></script>
-  <script src="js/storage.js?v=20260406b"></script>
-  <script src="js/pdf.js?v=20260406b"></script>
-  <script src="js/app.js?v=20260406b"></script>
+  <script src="js/supabase.js?v=20260406c"></script>
+  <script src="js/inspection.js?v=20260406c"></script>
+  <script src="js/bodyDiagram.js?v=20260406c"></script>
+  <script src="js/selfcare.js?v=20260406c"></script>
+  <script src="js/storage.js?v=20260406c"></script>
+  <script src="js/pdf.js?v=20260406c"></script>
+  <script src="js/app.js?v=20260406c"></script>
   <script>
     // フォールバック：app.jsでエラーが出た場合のログイン処理
     window.addEventListener('load', function() {
