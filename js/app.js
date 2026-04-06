@@ -808,6 +808,14 @@
         switchTab('diagnosis');
       });
     }
+
+    // 患者名入力で「次へ」ボタンの有効/無効を更新
+    const patientNameInput = document.getElementById('patientName');
+    if (patientNameInput) {
+      patientNameInput.addEventListener('input', () => updateNextButtonState());
+      // 初期状態で無効化
+      updateNextButtonState();
+    }
   }
 
   function goToStep(step) {
@@ -830,7 +838,15 @@
   }
 
   function validateCurrentStep() {
-    return true; // ボタン無効化で制御するため常にtrue
+    if (currentStep === 0) {
+      const name = document.getElementById('patientName').value.trim();
+      if (!name) {
+        alert('患者名を入力してください。');
+        document.getElementById('patientName').focus();
+        return false;
+      }
+    }
+    return true;
   }
 
   // 現在のステップの全ランドマークが入力済みか判定し、次へボタンを有効/無効化
@@ -864,8 +880,11 @@
       for (const landmark of Object.keys(InspectionLogic.landmarks)) {
         if (data[landmark] === null) { allFilled = false; break; }
       }
+    } else if (currentStep === 0) {
+      const name = document.getElementById('patientName').value.trim();
+      allFilled = name.length > 0;
     } else {
-      return; // Step 0, 4 はバリデーション不要
+      return; // Step 4 はバリデーション不要
     }
 
     nextBtn.disabled = !allFilled;
