@@ -3904,60 +3904,74 @@
 
   // ===== カルテからPDF出力 =====
   async function exportPdfFromEntry(id) {
-    const entry = await Storage.getById(id);
-    if (!entry || !entry.diagnosisResult) {
-      alert('この検査データにはPDF出力できる診断結果がありません。');
-      return;
+    try {
+      const entry = await Storage.getById(id);
+      if (!entry || !entry.diagnosisResult) {
+        alert('この検査データにはPDF出力できる診断結果がありません。');
+        return;
+      }
+
+      const dateObj = new Date(entry.date);
+      const dateStr = `${dateObj.getFullYear()}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${String(dateObj.getDate()).padStart(2, '0')}`;
+
+      // セルフケアデータを生成
+      let selfcareData = [];
+      if (entry.contractionResult && typeof SelfcareDatabase !== 'undefined') {
+        const allIssues = [];
+        if (entry.contractionResult.upper && Array.isArray(entry.contractionResult.upper.contractions)) {
+          allIssues.push(...entry.contractionResult.upper.contractions);
+        }
+        if (entry.contractionResult.lower && Array.isArray(entry.contractionResult.lower.contractions)) {
+          allIssues.push(...entry.contractionResult.lower.contractions);
+        }
+        for (const issue of allIssues) {
+          try {
+            const exercises = SelfcareDatabase.getSelfcareForArea(issue.areaShort || issue.area, issue.type || 'contraction');
+            if (exercises && exercises.length > 0) selfcareData.push(...exercises);
+          } catch (e) {
+            console.warn('セルフケア取得スキップ:', issue.area, e);
+          }
+        }
+      }
+
+      // 患者用PDFを出力
+      await PdfExport.exportPatientPdf(
+        entry.patientName,
+        dateStr,
+        entry.diagnosisResult,
+        entry.contractionResult,
+        selfcareData
+      );
+    } catch (e) {
+      console.error('PDF出力エラー:', e);
+      alert('PDF出力に失敗しました: ' + e.message);
     }
-
-    const dateObj = new Date(entry.date);
-    const dateStr = `${dateObj.getFullYear()}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${String(dateObj.getDate()).padStart(2, '0')}`;
-
-    // セルフケアデータを生成
-    let selfcareData = [];
-    if (entry.contractionResult && typeof SelfcareDatabase !== 'undefined') {
-      const allIssues = [];
-      if (entry.contractionResult.upper) {
-        allIssues.push(...entry.contractionResult.upper.contractions);
-      }
-      if (entry.contractionResult.lower) {
-        allIssues.push(...entry.contractionResult.lower.contractions);
-      }
-      for (const issue of allIssues) {
-        const exercises = SelfcareDatabase.getSelfcareForArea(issue.areaShort || issue.area, issue.type || 'contraction');
-        selfcareData.push(...exercises);
-      }
-    }
-
-    // 患者用PDFを出力
-    await PdfExport.exportPatientPdf(
-      entry.patientName,
-      dateStr,
-      entry.diagnosisResult,
-      entry.contractionResult,
-      selfcareData
-    );
   }
 
   // ===== カルテから施術者PDF出力 =====
   async function exportClinicalPdfFromEntry(id) {
-    const entry = await Storage.getById(id);
-    if (!entry || !entry.diagnosisResult) {
-      alert('この検査データにはPDF出力できる診断結果がありません。');
-      return;
+    try {
+      const entry = await Storage.getById(id);
+      if (!entry || !entry.diagnosisResult) {
+        alert('この検査データにはPDF出力できる診断結果がありません。');
+        return;
+      }
+
+      const dateObj = new Date(entry.date);
+      const dateStr = `${dateObj.getFullYear()}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${String(dateObj.getDate()).padStart(2, '0')}`;
+
+      await PdfExport.exportClinicalPdf(
+        entry.patientName,
+        dateStr,
+        entry.diagnosisResult,
+        entry.contractionResult || null,
+        entry.detailData || null,
+        entry.weightBalance || null
+      );
+    } catch (e) {
+      console.error('施術者PDF出力エラー:', e);
+      alert('PDF出力に失敗しました: ' + e.message);
     }
-
-    const dateObj = new Date(entry.date);
-    const dateStr = `${dateObj.getFullYear()}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${String(dateObj.getDate()).padStart(2, '0')}`;
-
-    await PdfExport.exportClinicalPdf(
-      entry.patientName,
-      dateStr,
-      entry.diagnosisResult,
-      entry.contractionResult,
-      entry.detailData,
-      entry.weightBalance
-    );
   }
 
   // グローバル公開（カルテ詳細からも使えるように）

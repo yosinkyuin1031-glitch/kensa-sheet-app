@@ -6,7 +6,7 @@ const PdfExport = {
     try {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF('p', 'mm', 'a4');
-      const causeInfo = InspectionLogic.causeLabels[diagnosisResult.primaryCause];
+      const causeInfo = InspectionLogic.causeLabels[diagnosisResult.primaryCause] || { icon: '?', label: '未判定', color: '#94a3b8' };
       let y = 0;
 
       // --- Header ---
@@ -88,12 +88,12 @@ const PdfExport = {
       if (contractionResult) {
         const allIssues = [];
         if (contractionResult.upper) {
-          allIssues.push(...contractionResult.upper.contractions.map(c => ({ ...c, part: '上半身' })));
-          allIssues.push(...contractionResult.upper.tensions.map(t => ({ ...t, part: '上半身' })));
+          if (Array.isArray(contractionResult.upper.contractions)) allIssues.push(...contractionResult.upper.contractions.map(c => ({ ...c, part: '上半身' })));
+          if (Array.isArray(contractionResult.upper.tensions)) allIssues.push(...contractionResult.upper.tensions.map(t => ({ ...t, part: '上半身' })));
         }
         if (contractionResult.lower) {
-          allIssues.push(...contractionResult.lower.contractions.map(c => ({ ...c, part: '下半身' })));
-          allIssues.push(...contractionResult.lower.tensions.map(t => ({ ...t, part: '下半身' })));
+          if (Array.isArray(contractionResult.lower.contractions)) allIssues.push(...contractionResult.lower.contractions.map(c => ({ ...c, part: '下半身' })));
+          if (Array.isArray(contractionResult.lower.tensions)) allIssues.push(...contractionResult.lower.tensions.map(t => ({ ...t, part: '下半身' })));
         }
 
         if (allIssues.length > 0) {
@@ -189,7 +189,7 @@ const PdfExport = {
     try {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF('p', 'mm', 'a4');
-      const causeInfo = InspectionLogic.causeLabels[diagnosisResult.primaryCause];
+      const causeInfo = InspectionLogic.causeLabels[diagnosisResult.primaryCause] || { icon: '?', label: '未判定', color: '#94a3b8' };
       let y = 0;
 
       // --- Header ---
@@ -249,40 +249,43 @@ const PdfExport = {
       y += 7;
 
       // Table header
-      doc.setFontSize(8);
-      doc.setFillColor(241, 245, 249);
-      doc.rect(15, y - 4, 180, 8, 'F');
-      const headers = ['ランドマーク'];
-      const colWidth = 40;
-      for (const step of diagnosisResult.steps) {
-        headers.push(step.name);
-      }
-      let x = 15;
-      doc.setTextColor(100, 116, 139);
-      for (const header of headers) {
-        doc.text(header, x + 2, y);
-        x += colWidth;
-      }
-      y += 6;
-
-      // Table rows
-      doc.setTextColor(30, 41, 59);
-      for (const [landmark, config] of Object.entries(InspectionLogic.landmarks)) {
-        x = 15;
-        const lmLabel = config.simpleName ? `${config.name}（${config.simpleName}）` : config.name;
-        doc.text(lmLabel, x + 2, y);
-        x += colWidth;
-        for (const step of diagnosisResult.steps) {
-          const val = step.data[landmark] || 0;
-          const label = InspectionLogic.valueLabels[val.toString()];
-          if (val < 0) doc.setTextColor(59, 130, 246);
-          else if (val > 0) doc.setTextColor(249, 115, 22);
-          else doc.setTextColor(34, 197, 94);
-          doc.text(label, x + 2, y);
-          doc.setTextColor(30, 41, 59);
+      const steps = diagnosisResult.steps || [];
+      if (steps.length > 0) {
+        doc.setFontSize(8);
+        doc.setFillColor(241, 245, 249);
+        doc.rect(15, y - 4, 180, 8, 'F');
+        const headers = ['ランドマーク'];
+        const colWidth = 40;
+        for (const step of steps) {
+          headers.push(step.name || '');
+        }
+        let x = 15;
+        doc.setTextColor(100, 116, 139);
+        for (const header of headers) {
+          doc.text(header, x + 2, y);
           x += colWidth;
         }
         y += 6;
+
+        // Table rows
+        doc.setTextColor(30, 41, 59);
+        for (const [landmark, config] of Object.entries(InspectionLogic.landmarks)) {
+          x = 15;
+          const lmLabel = config.simpleName ? `${config.name}（${config.simpleName}）` : config.name;
+          doc.text(lmLabel, x + 2, y);
+          x += colWidth;
+          for (const step of steps) {
+            const val = (step.data && step.data[landmark]) || 0;
+            const label = InspectionLogic.valueLabels[val.toString()] || '-';
+            if (val < 0) doc.setTextColor(59, 130, 246);
+            else if (val > 0) doc.setTextColor(249, 115, 22);
+            else doc.setTextColor(34, 197, 94);
+            doc.text(label, x + 2, y);
+            doc.setTextColor(30, 41, 59);
+            x += colWidth;
+          }
+          y += 6;
+        }
       }
       y += 5;
 
@@ -297,13 +300,13 @@ const PdfExport = {
       y += 7;
 
       doc.setFontSize(9);
-      if (diagnosisResult.steps.length >= 2 && diagnosisResult.steps[1].comparison) {
-        const comp = diagnosisResult.steps[1].comparison;
+      if (steps.length >= 2 && steps[1].comparison) {
+        const comp = steps[1].comparison;
         doc.text(`第1段階（立位→座位）: ${comp.hasFootInfluence ? '変化あり - 足部の影響' : '変化なし - 足部以外の要因'}`, 20, y);
         y += 6;
       }
-      if (diagnosisResult.steps.length >= 3 && diagnosisResult.steps[2].comparison) {
-        const comp = diagnosisResult.steps[2].comparison;
+      if (steps.length >= 3 && steps[2].comparison) {
+        const comp = steps[2].comparison;
         doc.text(`第2段階（座位→上半身）: ${comp.hasUpperBodyInfluence ? '変化あり - 上半身の影響' : '変化なし - 上半身以外の要因'}`, 20, y);
         y += 6;
       }
@@ -329,10 +332,12 @@ const PdfExport = {
         y += 7;
 
         doc.setFontSize(11);
-        doc.text(`判定: ${gLabel}（左荷重: ${gr.score.left}項目 / 右荷重: ${gr.score.right}項目）`, 20, y);
+        const scoreLeft = (gr.score && gr.score.left) || 0;
+        const scoreRight = (gr.score && gr.score.right) || 0;
+        doc.text(`判定: ${gLabel}（左荷重: ${scoreLeft}項目 / 右荷重: ${scoreRight}項目）`, 20, y);
         y += 7;
         doc.setFontSize(9);
-        for (const d of gr.details) {
+        for (const d of (gr.details || [])) {
           if (y > 270) { doc.addPage(); y = 20; }
           doc.text(`  ${d.label}: ${d.desc}`, 20, y);
           y += 5;
@@ -393,21 +398,21 @@ const PdfExport = {
           y += 6;
           doc.setFontSize(8);
 
-          for (const lm of contractionResult.upper.landmarks) {
-            const valLabel = InspectionLogic.valueLabels[lm.value.toString()];
+          for (const lm of (contractionResult.upper.landmarks || [])) {
+            const valLabel = InspectionLogic.valueLabels[(lm.value || 0).toString()] || '-';
             doc.text(`  ${lm.name}: ${valLabel}`, 20, y);
             y += 5;
           }
           y += 3;
 
-          for (const c of contractionResult.upper.contractions) {
+          for (const c of (contractionResult.upper.contractions || [])) {
             const sideLabel = c.side === 'both' ? '両側' : c.side === 'right' ? '右側' : '左側';
             doc.setTextColor(220, 38, 38);
             doc.text(`  収縮: ${c.area}（${sideLabel}）`, 20, y);
             doc.setTextColor(30, 41, 59);
             y += 5;
           }
-          for (const t of contractionResult.upper.tensions) {
+          for (const t of (contractionResult.upper.tensions || [])) {
             const sideLabel = t.side === 'both' ? '両側' : t.side === 'right' ? '右側' : '左側';
             doc.setTextColor(139, 92, 246);
             doc.text(`  伸長: ${t.area}（${sideLabel}）`, 20, y);
@@ -428,21 +433,21 @@ const PdfExport = {
           y += 6;
           doc.setFontSize(8);
 
-          for (const lm of contractionResult.lower.landmarks) {
-            const valLabel = InspectionLogic.valueLabels[lm.value.toString()];
+          for (const lm of (contractionResult.lower.landmarks || [])) {
+            const valLabel = InspectionLogic.valueLabels[(lm.value || 0).toString()] || '-';
             doc.text(`  ${lm.name}: ${valLabel}`, 20, y);
             y += 5;
           }
           y += 3;
 
-          for (const c of contractionResult.lower.contractions) {
+          for (const c of (contractionResult.lower.contractions || [])) {
             const sideLabel = c.side === 'both' ? '両側' : c.side === 'right' ? '右側' : '左側';
             doc.setTextColor(220, 38, 38);
             doc.text(`  収縮: ${c.area}（${sideLabel}）`, 20, y);
             doc.setTextColor(30, 41, 59);
             y += 5;
           }
-          for (const t of contractionResult.lower.tensions) {
+          for (const t of (contractionResult.lower.tensions || [])) {
             const sideLabel = t.side === 'both' ? '両側' : t.side === 'right' ? '右側' : '左側';
             doc.setTextColor(139, 92, 246);
             doc.text(`  伸長: ${t.area}（${sideLabel}）`, 20, y);
