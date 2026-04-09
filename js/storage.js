@@ -44,7 +44,9 @@ const Storage = {
       patientOccupation: row.patient_occupation,
       visitType: row.visit_type,
       medicalHistory: row.medical_history,
-      symptomDetail: row.symptom_detail
+      symptomDetail: row.symptom_detail,
+      gravityData: row.gravity_data || (row.exam_data && row.exam_data.gravityData) || null,
+      gravityResult: row.gravity_result || (row.diagnosis_result && row.diagnosis_result.gravityResult) || null
     };
   },
 
@@ -209,6 +211,8 @@ const Storage = {
       if (extraFields.visitType) row.visit_type = extraFields.visitType;
       if (extraFields.medicalHistory) row.medical_history = extraFields.medicalHistory;
       if (extraFields.symptomDetail) row.symptom_detail = extraFields.symptomDetail;
+      if (extraFields.gravityData) row.gravity_data = extraFields.gravityData;
+      if (extraFields.gravityResult) row.gravity_result = extraFields.gravityResult;
     }
 
     const { error } = await this._db()

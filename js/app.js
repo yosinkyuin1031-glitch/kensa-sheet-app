@@ -16,6 +16,13 @@
     lowerDetail: { greaterTrochanter: null, patellaUpper: null, lateralMalleolus: null }
   };
   let weightBalance = null;  // 'right', 'even', 'left'
+  let gravityData = {
+    legLength: null,         // 足の長さ・膝の高さ
+    iliacCrestSupine: null,  // 腸骨稜の高さ（仰臥位）
+    asis: null,              // ASIS（上前腸骨棘）の高さ
+    toeDorsiflexion: null    // 母趾背屈
+  };
+  let gravityResult = null;  // { side: 'right'|'left'|'even', score: {...}, details: [...] }
   let diagnosisResult = null;
   let contractionResult = null;  // { upper: ..., lower: ... }
   let selectedPatientId = null;  // 選択中の患者ID
@@ -819,7 +826,7 @@
   }
 
   function goToStep(step) {
-    if (step < 0 || step > 4) return;
+    if (step < 0 || step > 5) return;
     currentStep = step;
 
     document.querySelectorAll('.wizard-panel').forEach(panel => {
@@ -883,8 +890,17 @@
     } else if (currentStep === 0) {
       const name = document.getElementById('patientName').value.trim();
       allFilled = name.length > 0;
+    } else if (currentStep === 4) {
+      // 重心検査: 4項目全て入力済みか
+      const gravityBtn = panel.querySelector('#diagnoseBtn');
+      if (gravityBtn) {
+        nextBtn = gravityBtn;
+      }
+      for (const key of Object.keys(gravityData)) {
+        if (gravityData[key] === null) { allFilled = false; break; }
+      }
     } else {
-      return; // Step 4 はバリデーション不要
+      return; // Step 5 はバリデーション不要
     }
 
     nextBtn.disabled = !allFilled;
@@ -944,7 +960,10 @@
 
           const value = parseInt(btn.dataset.value);
 
-          if (position === 'upperDetail' || position === 'lowerDetail') {
+          if (position === 'gravity') {
+            gravityData[landmark] = value;
+            calculateGravity();
+          } else if (position === 'upperDetail' || position === 'lowerDetail') {
             detailData[position][landmark] = value;
           } else {
             examData[position][landmark] = value;
@@ -1015,6 +1034,83 @@
     compBox.style.display = 'block';
   }
 
+  // ===== 重心判定 =====
+  function calculateGravity() {
+    const items = [
+      { key: 'legLength', label: '足の長さ・膝の高さ', leftDesc: '左が短い（左荷重）', rightDesc: '右が短い（右荷重）' },
+      { key: 'iliacCrestSupine', label: '腸骨稜の高さ', leftDesc: '左が低い（左荷重）', rightDesc: '右が低い（右荷重）' },
+      { key: 'asis', label: 'ASISの高さ', leftDesc: '左が高い（左荷重）', rightDesc: '右が高い（右荷重）' },
+      { key: 'toeDorsiflexion', label: '母趾背屈', leftDesc: '左が強い（左荷重）', rightDesc: '右が強い（右荷重）' }
+    ];
+
+    let leftCount = 0, rightCount = 0;
+    const details = [];
+    let allFilled = true;
+
+    for (const item of items) {
+      const val = gravityData[item.key];
+      if (val === null) { allFilled = false; continue; }
+      if (val === -1) { leftCount++; details.push({ ...item, side: 'left', desc: item.leftDesc }); }
+      else if (val === 1) { rightCount++; details.push({ ...item, side: 'right', desc: item.rightDesc }); }
+      else { details.push({ ...item, side: 'even', desc: '同じ' }); }
+    }
+
+    if (!allFilled) {
+      gravityResult = null;
+      const resultDiv = document.getElementById('gravityResult');
+      if (resultDiv) resultDiv.style.display = 'none';
+      return;
+    }
+
+    let side;
+    if (leftCount > rightCount) side = 'left';
+    else if (rightCount > leftCount) side = 'right';
+    else side = 'even';
+
+    gravityResult = { side, score: { left: leftCount, right: rightCount }, details };
+    weightBalance = side;
+
+    renderGravityResult();
+    updateNextButtonState();
+  }
+
+  function renderGravityResult() {
+    const resultDiv = document.getElementById('gravityResult');
+    if (!resultDiv || !gravityResult) return;
+
+    const sideLabel = gravityResult.side === 'left' ? '左重心' :
+                      gravityResult.side === 'right' ? '右重心' : '均等';
+    const sideColor = gravityResult.side === 'left' ? '#3b82f6' :
+                      gravityResult.side === 'right' ? '#f59e0b' : '#22c55e';
+    const sideIcon = gravityResult.side === 'left' ? '◀' :
+                     gravityResult.side === 'right' ? '▶' : '●';
+
+    let html = `<div class="gravity-result-card" style="border-left:4px solid ${sideColor};background:${sideColor}10;padding:14px;border-radius:8px;margin-top:12px;">
+      <div style="font-size:1.1rem;font-weight:700;color:${sideColor};margin-bottom:8px;">
+        ${sideIcon} 判定: ${sideLabel}
+      </div>
+      <div style="font-size:0.85rem;color:#475569;margin-bottom:8px;">
+        左荷重: ${gravityResult.score.left}項目 / 右荷重: ${gravityResult.score.right}項目
+      </div>
+      <table style="width:100%;font-size:0.8rem;border-collapse:collapse;">
+        <thead><tr style="border-bottom:1px solid #e2e8f0;">
+          <th style="text-align:left;padding:4px;">検査項目</th>
+          <th style="text-align:left;padding:4px;">結果</th>
+        </tr></thead><tbody>`;
+
+    for (const d of gravityResult.details) {
+      const color = d.side === 'left' ? '#3b82f6' : d.side === 'right' ? '#f59e0b' : '#64748b';
+      html += `<tr style="border-bottom:1px solid #f1f5f9;">
+        <td style="padding:4px;">${d.label}</td>
+        <td style="padding:4px;color:${color};font-weight:600;">${d.desc}</td>
+      </tr>`;
+    }
+
+    html += '</tbody></table></div>';
+    resultDiv.innerHTML = html;
+    resultDiv.style.display = 'block';
+  }
+
   // ===== 診断実行 =====
   async function runDiagnosis() {
     // 患者追加情報を収集
@@ -1030,6 +1126,8 @@
     if (histInput) medicalHistory = histInput.value;
 
     diagnosisResult = InspectionLogic.diagnose(examData);
+    diagnosisResult.gravityResult = gravityResult;
+    diagnosisResult.gravityData = { ...gravityData };
     await renderDiagnosis(diagnosisResult);
     showDetailedExam();
     await updateCompareButton();
@@ -1417,6 +1515,28 @@
       html += '</tr>';
     }
     html += '</tbody></table></div>';
+
+    // 重心分析セクション
+    if (result.gravityResult) {
+      const gr = result.gravityResult;
+      const gSideLabel = gr.side === 'left' ? '左重心' : gr.side === 'right' ? '右重心' : '均等';
+      const gColor = gr.side === 'left' ? '#3b82f6' : gr.side === 'right' ? '#f59e0b' : '#22c55e';
+      const gIcon = gr.side === 'left' ? '◀' : gr.side === 'right' ? '▶' : '●';
+
+      html += `<div class="diagnosis-flow" style="margin-top:16px;">
+        <h3>重心分析（構造医学的検査）</h3>
+        <div style="background:${gColor}10;border-left:4px solid ${gColor};padding:12px;border-radius:8px;margin-bottom:12px;">
+          <div style="font-size:1.1rem;font-weight:700;color:${gColor};">${gIcon} ${gSideLabel}</div>
+          <div style="font-size:0.85rem;color:#475569;margin-top:4px;">左荷重: ${gr.score.left}項目 / 右荷重: ${gr.score.right}項目</div>
+        </div>
+        <table class="flow-table"><thead><tr><th>検査項目</th><th>結果</th></tr></thead><tbody>`;
+
+      for (const d of gr.details) {
+        const dColor = d.side === 'left' ? '#3b82f6' : d.side === 'right' ? '#f59e0b' : '#64748b';
+        html += `<tr><td>${d.label}</td><td style="color:${dColor};font-weight:600;">${d.desc}</td></tr>`;
+      }
+      html += '</tbody></table></div>';
+    }
 
     html += '</div>'; // .practitioner-only
 
@@ -2183,7 +2303,9 @@
           gender: patientGender,
           occupation: patientOccupation,
           visitType: visitType,
-          medicalHistory: medicalHistory
+          medicalHistory: medicalHistory,
+          gravityData: gravityData,
+          gravityResult: gravityResult
         };
         const chiefComplaints = chiefComplaintText ? [chiefComplaintText] : [];
         const clinicId = SupabaseAuth.getClinicId();
@@ -2923,7 +3045,9 @@
           gender: patientGender,
           occupation: patientOccupation,
           visitType: visitType,
-          medicalHistory: medicalHistory
+          medicalHistory: medicalHistory,
+          gravityData: gravityData,
+          gravityResult: gravityResult
         };
         const chiefComplaints2 = chiefComplaintText ? [chiefComplaintText] : [];
         const success = await Storage.save(examData, diagnosisResult, patientName, memo, detailData, contractionResult, weightBalance, selectedPatientId, painLevel, chiefComplaints2, extraFields);
@@ -2993,6 +3117,28 @@
       html += '</div>';
     }
     html += '</div></div>';
+
+    // 重心分析
+    if (diagnosisResult.gravityResult) {
+      const gr = diagnosisResult.gravityResult;
+      const gSideLabel = gr.side === 'left' ? '左重心' : gr.side === 'right' ? '右重心' : '均等';
+      const gColor = gr.side === 'left' ? '#3b82f6' : gr.side === 'right' ? '#f59e0b' : '#22c55e';
+      html += `<div class="report-body-map" style="margin-top:12px;">
+        <h3>重心分析</h3>
+        <div style="background:${gColor}10;border-left:4px solid ${gColor};padding:10px;border-radius:8px;margin-bottom:8px;">
+          <strong style="color:${gColor};">${gSideLabel}</strong>
+          <span style="font-size:0.85rem;color:#475569;margin-left:8px;">（左荷重: ${gr.score.left} / 右荷重: ${gr.score.right}）</span>
+        </div>
+        <div class="report-map-grid"><div class="report-map-position"><h4>仰臥位検査</h4>`;
+      for (const d of gr.details) {
+        const indicator = d.side === 'left' ? 'left-high' : d.side === 'right' ? 'right-high' : 'balanced';
+        html += `<div class="report-map-item ${indicator}">
+          <span class="report-map-name">${d.label}</span>
+          <span class="report-map-value">${d.desc}</span>
+        </div>`;
+      }
+      html += '</div></div></div>';
+    }
 
     // Contraction summary
     if (contractionResult) {
@@ -3129,6 +3275,8 @@
     weightBalance = null;
     diagnosisResult = null;
     contractionResult = null;
+    gravityData = { legLength: null, iliacCrestSupine: null, asis: null, toeDorsiflexion: null };
+    gravityResult = null;
     selectedPatientId = null;
     painLevel = null;
     chiefComplaintText = '';
@@ -3166,6 +3314,8 @@
     }
     setDefaultDate();
 
+    const gravityResultDiv = document.getElementById('gravityResult');
+    if (gravityResultDiv) { gravityResultDiv.style.display = 'none'; gravityResultDiv.innerHTML = ''; }
     document.getElementById('seatedComparison').style.display = 'none';
     document.getElementById('diagnosisContent').innerHTML = '';
     document.getElementById('diagnosisActions').style.display = 'none';
@@ -3342,8 +3492,32 @@
       }
     }
 
+    // 重心データの復元
+    if (entry.gravityData) {
+      gravityData = { ...entry.gravityData };
+      calculateGravity();
+      // 重心ボタンの状態を復元
+      for (const [landmark, val] of Object.entries(entry.gravityData)) {
+        if (val !== null && val !== undefined) {
+          const group = document.querySelector(
+            `.landmark-input[data-position="gravity"][data-landmark="${landmark}"]`
+          );
+          if (group) {
+            group.querySelectorAll('.landmark-btn').forEach(btn => {
+              btn.classList.toggle('selected', parseInt(btn.dataset.value) === val);
+            });
+          }
+        }
+      }
+    } else if (entry.diagnosisResult && entry.diagnosisResult.gravityData) {
+      gravityData = { ...entry.diagnosisResult.gravityData };
+      calculateGravity();
+    }
+
     // 診断結果を再計算して表示
     diagnosisResult = InspectionLogic.diagnose(examData);
+    diagnosisResult.gravityResult = gravityResult;
+    diagnosisResult.gravityData = { ...gravityData };
     await renderDiagnosis(diagnosisResult);
     showDetailedExam();
 

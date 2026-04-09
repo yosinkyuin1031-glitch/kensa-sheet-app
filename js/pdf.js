@@ -66,6 +66,24 @@ const PdfExport = {
         }
       }
 
+      // --- Gravity analysis ---
+      if (diagnosisResult.gravityResult) {
+        const gr = diagnosisResult.gravityResult;
+        const gLabel = gr.side === 'left' ? '左重心' : gr.side === 'right' ? '右重心' : '均等';
+        y += 4;
+        doc.setFontSize(13);
+        doc.text('重心バランス', 15, y);
+        y += 3;
+        doc.setDrawColor(37, 99, 235);
+        doc.setLineWidth(0.8);
+        doc.line(15, y, 80, y);
+        doc.setLineWidth(0.2);
+        y += 8;
+        doc.setFontSize(11);
+        doc.text(`判定: ${gLabel}`, 20, y);
+        y += 8;
+      }
+
       // --- Contraction summary for patient ---
       if (contractionResult) {
         const allIssues = [];
@@ -294,6 +312,33 @@ const PdfExport = {
         y += 6;
       }
       y += 5;
+
+      // --- Gravity Analysis ---
+      if (diagnosisResult.gravityResult) {
+        if (y > 240) { doc.addPage(); y = 20; }
+        const gr = diagnosisResult.gravityResult;
+        const gLabel = gr.side === 'left' ? '左重心' : gr.side === 'right' ? '右重心' : '均等';
+        y += 5;
+        doc.setFontSize(12);
+        doc.text('重心分析（構造医学的検査）', 15, y);
+        y += 2;
+        doc.setDrawColor(37, 99, 235);
+        doc.setLineWidth(0.8);
+        doc.line(15, y, 120, y);
+        doc.setLineWidth(0.2);
+        y += 7;
+
+        doc.setFontSize(11);
+        doc.text(`判定: ${gLabel}（左荷重: ${gr.score.left}項目 / 右荷重: ${gr.score.right}項目）`, 20, y);
+        y += 7;
+        doc.setFontSize(9);
+        for (const d of gr.details) {
+          if (y > 270) { doc.addPage(); y = 20; }
+          doc.text(`  ${d.label}: ${d.desc}`, 20, y);
+          y += 5;
+        }
+        y += 5;
+      }
 
       // --- Contraction Analysis ---
       if (contractionResult) {

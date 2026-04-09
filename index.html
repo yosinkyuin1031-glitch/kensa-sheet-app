@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>カラダマップ - 3分で、体の"いま"を見える化</title>
-  <link rel="stylesheet" href="css/style.css?v=20260409a">
+  <link rel="stylesheet" href="css/style.css?v=20260409b">
   <script>
     // Service Worker強制リセット（古いキャッシュを自動削除）
     if ('serviceWorker' in navigator) {
@@ -23,7 +23,7 @@
   <link rel="apple-touch-icon" href="icons/icon.svg">
   <meta name="theme-color" content="#2563eb">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
-  <script src="js/supabase-cdn.min.js?v=20260409a"></script>
+  <script src="js/supabase-cdn.min.js?v=20260409b"></script>
 </head>
 <body data-view="practitioner">
   <!-- ===== ログイン画面 ===== -->
@@ -148,6 +148,11 @@
         <div class="wizard-connector"></div>
         <div class="wizard-step" data-step="4">
           <span class="step-number">5</span>
+          <span class="step-label">重心検査</span>
+        </div>
+        <div class="wizard-connector"></div>
+        <div class="wizard-step" data-step="5">
+          <span class="step-number">6</span>
           <span class="step-label">結果</span>
         </div>
       </div>
@@ -456,12 +461,70 @@
 
         <div class="form-actions">
           <button type="button" class="btn btn-secondary wizard-prev">← 戻る</button>
+          <button type="button" class="btn btn-primary wizard-next">重心検査へ →</button>
+        </div>
+      </div>
+
+      <!-- ===== Step 4: 重心検査（仰臥位） ===== -->
+      <div class="wizard-panel" data-panel="4">
+        <div class="step-instruction">
+          <div class="instruction-icon">🛏️</div>
+          <h3>重心検査</h3>
+          <p>ベッドに<strong>仰向け</strong>で寝てもらい、以下の4項目を確認します。</p>
+          <div class="instruction-important">荷重側（重心側）を特定するための検査です</div>
+        </div>
+
+        <div class="form-card">
+          <h3 class="card-title">① 足の長さ・膝の高さ</h3>
+          <p class="landmark-desc">脚を伸ばした状態と膝を曲げた状態で、それぞれ左右の長さ・高さを比較します。短い方が荷重側です。</p>
+          <div class="landmark-input" data-position="gravity" data-landmark="legLength">
+            <button type="button" class="landmark-btn" data-value="-1">← 左が短い</button>
+            <button type="button" class="landmark-btn" data-value="0">同じ</button>
+            <button type="button" class="landmark-btn" data-value="1">右が短い →</button>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <h3 class="card-title">② 腸骨稜の高さ（仰臥位）</h3>
+          <p class="landmark-desc">仰向けの状態で骨盤の上端の高さを比較します。低い方が荷重側です。</p>
+          <div class="landmark-input" data-position="gravity" data-landmark="iliacCrestSupine">
+            <button type="button" class="landmark-btn" data-value="-1">← 左が低い</button>
+            <button type="button" class="landmark-btn" data-value="0">同じ</button>
+            <button type="button" class="landmark-btn" data-value="1">右が低い →</button>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <h3 class="card-title">③ ASIS（上前腸骨棘）の高さ</h3>
+          <p class="landmark-desc">骨盤前面の出っ張り（ASIS）の高さを比較します。高い方が荷重側です。</p>
+          <div class="landmark-input" data-position="gravity" data-landmark="asis">
+            <button type="button" class="landmark-btn" data-value="-1">← 左が高い</button>
+            <button type="button" class="landmark-btn" data-value="0">同じ</button>
+            <button type="button" class="landmark-btn" data-value="1">右が高い →</button>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <h3 class="card-title">④ 母趾背屈（親指を上げる力）</h3>
+          <p class="landmark-desc">骨盤から足先への神経伝達を確認します。力強く素早く上がる方が荷重側です。</p>
+          <div class="landmark-input" data-position="gravity" data-landmark="toeDorsiflexion">
+            <button type="button" class="landmark-btn" data-value="-1">← 左が強い</button>
+            <button type="button" class="landmark-btn" data-value="0">同じ</button>
+            <button type="button" class="landmark-btn" data-value="1">右が強い →</button>
+          </div>
+        </div>
+
+        <!-- 重心判定結果（自動表示） -->
+        <div id="gravityResult" style="display:none;"></div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary wizard-prev">← 戻る</button>
           <button type="button" class="btn btn-primary" id="diagnoseBtn">診断する</button>
         </div>
       </div>
 
-      <!-- ===== Step 4: 検査結果サマリー ===== -->
-      <div class="wizard-panel" data-panel="4">
+      <!-- ===== Step 5: 検査結果サマリー ===== -->
+      <div class="wizard-panel" data-panel="5">
         <div class="step-instruction">
           <div class="instruction-icon">📋</div>
           <h3>検査結果サマリー</h3>
@@ -664,13 +727,13 @@
   <!-- 印刷用コンテナ（通常は非表示、印刷時のみ表示） -->
   <div id="printContainer" class="print-container"></div>
 
-  <script src="js/supabase.js?v=20260409a"></script>
-  <script src="js/inspection.js?v=20260409a"></script>
-  <script src="js/bodyDiagram.js?v=20260409a"></script>
-  <script src="js/selfcare.js?v=20260409a"></script>
-  <script src="js/storage.js?v=20260409a"></script>
-  <script src="js/pdf.js?v=20260409a"></script>
-  <script src="js/app.js?v=20260409a"></script>
+  <script src="js/supabase.js?v=20260409b"></script>
+  <script src="js/inspection.js?v=20260409b"></script>
+  <script src="js/bodyDiagram.js?v=20260409b"></script>
+  <script src="js/selfcare.js?v=20260409b"></script>
+  <script src="js/storage.js?v=20260409b"></script>
+  <script src="js/pdf.js?v=20260409b"></script>
+  <script src="js/app.js?v=20260409b"></script>
   <script>
     // フォールバック：app.jsでエラーが出た場合のログイン処理
     window.addEventListener('load', function() {
