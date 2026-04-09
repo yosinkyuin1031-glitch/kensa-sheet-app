@@ -175,11 +175,11 @@ const PdfExport = {
       // Save
       const dateStr = (inspectionDate || new Date().toISOString().split('T')[0]).replace(/-/g, '');
       const nameStr = patientName ? `_${patientName}` : '';
-      doc.save(`検査レポート_${dateStr}${nameStr}.pdf`);
+      this._savePdf(doc, `検査レポート_${dateStr}${nameStr}.pdf`);
       return true;
     } catch (e) {
       console.error('患者用PDF出力エラー:', e);
-      alert('PDFの出力に失敗しました。もう一度お試しください。');
+      alert('PDFの出力に失敗しました: ' + e.message);
       return false;
     }
   },
@@ -560,11 +560,11 @@ const PdfExport = {
       // Save
       const dateStr = (inspectionDate || new Date().toISOString().split('T')[0]).replace(/-/g, '');
       const nameStr = patientName ? `_${patientName}` : '';
-      doc.save(`検査レポート_施術者用_${dateStr}${nameStr}.pdf`);
+      this._savePdf(doc, `検査レポート_施術者用_${dateStr}${nameStr}.pdf`);
       return true;
     } catch (e) {
       console.error('施術者用PDF出力エラー:', e);
-      alert('PDFの出力に失敗しました。もう一度お試しください。');
+      alert('PDFの出力に失敗しました: ' + e.message);
       return false;
     }
   },
@@ -575,6 +575,22 @@ const PdfExport = {
   },
 
   // --- Helper methods ---
+
+  // スマホ対応PDF保存（iOS Safariではdoc.saveが動かないためBlob URLで開く）
+  _savePdf(doc, filename) {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (isMobile) {
+      // Blob URLを生成して新しいタブで開く（印刷・共有が可能）
+      const blob = doc.output('blob');
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+      // メモリリーク防止（少し遅延してから解放）
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } else {
+      doc.save(filename);
+    }
+  },
+
   _addFooter(doc, reportType) {
     const pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
