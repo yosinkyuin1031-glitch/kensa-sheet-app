@@ -576,16 +576,41 @@ const PdfExport = {
 
   // --- Helper methods ---
 
-  // スマホ対応PDF保存（iOS Safariではdoc.saveが動かないためBlob URLで開く）
+  // スマホ対応PDF保存（画面内にPDFビューアを表示）
   _savePdf(doc, filename) {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     if (isMobile) {
-      // Blob URLを生成して新しいタブで開く（印刷・共有が可能）
       const blob = doc.output('blob');
       const url = URL.createObjectURL(blob);
-      window.open(url, '_blank');
-      // メモリリーク防止（少し遅延してから解放）
-      setTimeout(() => URL.revokeObjectURL(url), 60000);
+
+      // フルスクリーンのPDFビューアをオーバーレイ表示
+      const overlay = document.createElement('div');
+      overlay.id = 'pdfViewerOverlay';
+      overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:99999;background:#fff;display:flex;flex-direction:column;';
+
+      // ツールバー
+      const toolbar = document.createElement('div');
+      toolbar.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#1e293b;color:#fff;flex-shrink:0;';
+      toolbar.innerHTML = `
+        <button id="pdfViewerClose" style="background:none;border:1px solid rgba(255,255,255,0.3);color:#fff;font-size:15px;padding:6px 14px;border-radius:8px;cursor:pointer;">✕ 閉じる</button>
+        <span style="font-size:13px;flex:1;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0 8px;">${filename}</span>
+        <a id="pdfViewerDownload" href="${url}" download="${filename}" style="background:#3b82f6;color:#fff;text-decoration:none;font-size:14px;padding:6px 14px;border-radius:8px;">保存</a>
+      `;
+
+      // PDF表示用iframe
+      const iframe = document.createElement('iframe');
+      iframe.src = url;
+      iframe.style.cssText = 'flex:1;width:100%;border:none;';
+
+      overlay.appendChild(toolbar);
+      overlay.appendChild(iframe);
+      document.body.appendChild(overlay);
+
+      // 閉じるボタン
+      document.getElementById('pdfViewerClose').addEventListener('click', () => {
+        overlay.remove();
+        URL.revokeObjectURL(url);
+      });
     } else {
       doc.save(filename);
     }
