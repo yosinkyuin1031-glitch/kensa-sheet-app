@@ -1538,6 +1538,46 @@
       html += '</tbody></table></div>';
     }
 
+    // 矢状面分析（前後の状態）
+    if (result.gravityResult && result.gravityResult.side !== 'even') {
+      const sagittal = InspectionLogic.analyzeSagittal(result.gravityResult, result.gravityData);
+      if (sagittal) {
+        html += `<div class="diagnosis-flow sagittal-analysis" style="margin-top:16px;">
+          <h3>矢状面分析（前後の状態）</h3>
+          <p style="font-size:0.85rem;color:#475569;margin-bottom:12px;">${sagittal.summary}</p>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+            <div style="background:#fef3c710;border:1px solid #f59e0b40;border-radius:8px;padding:10px;">
+              <div style="font-weight:700;color:#f59e0b;font-size:0.9rem;margin-bottom:4px;">${sagittal.anterior.title}</div>
+              <p style="font-size:0.8rem;color:#475569;margin-bottom:6px;">${sagittal.anterior.description}</p>
+              <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                ${sagittal.anterior.areas.map(a => `<span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:10px;font-size:0.75rem;">${a}</span>`).join('')}
+              </div>
+            </div>
+            <div style="background:#dbeafe10;border:1px solid #3b82f640;border-radius:8px;padding:10px;">
+              <div style="font-weight:700;color:#3b82f6;font-size:0.9rem;margin-bottom:4px;">${sagittal.posterior.title}</div>
+              <p style="font-size:0.8rem;color:#475569;margin-bottom:6px;">${sagittal.posterior.description}</p>
+              <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                ${sagittal.posterior.areas.map(a => `<span style="background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:10px;font-size:0.75rem;">${a}</span>`).join('')}
+              </div>
+            </div>
+          </div>
+
+          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px;">
+            <h4 style="font-size:0.85rem;font-weight:700;margin-bottom:8px;">波及パターン（骨盤→背骨→肩→首）</h4>
+            <div style="font-size:0.8rem;color:#475569;line-height:1.8;">
+              <div><strong>骨盤：</strong>${sagittal.pelvis.twist}</div>
+              <div><strong>背骨：</strong>${sagittal.spine.description}</div>
+              <div><strong>肩関節：</strong>${sagittal.shoulder.description}</div>
+              <div style="padding-left:1em;">- ${sagittal.shoulder.weightSide}</div>
+              <div style="padding-left:1em;">- ${sagittal.shoulder.nonWeightSide}</div>
+              <div><strong>頸椎：</strong>${sagittal.neck.description}</div>
+            </div>
+          </div>
+        </div>`;
+      }
+    }
+
     html += '</div>'; // .practitioner-only
 
     // === 患者モード：シンプルな説明 ===
@@ -2281,6 +2321,15 @@
       for (const footExercise of footExercises) {
         html += SelfcareDatabase.renderSelfcareCard(footExercise, footRollSide, patientGender);
       }
+    }
+
+    // 重心ベースのセルフケア（前面・後面）
+    if (gravityResult && gravityResult.side !== 'even') {
+      html += '<div class="selfcare-gravity-divider" style="margin-top:24px;padding-top:16px;border-top:2px solid #e2e8f0;">';
+      html += '<h2 class="selfcare-title" style="margin-bottom:4px;">重心に基づくセルフケア</h2>';
+      html += '<p class="selfcare-intro">重心検査の結果から、前後の縮こまりに対応するケアメニューです。</p>';
+      html += SelfcareDatabase.renderGravitySelfcareCards(gravityResult.side, patientGender);
+      html += '</div>';
     }
 
     html += '</div>';
@@ -3140,6 +3189,33 @@
       html += '</div></div></div>';
     }
 
+    // 矢状面分析（レポート）
+    if (diagnosisResult.gravityResult && diagnosisResult.gravityResult.side !== 'even') {
+      const sagittal = InspectionLogic.analyzeSagittal(diagnosisResult.gravityResult, diagnosisResult.gravityData);
+      if (sagittal) {
+        html += `<div class="report-body-map" style="margin-top:12px;">
+          <h3>矢状面分析（前後の状態）</h3>
+          <p style="font-size:0.85rem;color:#475569;margin-bottom:8px;">${sagittal.summary}</p>
+          <div class="report-map-grid">
+            <div class="report-map-position">
+              <h4 style="color:#f59e0b;">${sagittal.anterior.title}</h4>
+              ${sagittal.anterior.areas.map(a => `<div class="report-map-item right-high"><span class="report-map-name">${a}</span><span class="report-map-value">前面収縮</span></div>`).join('')}
+            </div>
+            <div class="report-map-position">
+              <h4 style="color:#3b82f6;">${sagittal.posterior.title}</h4>
+              ${sagittal.posterior.areas.map(a => `<div class="report-map-item left-high"><span class="report-map-name">${a}</span><span class="report-map-value">後面過緊張</span></div>`).join('')}
+            </div>
+          </div>
+          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px;margin-top:8px;font-size:0.8rem;color:#475569;">
+            <div><strong>骨盤：</strong>${sagittal.pelvis.twist}</div>
+            <div><strong>背骨：</strong>${sagittal.spine.description}</div>
+            <div><strong>肩：</strong>${sagittal.shoulder.description}</div>
+            <div><strong>首：</strong>${sagittal.neck.description}</div>
+          </div>
+        </div>`;
+      }
+    }
+
     // Contraction summary
     if (contractionResult) {
       const allIssues = [];
@@ -3848,7 +3924,7 @@
         allIssues.push(...entry.contractionResult.lower.contractions);
       }
       for (const issue of allIssues) {
-        const exercises = SelfcareDatabase.getExercises(issue.area, issue.side);
+        const exercises = SelfcareDatabase.getSelfcareForArea(issue.areaShort || issue.area, issue.type || 'contraction');
         selfcareData.push(...exercises);
       }
     }

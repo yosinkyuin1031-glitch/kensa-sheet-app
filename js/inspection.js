@@ -214,6 +214,64 @@ const InspectionLogic = {
     none: { label: '顕著な歪みなし', icon: '✅', color: '#22c55e' }
   },
 
+  // ===== 矢状面分析（重心検査データから前後の状態を推定） =====
+  analyzeSagittal(gravityResult, gravityData) {
+    if (!gravityResult || gravityResult.side === 'even') {
+      return null;
+    }
+
+    const weightSide = gravityResult.side; // 'left' or 'right'
+    const nonWeightSide = weightSide === 'left' ? 'right' : 'left';
+    const weightLabel = weightSide === 'left' ? '左' : '右';
+    const nonWeightLabel = nonWeightSide === 'left' ? '左' : '右';
+
+    const analysis = {
+      weightSide,
+      nonWeightSide,
+      pelvis: {
+        weightSide: {
+          side: weightLabel,
+          tilt: '前傾',
+          description: `${weightLabel}側の骨盤が前傾（ASISが高い）し、体重が乗っています`
+        },
+        nonWeightSide: {
+          side: nonWeightLabel,
+          tilt: '後傾',
+          description: `${nonWeightLabel}側の骨盤が相対的に後傾しています`
+        },
+        twist: `骨盤は${weightLabel}前方・${nonWeightLabel}後方にねじれています`
+      },
+      spine: {
+        description: `骨盤のねじれに対して背骨が代償的に回旋し、${nonWeightLabel}側に凸のカーブが生じやすい状態です`,
+        rotation: `${weightLabel}回旋傾向`
+      },
+      shoulder: {
+        weightSide: `${weightLabel}肩が前方に巻き込みやすい（前肩）`,
+        nonWeightSide: `${nonWeightLabel}肩が後方に引けやすい`,
+        description: `骨盤・背骨のねじれの影響で、肩の位置に前後差が生じています`
+      },
+      neck: {
+        description: `肩の前後差を代償するため、頸椎が${nonWeightLabel}に回旋しやすい傾向があります`,
+        rotation: `${nonWeightLabel}回旋傾向`
+      },
+      anterior: {
+        side: weightLabel,
+        title: `${weightLabel}側（荷重側）の前面収縮`,
+        areas: ['腸腰筋', '大腿四頭筋', '大胸筋', '腹直筋', '胸鎖乳突筋'],
+        description: `${weightLabel}側は体の前面（屈筋群）が全体的に縮こまっています。骨盤の前傾に伴い、股関節前面〜胸〜首前面にかけて短縮傾向です。`
+      },
+      posterior: {
+        side: nonWeightLabel,
+        title: `${nonWeightLabel}側（非荷重側）の後面影響`,
+        areas: ['ハムストリングス', '大臀筋', '脊柱起立筋', '菱形筋'],
+        description: `${nonWeightLabel}側は体の後面（伸筋群）に過緊張が生じやすい状態です。骨盤の後傾に伴い、もも裏〜お尻〜背中にかけて影響が出ています。`
+      },
+      summary: `${weightLabel}重心により、${weightLabel}側の前面（屈筋群）が縮こまり、${nonWeightLabel}側の後面（伸筋群）に影響が出ています。骨盤のねじれが背骨→肩→首へと波及しています。`
+    };
+
+    return analysis;
+  },
+
   // ===== 第2段階：詳細検査ランドマーク =====
 
   upperDetailLandmarks: [

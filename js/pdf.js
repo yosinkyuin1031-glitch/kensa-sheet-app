@@ -313,7 +313,7 @@ const PdfExport = {
       }
       y += 5;
 
-      // --- Gravity Analysis ---
+      // --- Gravity & Sagittal Analysis ---
       if (diagnosisResult.gravityResult) {
         if (y > 240) { doc.addPage(); y = 20; }
         const gr = diagnosisResult.gravityResult;
@@ -338,6 +338,36 @@ const PdfExport = {
           y += 5;
         }
         y += 5;
+
+        // Sagittal plane analysis
+        if (typeof InspectionLogic !== 'undefined' && InspectionLogic.analyzeSagittal) {
+          const sagittal = InspectionLogic.analyzeSagittal(gr, diagnosisResult.gravityData);
+          if (sagittal) {
+            if (y > 230) { doc.addPage(); y = 20; }
+            doc.setFontSize(12);
+            doc.text('矢状面分析（前後の状態）', 15, y);
+            y += 2;
+            doc.setDrawColor(139, 92, 246);
+            doc.setLineWidth(0.8);
+            doc.line(15, y, 120, y);
+            doc.setLineWidth(0.2);
+            y += 7;
+
+            doc.setFontSize(9);
+            const summaryLines = doc.splitTextToSize(sagittal.summary, 170);
+            doc.text(summaryLines, 20, y);
+            y += summaryLines.length * 5 + 3;
+
+            doc.text(`骨盤: ${sagittal.pelvis.twist}`, 20, y); y += 5;
+            doc.text(`背骨: ${sagittal.spine.rotation}`, 20, y); y += 5;
+            doc.text(`肩: ${sagittal.shoulder.weightSide}`, 20, y); y += 5;
+            doc.text(`首: ${sagittal.neck.description}`, 20, y); y += 5;
+
+            doc.text(`前面収縮: ${sagittal.anterior.areas.join('・')}`, 20, y); y += 5;
+            doc.text(`後面影響: ${sagittal.posterior.areas.join('・')}`, 20, y); y += 5;
+            y += 3;
+          }
+        }
       }
 
       // --- Contraction Analysis ---

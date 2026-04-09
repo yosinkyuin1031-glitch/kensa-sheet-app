@@ -256,6 +256,194 @@ const SelfcareDatabase = {
     }
   },
 
+  // ===== 重心ベース：前面・後面のセルフケア =====
+  gravitySelfcare: {
+    // 荷重側 → 前面（屈筋群）の縮こまりケア
+    anterior: [
+      {
+        area: '股関節前面（腸腰筋）',
+        name: '腸腰筋ストレッチ（荷重側）',
+        target: '腸腰筋・大腿直筋',
+        description: '荷重側は骨盤が前傾し、股関節前面の筋肉が縮こまっています。膝立ちランジで股関節前面を伸ばします。',
+        steps: [
+          '片膝を床につき、反対の足を前に出して膝を90度に曲げます',
+          '背筋を伸ばし、お腹に軽く力を入れます',
+          '体を前にスライドさせ、後ろ足の股関節前面に伸びを感じます',
+          '20秒キープし、ゆっくり戻して3回行います'
+        ],
+        sets: '20秒 × 3回',
+        frequency: '1日2回',
+        caution: '腰を反らさないよう、お腹に力を入れたまま行ってください。',
+        illustration: 'hipFlexorStretch'
+      },
+      {
+        area: '太もも前面（大腿四頭筋）',
+        name: '大腿四頭筋ストレッチ（荷重側）',
+        target: '大腿四頭筋・大腿直筋',
+        description: '荷重側は太もも前面が縮こまり、膝への負担が増えています。',
+        steps: [
+          'うつ伏せに寝ます',
+          '荷重側の膝をゆっくり曲げ、足首を持ちます',
+          '太もも前面に伸びを感じたら15秒キープ',
+          'ゆっくり戻して3回繰り返します'
+        ],
+        sets: '15秒 × 3回',
+        frequency: '1日2回',
+        caution: '腰が反る場合はお腹の下にタオルを入れてください。',
+        illustration: 'quadStretch'
+      },
+      {
+        area: '胸・前肩（大胸筋）',
+        name: '大胸筋ストレッチ（荷重側）',
+        target: '大胸筋・小胸筋・前部三角筋',
+        description: '荷重側は肩が前に巻き込み、胸の筋肉が縮こまっています。壁を使って胸を開きます。',
+        steps: [
+          '壁の横に立ち、荷重側の腕を90度に曲げて壁につけます',
+          '体を反対側にゆっくり回します',
+          '胸の前面に伸びを感じたら20秒キープ',
+          'ゆっくり戻して3回繰り返します'
+        ],
+        sets: '20秒 × 3回',
+        frequency: '1日2〜3回',
+        caution: '肩に痛みがある場合は腕の角度を下げて行ってください。',
+        illustration: 'chestStretch'
+      },
+      {
+        area: '腹部前面',
+        name: '腹部ストレッチ（荷重側）',
+        target: '腹直筋・腸腰筋上部',
+        description: '荷重側は体が前かがみになりやすく、腹部前面が縮こまっています。コブラストレッチで伸ばします。',
+        steps: [
+          'うつ伏せに寝て、両手を肩の横に置きます',
+          '両手で床を押しながら、上体をゆっくり起こします',
+          'お腹の前面が伸びる感覚を意識し、15秒キープ',
+          'ゆっくり戻して3回繰り返します'
+        ],
+        sets: '15秒 × 3回',
+        frequency: '1日2〜3回',
+        caution: '腰に痛みが出る場合は上体を起こす角度を浅くしてください。',
+        illustration: 'cobraStretch'
+      },
+      {
+        area: '首前面',
+        name: '首前面ストレッチ（荷重側）',
+        target: '胸鎖乳突筋・斜角筋',
+        description: '荷重側は頭が前に出やすく、首前面が縮こまっています。顎を引いて首前面を伸ばします。',
+        steps: [
+          '椅子に座り、背筋を伸ばします',
+          '顎を軽く上げ、首の前面を伸ばします',
+          '片手を鎖骨の下に軽く添え、皮膚を下に引きます',
+          '15秒キープし、3回繰り返します'
+        ],
+        sets: '15秒 × 3回',
+        frequency: '1日3回',
+        caution: '首を後ろに反らしすぎないでください。めまいが出たらすぐ中止。',
+        illustration: 'anteriorNeckStretch'
+      }
+    ],
+    // 非荷重側 → 後面（伸筋群）のケア
+    posterior: [
+      {
+        area: 'ハムストリングス（もも裏）',
+        name: 'ハムストリングスストレッチ（非荷重側）',
+        target: 'ハムストリングス（大腿二頭筋・半腱様筋・半膜様筋）',
+        description: '非荷重側は骨盤が後傾し、もも裏の筋肉に影響が出ています。座ったまま伸ばします。',
+        steps: [
+          '椅子に浅く座り、非荷重側の足をまっすぐ前に伸ばします',
+          'つま先を上に向け、背筋を伸ばしたまま上体を前に倒します',
+          'もも裏に伸びを感じたら20秒キープ',
+          'ゆっくり戻して3回繰り返します'
+        ],
+        sets: '20秒 × 3回',
+        frequency: '1日2回',
+        caution: '腰を丸めず、骨盤から前に倒すイメージで行ってください。',
+        illustration: 'hamstringStretch'
+      },
+      {
+        area: '臀部（お尻）',
+        name: '臀筋ストレッチ（非荷重側）',
+        target: '大臀筋・梨状筋・深層外旋六筋',
+        description: '非荷重側はお尻の筋肉が引き伸ばされ、硬くなりやすい状態です。座って足を組んで伸ばします。',
+        steps: [
+          '椅子に座り、非荷重側の足首を反対の膝の上に乗せます（4の字）',
+          '背筋を伸ばしたまま、上体をゆっくり前に倒します',
+          'お尻の奥に伸びを感じたら20秒キープ',
+          'ゆっくり戻して3回繰り返します'
+        ],
+        sets: '20秒 × 3回',
+        frequency: '1日2〜3回',
+        caution: '膝に痛みがある場合は足を乗せる角度を調整してください。',
+        illustration: 'gluteStretch'
+      },
+      {
+        area: '背部（脊柱起立筋）',
+        name: '背部ストレッチ（非荷重側）',
+        target: '脊柱起立筋・多裂筋・広背筋',
+        description: '非荷重側は背中の筋肉が過緊張しやすい状態です。丸まるストレッチで背面全体を緩めます。',
+        steps: [
+          '椅子に座り、足を肩幅に開きます',
+          '両手を膝の上に置き、背中を丸めるようにゆっくり上体を前に倒します',
+          '非荷重側の背中が特に伸びるよう、少し斜めに倒します',
+          '背中全体に伸びを感じたら20秒キープ',
+          'ゆっくり戻して3回繰り返します'
+        ],
+        sets: '20秒 × 3回',
+        frequency: '1日2回',
+        caution: '急に起き上がるとめまいが出ることがあるので、ゆっくり戻してください。',
+        illustration: 'backStretch'
+      },
+      {
+        area: '肩甲骨・背中上部',
+        name: '肩甲骨ストレッチ（非荷重側）',
+        target: '菱形筋・僧帽筋中部・下部',
+        description: '非荷重側は肩甲骨周りが過緊張し、肩の位置がずれやすくなっています。腕を前に伸ばして肩甲骨を開きます。',
+        steps: [
+          '椅子に座り、非荷重側の腕を前にまっすぐ伸ばします',
+          '反対の手で肘を持ち、体の前を横切るように引き寄せます',
+          '肩甲骨の内側に伸びを感じたら15秒キープ',
+          'ゆっくり戻して3回繰り返します'
+        ],
+        sets: '15秒 × 3回',
+        frequency: '1日2〜3回',
+        caution: '肩を上げずに、リラックスした状態で行ってください。',
+        illustration: 'scapulaStretch'
+      }
+    ]
+  },
+
+  // 重心ベースのセルフケアカードを生成
+  renderGravitySelfcareCards(gravitySide, gender) {
+    if (!gravitySide || gravitySide === 'even') return '';
+
+    const weightSideLabel = gravitySide === 'left' ? '左' : '右';
+    const nonWeightSideLabel = gravitySide === 'left' ? '右' : '左';
+
+    let html = '';
+
+    // 荷重側：前面のセルフケア
+    html += `<div class="selfcare-gravity-group">
+      <h3 class="selfcare-gravity-title" style="color:#f59e0b;border-left:4px solid #f59e0b;padding-left:10px;">
+        ${weightSideLabel}側（荷重側）のセルフケア ― 前面の縮こまりを伸ばす
+      </h3>`;
+    for (const exercise of this.gravitySelfcare.anterior) {
+      html += this.renderSelfcareCard(exercise, gravitySide, gender);
+    }
+    html += '</div>';
+
+    // 非荷重側：後面のセルフケア
+    html += `<div class="selfcare-gravity-group" style="margin-top:20px;">
+      <h3 class="selfcare-gravity-title" style="color:#3b82f6;border-left:4px solid #3b82f6;padding-left:10px;">
+        ${nonWeightSideLabel}側（非荷重側）のセルフケア ― 後面のケア
+      </h3>`;
+    const nonWeightSide = gravitySide === 'left' ? 'right' : 'left';
+    for (const exercise of this.gravitySelfcare.posterior) {
+      html += this.renderSelfcareCard(exercise, nonWeightSide, gender);
+    }
+    html += '</div>';
+
+    return html;
+  },
+
   // ===== AI生成イラスト（性別対応） =====
   getIllustration(key, gender) {
     const imageMap = {
@@ -271,7 +459,10 @@ const SelfcareDatabase = {
       cobraStretch: 'cobra_stretch.png',
       gluteStretch: 'glute_stretch.png',
       adductorStretch: 'adductor_stretch.png',
-      anteriorNeckStretch: 'anterior_neck_stretch.png'
+      anteriorNeckStretch: 'anterior_neck_stretch.png',
+      hamstringStretch: 'hamstring_stretch.png',
+      backStretch: 'back_stretch.png',
+      scapulaStretch: 'scapula_stretch.png'
     };
     const file = imageMap[key];
     if (!file) return '';
@@ -409,7 +600,10 @@ const SelfcareDatabase = {
       gluteStretch: '足を組んだ時に骨盤が後ろに倒れないよう、背筋を伸ばして行うのがポイントです。',
       quadStretch: 'うつ伏せがつらい方はベッドの端で行ってもOK。膝が痛い場合は無理せず。',
       ankleExercise: '足の甲を床につける時はゆっくりと。痛みがあれば角度を調整してください。',
-      footRoll: '硬いボールよりテニスボールくらいの柔らかさがベスト。お風呂上がりにやると効果的です。'
+      footRoll: '硬いボールよりテニスボールくらいの柔らかさがベスト。お風呂上がりにやると効果的です。',
+      hamstringStretch: '膝を完全に伸ばしきらなくてOK。背中をまっすぐに保つことが最優先です。',
+      backStretch: '息を吐きながらゆっくり丸めるのがポイント。背骨一つずつ動かすイメージで。',
+      scapulaStretch: '引っ張る時に肩が上がらないように。呼吸を止めず、リラックスして行いましょう。'
     };
     return tips[illustrationKey] || '';
   }
