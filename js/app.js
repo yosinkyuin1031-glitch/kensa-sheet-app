@@ -208,8 +208,10 @@
     setupCustomSettingsModal();
     setupBackupButtons();
     setupTrendButton();
+    setupRecentExamsToggle();
     setDefaultDate();
     await refreshHistory();
+    await renderRecentExamsDashboard();
     initDiagrams();
     registerServiceWorker();
     showTutorialIfNeeded();
@@ -3651,6 +3653,161 @@
     await TreatmentProtocol.deleteCustomProtocol(id);
     renderCustomLists();
   };
+
+  // ===== トップ画面ダッシュボード（最近の検査データ） =====
+  async function renderRecentExamsDashboard() {
+    const dashboard = document.getElementById('recentExamsDashboard');
+    const listEl = document.getElementById('recentExamsList');
+    if (!dashboard || !listEl) return;
+
+    const history = await Storage.getAll();
+    if (history.length === 0) {
+      dashboard.style.display = 'none';
+      return;
+    }
+
+    // ダッシュボード表示状態を復元
+    const isHidden = localStorage.getItem('recentExams_hidden') === 'true';
+    if (isHidden) {
+      dashboard.style.display = 'none';
+      return;
+    }
+
+    dashboard.style.display = 'block';
+
+    // 最新10件を表示
+    const recent = history.slice(0, 10);
+    let html = '';
+
+    for (const entry of recent) {
+      const date = new Date(entry.date);
+      const dateStr = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
+      const causeInfo = entry.diagnosisResult
+        ? (InspectionLogic.causeLabels[entry.diagnosisResult.primaryCause] || {})
+        : {};
+      const complaints = entry.chiefComplaints && entry.chiefComplaints.length > 0
+        ? entry.chiefComplaints.join('・') : '';
+      const painStr = entry.painLevel != null ? `NRS:${entry.painLevel}` : '';
+
+      html += `<div class="recent-exam-card" data-id="${entry.id}">
+        <div class="recent-exam-icon">${(entry.patientName || '?').charAt(0)}</div>
+        <div class="recent-exam-body">
+          <div class="recent-exam-name">${entry.patientName || '名前未入力'}</div>
+          <div class="recent-exam-info">
+            <span>${dateStr}</span>
+            ${painStr ? `<span>${painStr}</span>` : ''}
+            ${complaints ? `<span>${complaints}</span>` : ''}
+          </div>
+        </div>
+        <span class="recent-exam-badge" style="background:${causeInfo.color || '#94a3b8'}">${causeInfo.icon || '?'} ${causeInfo.label || '未診断'}</span>
+        <div class="recent-exam-actions">
+          <button type="button" class="btn btn-xs btn-primary recent-load-btn" data-id="${entry.id}">開く</button>
+          <button type="button" class="btn btn-xs btn-secondary recent-pdf-btn" data-id="${entry.id}">PDF</button>
+        </div>
+      </div>`;
+    }
+
+    listEl.innerHTML = html;
+
+    // 開くボタン
+    listEl.querySelectorAll('.recent-load-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        loadFromHistory(btn.dataset.id);
+      });
+    });
+
+    // PDFボタン
+    listEl.querySelectorAll('.recent-pdf-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        await exportPdfFromEntry(btn.dataset.id);
+      });
+    });
+
+    // カード全体クリックでも開く
+    listEl.querySelectorAll('.recent-exam-card').forEach(card => {
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('.recent-exam-actions')) return;
+        loadFromHistory(card.dataset.id);
+      });
+    });
+  }
+
+  // トグルボタン
+  function setupRecentExamsToggle() {
+    const toggleBtn = document.getElementById('toggleRecentExams');
+    if (!toggleBtn) return;
+    toggleBtn.addEventListener('click', () => {
+      const dashboard = document.getElementById('recentExamsDashboard');
+      if (dashboard) {
+        dashboard.style.display = 'none';
+        localStorage.setItem('recentExams_hidden', 'true');
+      }
+    });
+  }
+
+  // ===== カルテからPDF出力 =====
+  async function exportPdfFromEntry(id) {
+    const entry = await Storage.getById(id);
+    if (!entry || !entry.diagnosisResult) {
+      alert('この検査データにはPDF出力できる診断結果がありません。');
+      return;
+    }
+
+    const dateObj = new Date(entry.date);
+    const dateStr = `${dateObj.getFullYear()}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${String(dateObj.getDate()).padStart(2, '0')}`;
+
+    // セルフケアデータを生成
+    let selfcareData = [];
+    if (entry.contractionResult && typeof SelfcareDatabase !== 'undefined') {
+      const allIssues = [];
+      if (entry.contractionResult.upper) {
+        allIssues.push(...entry.contractionResult.upper.contractions);
+      }
+      if (entry.contractionResult.lower) {
+        allIssues.push(...entry.contractionResult.lower.contractions);
+      }
+      for (const issue of allIssues) {
+        const exercises = SelfcareDatabase.getExercises(issue.area, issue.side);
+        selfcareData.push(...exercises);
+      }
+    }
+
+    // 患者用PDFを出力
+    await PdfExport.exportPatientPdf(
+      entry.patientName,
+      dateStr,
+      entry.diagnosisResult,
+      entry.contractionResult,
+      selfcareData
+    );
+  }
+
+  // ===== カルテから施術者PDF出力 =====
+  async function exportClinicalPdfFromEntry(id) {
+    const entry = await Storage.getById(id);
+    if (!entry || !entry.diagnosisResult) {
+      alert('この検査データにはPDF出力できる診断結果がありません。');
+      return;
+    }
+
+    const dateObj = new Date(entry.date);
+    const dateStr = `${dateObj.getFullYear()}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${String(dateObj.getDate()).padStart(2, '0')}`;
+
+    await PdfExport.exportClinicalPdf(
+      entry.patientName,
+      dateStr,
+      entry.diagnosisResult,
+      entry.contractionResult,
+      entry.detailData,
+      entry.weightBalance
+    );
+  }
+
+  // グローバル公開（カルテ詳細からも使えるように）
+  window.exportPdfFromEntry = exportPdfFromEntry;
+  window.exportClinicalPdfFromEntry = exportClinicalPdfFromEntry;
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initAuth);

@@ -387,6 +387,8 @@ const Storage = {
         </div>
         <div class="karte-record-actions">
           <button type="button" class="btn btn-sm btn-primary karte-load-btn" data-id="${entry.id}">読み込み</button>
+          <button type="button" class="btn btn-sm btn-secondary karte-pdf-btn" data-id="${entry.id}">PDF</button>
+          <button type="button" class="btn btn-sm btn-secondary karte-clinical-pdf-btn" data-id="${entry.id}">施術者PDF</button>
           <button type="button" class="btn btn-sm btn-secondary karte-delete-btn" data-id="${entry.id}">削除</button>
         </div>
       </div>`;
@@ -406,11 +408,27 @@ const Storage = {
       };
     }
 
-    // 読み込み・削除ボタン
+    // 読み込み・削除・PDFボタン
     listDiv.querySelectorAll('.karte-load-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         if (onLoad) onLoad(btn.dataset.id);
+      });
+    });
+    listDiv.querySelectorAll('.karte-pdf-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        if (typeof window.exportPdfFromEntry === 'function') {
+          await window.exportPdfFromEntry(btn.dataset.id);
+        }
+      });
+    });
+    listDiv.querySelectorAll('.karte-clinical-pdf-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        if (typeof window.exportClinicalPdfFromEntry === 'function') {
+          await window.exportClinicalPdfFromEntry(btn.dataset.id);
+        }
       });
     });
     listDiv.querySelectorAll('.karte-delete-btn').forEach(btn => {
