@@ -300,19 +300,45 @@
         };
         const json = JSON.stringify(exportData, null, 2);
         const blob = new Blob([json], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
         const now = new Date();
         const dateStr = now.getFullYear().toString() +
           String(now.getMonth() + 1).padStart(2, '0') +
           String(now.getDate()).padStart(2, '0');
-        a.href = url;
-        a.download = `カラダマップ_バックアップ_${dateStr}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        alert('データをエクスポートしました');
+        const filename = `カラダマップ_バックアップ_${dateStr}.json`;
+
+        // iOS/iPadOS判定（デスクトップモード含む）
+        const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+          (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+        if (isIOS) {
+          // iOSはdownload属性が効かないのでWeb Share APIを優先
+          const file = new File([blob], filename, { type: 'application/json' });
+          if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+            try {
+              await navigator.share({ files: [file], title: filename });
+              alert('データをエクスポートしました');
+              return;
+            } catch (e) {
+              if (e.name === 'AbortError') return;
+            }
+          }
+          // フォールバック: 新しいタブで開く（Safariの共有メニューから"ファイルに保存"）
+          const url = URL.createObjectURL(blob);
+          window.open(url, '_blank');
+          alert('新しいタブで開きます。Safariの共有メニューから「ファイルに保存」を選んでください。');
+          setTimeout(() => URL.revokeObjectURL(url), 60000);
+        } else {
+          // デスクトップ・Android: download属性でダウンロード
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          alert('データをエクスポートしました');
+        }
       } catch (e) {
         console.error('Export failed:', e);
         alert('エクスポートに失敗しました');
@@ -826,7 +852,7 @@
   }
 
   function goToStep(step) {
-    if (step < 0 || step > 5) return;
+    if (step < 0 || step > 4) return;
     currentStep = step;
 
     document.querySelectorAll('.wizard-panel').forEach(panel => {
@@ -890,17 +916,8 @@
     } else if (currentStep === 0) {
       const name = document.getElementById('patientName').value.trim();
       allFilled = name.length > 0;
-    } else if (currentStep === 4) {
-      // 重心検査: 4項目全て入力済みか
-      const gravityBtn = panel.querySelector('#diagnoseBtn');
-      if (gravityBtn) {
-        nextBtn = gravityBtn;
-      }
-      for (const key of Object.keys(gravityData)) {
-        if (gravityData[key] === null) { allFilled = false; break; }
-      }
     } else {
-      return; // Step 5 はバリデーション不要
+      return; // Step 4 (結果) はバリデーション不要
     }
 
     nextBtn.disabled = !allFilled;
@@ -2594,6 +2611,27 @@
     }
   }
 
+  // 指定コンテナ内の全画像がロード完了するまで待つ
+  function waitForImages(container) {
+    const images = container.querySelectorAll('img');
+    if (images.length === 0) return Promise.resolve();
+    const promises = Array.from(images).map(img => {
+      if (img.complete && img.naturalHeight !== 0) return Promise.resolve();
+      return new Promise((resolve) => {
+        const done = () => {
+          img.removeEventListener('load', done);
+          img.removeEventListener('error', done);
+          resolve();
+        };
+        img.addEventListener('load', done);
+        img.addEventListener('error', done);
+        // 安全装置: 3秒以内に読み込めなければあきらめる
+        setTimeout(done, 3000);
+      });
+    });
+    return Promise.all(promises);
+  }
+
   function printSheet() {
     if (!diagnosisResult) return;
 
@@ -2618,8 +2656,10 @@
       }
     }
 
-    // 少し待ってからSVG描画完了後に印刷
-    setTimeout(() => window.print(), 200);
+    // 画像の読み込み完了を待ってから印刷（セルフケアイラスト対策）
+    waitForImages(container).then(() => {
+      setTimeout(() => window.print(), 100);
+    });
   }
 
   // NRS痛みスケールSVG（印刷用）
@@ -2690,11 +2730,12 @@
 
     // 問題箇所リスト
     let issuesList = '';
+    const allIssues = [];
     if (contractionResult) {
-      const allIssues = [
+      allIssues.push(
         ...(contractionResult.upper ? [...contractionResult.upper.contractions, ...contractionResult.upper.tensions] : []),
         ...(contractionResult.lower ? [...contractionResult.lower.contractions, ...contractionResult.lower.tensions] : [])
-      ];
+      );
       if (allIssues.length > 0) {
         for (const issue of allIssues) {
           const typeLabel = issue.type === 'contraction' ? '収縮' : '伸長';
@@ -2708,10 +2749,87 @@
       }
     }
 
+    // ===== お身体の状態（具体的な説明） =====
+    let conditionHtml = '';
+    {
+      const items = [];
+      const cause = diagnosisResult.primaryCause;
+      if (cause === 'foot') {
+        items.push('足の着き方（接地バランス）に左右差があり、その影響が全身に波及しています。');
+        items.push('片方の足に体重が偏ると、骨盤・背骨が代償的に傾き、肩や首にまで影響が及びます。');
+      } else if (cause === 'upperBody') {
+        items.push('上半身（肩・腕）のポジションに左右差があり、それが全身のバランスに影響しています。');
+        items.push('デスクワークやスマホ操作など、日常の腕の使い方が偏りの原因になっている可能性があります。');
+      } else if (cause === 'cranialPelvic') {
+        items.push('全身のチェック箇所が同じ方向に傾いており、頭〜骨盤にかけての歪みが見られます。');
+        items.push('全身が一方向に傾く状態は、内臓の位置関係や自律神経にも影響を及ぼすことがあります。');
+      } else if (cause === 'spine') {
+        items.push('上半身と下半身で傾きの方向が異なり、体がねじれた状態になっています。');
+        items.push('背骨がバランスを取ろうとした結果、S字のねじれが生じています。');
+      }
+      const contractionAreas = allIssues.filter(i => i.type === 'contraction');
+      if (contractionAreas.length > 0) {
+        const areaNames = contractionAreas.map(i => i.area).slice(0, 3).join('、');
+        items.push(`${areaNames}あたりの筋肉が硬くなっており、動きが制限されやすい状態です。`);
+      }
+      if (gravityResult && gravityResult.side !== 'even') {
+        const gLabel = gravityResult.side === 'left' ? '左' : '右';
+        items.push(`重心が${gLabel}側に偏っています。${gLabel}側のお腹〜太もも前面が縮こまり、反対側の背中〜もも裏に負担がかかっています。`);
+      }
+      if (items.length > 0) {
+        conditionHtml = `
+          <div class="print-condition-box">
+            <div class="print-condition-header">お身体の状態</div>
+            <ul class="print-condition-list">
+              ${items.map(t => `<li>${t}</li>`).join('')}
+            </ul>
+          </div>`;
+      }
+    }
+
+    // ===== 日常生活のアドバイス =====
+    let adviceHtml = '';
+    {
+      const tips = [];
+      const cause = diagnosisResult.primaryCause;
+      if (cause === 'foot') {
+        tips.push({ title: '靴の見直し', text: 'かかとが擦り減った靴は左右差を悪化させます。靴底の減り方を確認してみてください。' });
+        tips.push({ title: '立ち方', text: '片足に体重を乗せる癖がある方は、両足均等に荷重する意識を持ちましょう。' });
+      } else if (cause === 'upperBody') {
+        tips.push({ title: 'デスク環境', text: 'パソコンの画面は正面に、マウスは体の近くに置き、片側に偏らない姿勢を心がけましょう。' });
+        tips.push({ title: 'カバンの持ち方', text: 'いつも同じ側で持つ癖がある場合は、反対側も交互に使うようにしましょう。' });
+      } else if (cause === 'cranialPelvic') {
+        tips.push({ title: '寝方の見直し', text: 'いつも同じ向きで寝ていませんか？仰向け寝を意識すると骨盤への負担が減ります。' });
+        tips.push({ title: '座り方', text: '足を組む・横座りなどは歪みを強めます。両足を床につけて座りましょう。' });
+      } else if (cause === 'spine') {
+        tips.push({ title: '同じ姿勢を避ける', text: '30分に1回は立ち上がり、軽く体をひねるストレッチをしましょう。' });
+        tips.push({ title: 'ひねり動作', text: '振り返る時にいつも同じ方向に回っていませんか？左右均等に動かす意識を持ちましょう。' });
+      }
+      if (allIssues.length > 0) {
+        tips.push({ title: '水分補給', text: '筋肉の柔軟性を保つために、1日1.5〜2Lの水を目標に飲みましょう。' });
+      }
+      if (gravityResult && gravityResult.side !== 'even') {
+        const gLabel = gravityResult.side === 'left' ? '左' : '右';
+        tips.push({ title: '荷重バランス', text: `${gLabel}足に体重が偏りがちです。信号待ちなどで反対の足にも体重を乗せる練習をしましょう。` });
+      }
+      if (tips.length > 0) {
+        adviceHtml = `
+          <div class="print-advice-box">
+            <div class="print-advice-header">日常生活で気をつけること</div>
+            <div class="print-advice-list">
+              ${tips.map(t => `<div class="print-advice-item">
+                <span class="print-advice-title">${t.title}</span>
+                <span class="print-advice-text">${t.text}</span>
+              </div>`).join('')}
+            </div>
+          </div>`;
+      }
+    }
+
     return `
     <div class="print-page print-page-front">
       <div class="print-header">
-        <div class="print-logo">Body Check Pro</div>
+        <div class="print-logo">カラダマップ</div>
         <h1 class="print-title">からだの状態シート</h1>
       </div>
 
@@ -2749,7 +2867,7 @@
           <div class="print-section">
             <h2 class="print-section-title">左右差チェック${hasDetail ? '（基本）' : ''}</h2>
             <table class="print-table">
-              <thead><tr><th>ランドマーク</th><th>結果</th></tr></thead>
+              <thead><tr><th>部位</th><th>結果</th></tr></thead>
               <tbody>${alignmentRows}</tbody>
             </table>
           </div>
@@ -2758,7 +2876,7 @@
           <div class="print-section">
             <h2 class="print-section-title">左右差チェック（詳細）</h2>
             <table class="print-table">
-              <thead><tr><th>ランドマーク</th><th>結果</th></tr></thead>
+              <thead><tr><th>部位</th><th>結果</th></tr></thead>
               <tbody>${detailRows}</tbody>
             </table>
           </div>` : ''}
@@ -2779,6 +2897,12 @@
             <div class="print-issues">${issuesList}</div>
           </div>
         </div>
+      </div>
+
+      <!-- お身体の状態＋日常生活アドバイス（下部エリア） -->
+      <div class="print-bottom-area">
+        ${conditionHtml}
+        ${adviceHtml}
       </div>
 
       <div class="print-footer">
@@ -2824,7 +2948,26 @@
       }
     }
 
-    if (selfcareItems.length === 0) {
+    // 重心ベースのセルフケア（画面表示と同じロジック）
+    let gravityItems = [];
+    if (gravityResult && gravityResult.side !== 'even' && typeof SelfcareDatabase !== 'undefined') {
+      const gSide = gravityResult.side;
+      // 荷重側：前面ケア
+      if (SelfcareDatabase.gravitySelfcare && SelfcareDatabase.gravitySelfcare.anterior) {
+        for (const exercise of SelfcareDatabase.gravitySelfcare.anterior) {
+          gravityItems.push({ exercise, side: gSide });
+        }
+      }
+      // 非荷重側：後面ケア
+      if (SelfcareDatabase.gravitySelfcare && SelfcareDatabase.gravitySelfcare.posterior) {
+        const nonWeightSide = gSide === 'left' ? 'right' : 'left';
+        for (const exercise of SelfcareDatabase.gravitySelfcare.posterior) {
+          gravityItems.push({ exercise, side: nonWeightSide });
+        }
+      }
+    }
+
+    if (selfcareItems.length === 0 && gravityItems.length === 0) {
       return `
       <div class="print-page print-page-back">
         <div class="print-header">
@@ -2840,33 +2983,48 @@
       </div>`;
     }
 
-    const gridClass = selfcareItems.length <= 2 ? 'print-selfcare-grid-2' : 'print-selfcare-grid-4';
+    const totalItems = selfcareItems.length + gravityItems.length;
+    const gridClass = totalItems <= 2 ? 'print-selfcare-grid-2' : 'print-selfcare-grid-4';
 
-    let cardsHtml = '';
-    for (let i = 0; i < selfcareItems.length; i++) {
-      const { exercise, side } = selfcareItems[i];
+    function buildCard(exercise, side, num) {
       const sideLabel = side === 'both' ? '両側' : side === 'right' ? '右側' : '左側';
-      const illustSvg = typeof SelfcareDatabase !== 'undefined' ? SelfcareDatabase.getIllustration(exercise.illustration, patientGender) : '';
-
-      cardsHtml += `
+      const illustHtml = typeof SelfcareDatabase !== 'undefined' ? SelfcareDatabase.getIllustration(exercise.illustration, patientGender) : '';
+      return `
       <div class="print-selfcare-card">
-        <div class="print-selfcare-num">${i + 1}</div>
+        <div class="print-selfcare-num">${num}</div>
         <h3 class="print-selfcare-name">${exercise.name}</h3>
         <div class="print-selfcare-meta">
           <span>${sideLabel}</span>
           <span>${exercise.sets}</span>
           <span>${exercise.frequency}</span>
         </div>
-
-        ${illustSvg ? `<div class="print-selfcare-illust">${illustSvg}</div>` : ''}
-
+        ${illustHtml ? `<div class="print-selfcare-illust">${illustHtml}</div>` : ''}
         <ol class="print-selfcare-steps">
           ${exercise.steps.map(s => `<li>${s}</li>`).join('')}
         </ol>
-
         <div class="print-selfcare-caution">${exercise.caution}</div>
         ${exercise.evidence ? `<div class="print-selfcare-evidence">${exercise.evidence}</div>` : ''}
       </div>`;
+    }
+
+    let cardsHtml = '';
+    let num = 1;
+    for (const { exercise, side } of selfcareItems) {
+      cardsHtml += buildCard(exercise, side, num++);
+    }
+
+    // 重心ベースセルフケア
+    let gravityHtml = '';
+    if (gravityItems.length > 0) {
+      const gSideLabel = gravityResult.side === 'left' ? '左重心' : '右重心';
+      gravityHtml += `<div style="margin-top:16px;padding-top:12px;border-top:2px solid #e2e8f0;">
+        <h2 class="print-section-title" style="margin-bottom:8px;">重心に基づくセルフケア（${gSideLabel}）</h2>
+      </div>`;
+      gravityHtml += `<div class="${gridClass}">`;
+      for (const { exercise, side } of gravityItems) {
+        gravityHtml += buildCard(exercise, side, num++);
+      }
+      gravityHtml += '</div>';
     }
 
     return `
@@ -2879,6 +3037,7 @@
       <div class="${gridClass}">
         ${cardsHtml}
       </div>
+      ${gravityHtml}
       <div class="print-footer">
         <p>※痛みが出た場合は無理をせず中止してください。次回の施術時にお伝えください。</p>
       </div>
@@ -3911,37 +4070,55 @@
         return;
       }
 
-      const dateObj = new Date(entry.date);
-      const dateStr = `${dateObj.getFullYear()}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${String(dateObj.getDate()).padStart(2, '0')}`;
+      // グローバル変数を一時的にentryデータで上書き（印刷と同じパターン）
+      const origDiagnosis = diagnosisResult;
+      const origContraction = contractionResult;
+      const origExam = { ...examData };
+      const origDetail = { upperDetail: { ...detailData.upperDetail }, lowerDetail: { ...detailData.lowerDetail } };
+      const origPainLevel = painLevel;
+      const origChiefComplaint = chiefComplaintText;
+      const origGender = patientGender;
+      const origWeight = weightBalance;
+      const origGravity = gravityResult;
 
-      // セルフケアデータを生成
-      let selfcareData = [];
-      if (entry.contractionResult && typeof SelfcareDatabase !== 'undefined') {
-        const allIssues = [];
-        if (entry.contractionResult.upper && Array.isArray(entry.contractionResult.upper.contractions)) {
-          allIssues.push(...entry.contractionResult.upper.contractions);
-        }
-        if (entry.contractionResult.lower && Array.isArray(entry.contractionResult.lower.contractions)) {
-          allIssues.push(...entry.contractionResult.lower.contractions);
-        }
-        for (const issue of allIssues) {
-          try {
-            const exercises = SelfcareDatabase.getSelfcareForArea(issue.areaShort || issue.area, issue.type || 'contraction');
-            if (exercises && exercises.length > 0) selfcareData.push(...exercises);
-          } catch (e) {
-            console.warn('セルフケア取得スキップ:', issue.area, e);
-          }
-        }
+      diagnosisResult = entry.diagnosisResult;
+      contractionResult = entry.contractionResult || null;
+      gravityResult = entry.diagnosisResult.gravityResult || null;
+      if (entry.examData) {
+        examData.standing = entry.examData.standing || {};
+        examData.seated = entry.examData.seated || {};
+        examData.motion = entry.examData.motion || {};
       }
+      if (entry.detailData) {
+        detailData.upperDetail = entry.detailData.upperDetail || { acromion: null, clavicle: null, nipple: null, shoulderBlade: null, scapulaBottom: null };
+        detailData.lowerDetail = entry.detailData.lowerDetail || { greaterTrochanter: null, fibularHead: null, lateralMalleolus: null };
+      }
+      painLevel = entry.painLevel != null ? entry.painLevel : null;
+      chiefComplaintText = entry.chiefComplaints ? entry.chiefComplaints.join('、') : '';
+      patientGender = entry.patientGender || '';
+      weightBalance = entry.weightBalance || null;
 
-      // 患者用PDFを出力
-      await PdfExport.exportPatientPdf(
-        entry.patientName,
-        dateStr,
-        entry.diagnosisResult,
-        entry.contractionResult,
-        selfcareData
-      );
+      const patientName = entry.patientName || '名前未入力';
+      const dateObj = new Date(entry.date);
+      const dateStr = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+
+      try {
+        await PdfExport.exportPatientPdf(patientName, dateStr, entry.diagnosisResult, entry.contractionResult, null);
+      } finally {
+        // グローバル変数を元に戻す
+        diagnosisResult = origDiagnosis;
+        contractionResult = origContraction;
+        examData.standing = origExam.standing;
+        examData.seated = origExam.seated;
+        examData.motion = origExam.motion;
+        detailData.upperDetail = origDetail.upperDetail;
+        detailData.lowerDetail = origDetail.lowerDetail;
+        painLevel = origPainLevel;
+        chiefComplaintText = origChiefComplaint;
+        patientGender = origGender;
+        weightBalance = origWeight;
+        gravityResult = origGravity;
+      }
     } catch (e) {
       console.error('PDF出力エラー:', e);
       alert('PDF出力に失敗しました: ' + e.message);
@@ -3957,26 +4134,185 @@
         return;
       }
 
-      const dateObj = new Date(entry.date);
-      const dateStr = `${dateObj.getFullYear()}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${String(dateObj.getDate()).padStart(2, '0')}`;
+      // グローバル変数を一時的にentryデータで上書き（renderPrintContainerが参照するため）
+      const origDiagnosis = diagnosisResult;
+      const origContraction = contractionResult;
+      const origExam = { ...examData };
+      const origDetail = { upperDetail: { ...detailData.upperDetail }, lowerDetail: { ...detailData.lowerDetail } };
+      const origPainLevel = painLevel;
+      const origChiefComplaint = chiefComplaintText;
+      const origGender = patientGender;
+      const origWeight = weightBalance;
+      const origGravity = gravityResult;
 
-      await PdfExport.exportClinicalPdf(
-        entry.patientName,
-        dateStr,
-        entry.diagnosisResult,
-        entry.contractionResult || null,
-        entry.detailData || null,
-        entry.weightBalance || null
-      );
+      diagnosisResult = entry.diagnosisResult;
+      contractionResult = entry.contractionResult || null;
+      gravityResult = entry.diagnosisResult.gravityResult || null;
+      if (entry.examData) {
+        examData.standing = entry.examData.standing || {};
+        examData.seated = entry.examData.seated || {};
+        examData.motion = entry.examData.motion || {};
+      }
+      if (entry.detailData) {
+        detailData.upperDetail = entry.detailData.upperDetail || { acromion: null, clavicle: null, nipple: null, shoulderBlade: null, scapulaBottom: null };
+        detailData.lowerDetail = entry.detailData.lowerDetail || { greaterTrochanter: null, fibularHead: null, lateralMalleolus: null };
+      }
+      painLevel = entry.painLevel != null ? entry.painLevel : null;
+      chiefComplaintText = entry.chiefComplaints ? entry.chiefComplaints.join('、') : '';
+      patientGender = entry.patientGender || '';
+      weightBalance = entry.weightBalance || null;
+
+      const patientName = entry.patientName || '名前未入力';
+      const dateObj = new Date(entry.date);
+      const dateStr = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+
+      try {
+        await PdfExport.exportClinicalPdf(
+          patientName,
+          dateStr,
+          entry.diagnosisResult,
+          entry.contractionResult || null,
+          entry.detailData || null,
+          entry.weightBalance || null
+        );
+      } finally {
+        // グローバル変数を元に戻す
+        diagnosisResult = origDiagnosis;
+        contractionResult = origContraction;
+        examData.standing = origExam.standing;
+        examData.seated = origExam.seated;
+        examData.motion = origExam.motion;
+        detailData.upperDetail = origDetail.upperDetail;
+        detailData.lowerDetail = origDetail.lowerDetail;
+        painLevel = origPainLevel;
+        chiefComplaintText = origChiefComplaint;
+        patientGender = origGender;
+        weightBalance = origWeight;
+        gravityResult = origGravity;
+      }
     } catch (e) {
       console.error('施術者PDF出力エラー:', e);
       alert('PDF出力に失敗しました: ' + e.message);
     }
   }
 
-  // グローバル公開（カルテ詳細からも使えるように）
+  // ===== カルテから印刷シート（体の状態＋セルフケア）出力 =====
+  async function printSheetFromEntry(id) {
+    try {
+      const entry = await Storage.getById(id);
+      if (!entry || !entry.diagnosisResult) {
+        alert('この検査データには印刷できる診断結果がありません。');
+        return;
+      }
+
+      // グローバル変数を一時的にentryデータで上書き
+      const origDiagnosis = diagnosisResult;
+      const origContraction = contractionResult;
+      const origExam = { ...examData };
+      const origDetail = { upperDetail: { ...detailData.upperDetail }, lowerDetail: { ...detailData.lowerDetail } };
+      const origPainLevel = painLevel;
+      const origChiefComplaint = chiefComplaintText;
+      const origGender = patientGender;
+      const origWeight = weightBalance;
+      const origGravity = gravityResult;
+
+      diagnosisResult = entry.diagnosisResult;
+      contractionResult = entry.contractionResult || null;
+      gravityResult = entry.diagnosisResult.gravityResult || null;
+      if (entry.examData) {
+        examData.standing = entry.examData.standing || {};
+        examData.seated = entry.examData.seated || {};
+        examData.motion = entry.examData.motion || {};
+      }
+      if (entry.detailData) {
+        detailData.upperDetail = entry.detailData.upperDetail || { acromion: null, clavicle: null, nipple: null, shoulderBlade: null, scapulaBottom: null };
+        detailData.lowerDetail = entry.detailData.lowerDetail || { greaterTrochanter: null, fibularHead: null, lateralMalleolus: null };
+      }
+      painLevel = entry.painLevel != null ? entry.painLevel : null;
+      chiefComplaintText = entry.chiefComplaints ? entry.chiefComplaints.join('、') : '';
+      patientGender = entry.patientGender || '';
+      weightBalance = entry.weightBalance || null;
+
+      const patientName = entry.patientName || '名前未入力';
+      const dateObj = new Date(entry.date);
+      const dateStr = `${dateObj.getFullYear()}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${String(dateObj.getDate()).padStart(2, '0')}`;
+
+      const container = document.getElementById('printContainer');
+      if (!container) {
+        alert('印刷用コンテナが見つかりません。');
+        return;
+      }
+
+      // 印刷用HTML生成
+      container.innerHTML = generatePrintPage1(patientName, dateStr)
+                          + generatePrintPage2(patientName);
+
+      // SVGダイアグラムを印刷用コンテナ内に描画
+      const printDiagramEl = document.getElementById('print-diagram');
+      if (printDiagramEl && typeof BodyDiagram !== 'undefined') {
+        BodyDiagram.init('print-diagram');
+        if (detailData.upperDetail.acromion !== null || detailData.lowerDetail.greaterTrochanter !== null) {
+          BodyDiagram.updateUnified('print-diagram', detailData.upperDetail, detailData.lowerDetail, examData.standing);
+        } else if (examData.standing) {
+          BodyDiagram.update('print-diagram', 'firstStage', examData.standing);
+        }
+      }
+
+      // 画像の読み込み完了を待ってから印刷（セルフケアイラスト対策）
+      waitForImages(container).then(() => {
+        setTimeout(() => {
+          window.print();
+
+          // グローバル変数を元に戻す
+          diagnosisResult = origDiagnosis;
+          contractionResult = origContraction;
+          examData.standing = origExam.standing;
+          examData.seated = origExam.seated;
+          examData.motion = origExam.motion;
+          detailData.upperDetail = origDetail.upperDetail;
+          detailData.lowerDetail = origDetail.lowerDetail;
+          painLevel = origPainLevel;
+          chiefComplaintText = origChiefComplaint;
+          patientGender = origGender;
+          weightBalance = origWeight;
+          gravityResult = origGravity;
+        }, 100);
+      });
+
+    } catch (e) {
+      console.error('印刷エラー:', e);
+      alert('印刷に失敗しました: ' + e.message);
+    }
+  }
+
+  // 印刷用コンテナに現在の検査状態をレンダリング（PDF生成でも使う）
+  async function renderPrintContainer(patientName, inspectionDate) {
+    const container = document.getElementById('printContainer');
+    if (!container || !diagnosisResult) return null;
+
+    container.innerHTML = generatePrintPage1(patientName, inspectionDate)
+                        + generatePrintPage2(patientName);
+
+    // SVGダイアグラム描画
+    const printDiagramEl = document.getElementById('print-diagram');
+    if (printDiagramEl && typeof BodyDiagram !== 'undefined') {
+      BodyDiagram.init('print-diagram');
+      if (detailData.upperDetail.acromion !== null || detailData.lowerDetail.greaterTrochanter !== null) {
+        BodyDiagram.updateUnified('print-diagram', detailData.upperDetail, detailData.lowerDetail, examData.standing);
+      } else if (examData.standing) {
+        BodyDiagram.update('print-diagram', 'firstStage', examData.standing);
+      }
+    }
+
+    await waitForImages(container);
+    return container;
+  }
+
+  // グローバル公開（カルテ詳細・PDFからも使えるように）
   window.exportPdfFromEntry = exportPdfFromEntry;
   window.exportClinicalPdfFromEntry = exportClinicalPdfFromEntry;
+  window.printSheetFromEntry = printSheetFromEntry;
+  window.renderPrintContainer = renderPrintContainer;
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initAuth);

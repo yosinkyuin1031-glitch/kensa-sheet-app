@@ -2321,13 +2321,9 @@ body[data-view="patient"] .patient-treatment-hint p {
   }
 
   .header-top {
-    flex-direction: column;
-    gap: 8px;
-    align-items: flex-start;
-  }
-
-  .view-toggle {
-    align-self: flex-end;
+    flex-direction: row;
+    gap: 6px;
+    align-items: center;
   }
 
   .toggle-btn {
@@ -3521,6 +3517,84 @@ body[data-view="patient"] .patient-treatment-hint p {
   font-size: 9px;
   color: #94a3b8;
   text-align: center;
+}
+
+/* ===== 下部エリア：お身体の状態＋日常生活アドバイス ===== */
+.print-bottom-area {
+  margin-top: 6px;
+  display: flex;
+  gap: 8px;
+}
+
+/* お身体の状態ボックス（オレンジ系） */
+.print-condition-box {
+  flex: 1;
+  min-width: 0;
+  border: 1.5px solid #fb923c;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.print-condition-header {
+  background: #fb923c;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  text-align: center;
+}
+.print-condition-list {
+  margin: 0;
+  padding: 5px 6px 5px 20px;
+  font-size: 8.5px;
+  line-height: 1.45;
+  color: #334155;
+}
+.print-condition-list li {
+  margin-bottom: 2px;
+}
+
+/* 日常生活アドバイスボックス（青系） */
+.print-advice-box {
+  flex: 1;
+  min-width: 0;
+  border: 1.5px solid #3b82f6;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.print-advice-header {
+  background: #3b82f6;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  text-align: center;
+}
+.print-advice-list {
+  padding: 4px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.print-advice-item {
+  font-size: 8.5px;
+  line-height: 1.4;
+  color: #334155;
+  padding: 2px 0;
+  border-bottom: 1px dotted #e2e8f0;
+}
+.print-advice-item:last-child {
+  border-bottom: none;
+}
+.print-advice-title {
+  font-weight: 700;
+  color: #1e40af;
+  margin-right: 4px;
+}
+.print-advice-title::after {
+  content: '：';
+}
+.print-advice-text {
+  color: #475569;
 }
 
 /* ===== 裏面：セルフケアシート ===== */

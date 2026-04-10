@@ -1,182 +1,194 @@
 // ===== PDF出力（患者用 + 施術者用） =====
 
 const PdfExport = {
-  // ===== 患者説明用PDF =====
-  async exportPatientPdf(patientName, inspectionDate, diagnosisResult, contractionResult, selfcareData) {
+  _fontLoaded: false,
+  _fontBase64: null,
+
+  async _loadJapaneseFont(doc) {
+    if (this._fontLoaded && this._fontBase64) {
+      doc.addFileToVFS('NotoSansJP-Regular.ttf', this._fontBase64);
+      doc.addFont('NotoSansJP-Regular.ttf', 'NotoSansJP', 'normal');
+      doc.setFont('NotoSansJP');
+      return;
+    }
     try {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF('p', 'mm', 'a4');
-      const causeInfo = InspectionLogic.causeLabels[diagnosisResult.primaryCause] || { icon: '?', label: '未判定', color: '#94a3b8' };
-      let y = 0;
+      const res = await fetch('fonts/NotoSansJP-Regular.ttf');
+      if (!res.ok) throw new Error('Font fetch failed');
+      const buf = await res.arrayBuffer();
+      const bytes = new Uint8Array(buf);
+      let binary = '';
+      for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+      this._fontBase64 = btoa(binary);
+      doc.addFileToVFS('NotoSansJP-Regular.ttf', this._fontBase64);
+      doc.addFont('NotoSansJP-Regular.ttf', 'NotoSansJP', 'normal');
+      doc.setFont('NotoSansJP');
+      this._fontLoaded = true;
+    } catch (e) {
+      console.warn('Japanese font load failed, using default:', e);
+    }
+  },
 
-      // --- Header ---
-      doc.setFillColor(37, 99, 235);
-      doc.rect(0, 0, 210, 30, 'F');
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(18);
-      doc.text('検査レポート', 105, 14, { align: 'center' });
-      doc.setFontSize(10);
-      doc.text('- 患者様用 -', 105, 22, { align: 'center' });
+  // PDF生成中のローディングオーバーレイ
+  _showLoadingOverlay(message) {
+    const existing = document.getElementById('pdfLoadingOverlay');
+    if (existing) existing.remove();
+    const overlay = document.createElement('div');
+    overlay.id = 'pdfLoadingOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:99998;background:rgba(15,23,42,0.7);display:flex;align-items:center;justify-content:center;';
+    overlay.innerHTML = `
+      <div style="background:white;border-radius:16px;padding:28px 32px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.3);">
+        <div class="pdf-spinner" style="width:40px;height:40px;border:4px solid #e2e8f0;border-top-color:#3b82f6;border-radius:50%;animation:pdfSpin 0.8s linear infinite;margin:0 auto 16px;"></div>
+        <div style="font-size:15px;color:#1e293b;font-weight:600;">${message || 'PDF生成中...'}</div>
+        <div style="font-size:11px;color:#94a3b8;margin-top:4px;">少々お待ちください</div>
+      </div>
+      <style>@keyframes pdfSpin{to{transform:rotate(360deg)}}</style>
+    `;
+    document.body.appendChild(overlay);
+    return overlay;
+  },
 
-      // --- Patient Info ---
-      doc.setTextColor(30, 41, 59);
-      doc.setFontSize(11);
-      y = 40;
-      doc.text(`お名前: ${patientName || '-'}`, 15, y);
-      doc.text(`検査日: ${inspectionDate || new Date().toLocaleDateString('ja-JP')}`, 130, y);
-      y += 3;
-      doc.setDrawColor(226, 232, 240);
-      doc.line(15, y, 195, y);
-      y += 12;
+  _hideLoadingOverlay() {
+    const overlay = document.getElementById('pdfLoadingOverlay');
+    if (overlay) overlay.remove();
+  },
 
-      // --- Main Diagnosis ---
-      doc.setFillColor(this._hexToRgb(causeInfo.color).r, this._hexToRgb(causeInfo.color).g, this._hexToRgb(causeInfo.color).b);
-      doc.roundedRect(15, y, 180, 30, 4, 4, 'F');
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(14);
-      doc.text(`${causeInfo.icon} ${this._getPatientLabel(diagnosisResult.primaryCause)}`, 105, y + 12, { align: 'center' });
-      doc.setFontSize(9);
-      const summaryLines = doc.splitTextToSize(this._getPatientSummary(diagnosisResult), 160);
-      doc.text(summaryLines, 105, y + 20, { align: 'center' });
-      y += 38;
+  // html2canvas 読み込み待ち（defer属性対応）
+  async _waitForHtml2Canvas(maxWaitMs) {
+    const limit = maxWaitMs || 5000;
+    const start = Date.now();
+    while (typeof html2canvas === 'undefined') {
+      if (Date.now() - start > limit) return false;
+      await new Promise(r => setTimeout(r, 100));
+    }
+    return true;
+  },
 
-      // --- Body Status Summary ---
-      doc.setTextColor(30, 41, 59);
-      doc.setFontSize(13);
-      doc.text('体の状態', 15, y);
-      y += 3;
-      doc.setDrawColor(37, 99, 235);
-      doc.setLineWidth(0.8);
-      doc.line(15, y, 80, y);
-      doc.setLineWidth(0.2);
-      y += 8;
+  // 印刷HTMLをhtml2canvasでPDFに変換する共通ロジック
+  async _captureHtmlToPdf(filename) {
+    const loadingOverlay = this._showLoadingOverlay('PDF生成中...');
 
-      doc.setFontSize(10);
-      if (diagnosisResult.treatmentArea && diagnosisResult.treatmentArea !== 'none') {
-        doc.text(`施術の重点: ${diagnosisResult.treatmentArea}`, 20, y);
-        y += 7;
+    try {
+      // html2canvasがロードされるまで待機
+      const h2cReady = await this._waitForHtml2Canvas(8000);
+      if (!h2cReady) {
+        alert('PDF生成ライブラリの読み込みに失敗しました。通信環境を確認して再読み込みしてください。');
+        return false;
       }
 
-      // Body map text summary
-      if (diagnosisResult.pattern) {
-        const patternDesc = diagnosisResult.pattern.description || '';
-        if (patternDesc) {
-          doc.text(`パターン: ${patternDesc}`, 20, y);
-          y += 7;
-        }
+      if (typeof window.jspdf === 'undefined' || !window.jspdf.jsPDF) {
+        alert('PDF生成ライブラリ(jsPDF)が読み込まれていません。ページを再読み込みしてください。');
+        return false;
       }
 
-      // --- Gravity analysis ---
-      if (diagnosisResult.gravityResult) {
-        const gr = diagnosisResult.gravityResult;
-        const gLabel = gr.side === 'left' ? '左重心' : gr.side === 'right' ? '右重心' : '均等';
-        y += 4;
-        doc.setFontSize(13);
-        doc.text('重心バランス', 15, y);
-        y += 3;
-        doc.setDrawColor(37, 99, 235);
-        doc.setLineWidth(0.8);
-        doc.line(15, y, 80, y);
-        doc.setLineWidth(0.2);
-        y += 8;
-        doc.setFontSize(11);
-        doc.text(`判定: ${gLabel}`, 20, y);
-        y += 8;
+      const container = document.getElementById('printContainer');
+      if (!container) {
+        alert('印刷用コンテナが見つかりません。');
+        return false;
       }
 
-      // --- Contraction summary for patient ---
-      if (contractionResult) {
-        const allIssues = [];
-        if (contractionResult.upper) {
-          if (Array.isArray(contractionResult.upper.contractions)) allIssues.push(...contractionResult.upper.contractions.map(c => ({ ...c, part: '上半身' })));
-          if (Array.isArray(contractionResult.upper.tensions)) allIssues.push(...contractionResult.upper.tensions.map(t => ({ ...t, part: '上半身' })));
-        }
-        if (contractionResult.lower) {
-          if (Array.isArray(contractionResult.lower.contractions)) allIssues.push(...contractionResult.lower.contractions.map(c => ({ ...c, part: '下半身' })));
-          if (Array.isArray(contractionResult.lower.tensions)) allIssues.push(...contractionResult.lower.tensions.map(t => ({ ...t, part: '下半身' })));
+      // 一時的にオフスクリーンで可視化（画像撮影のため）
+      const origStyle = container.getAttribute('style') || '';
+      container.setAttribute('style',
+        'display:block !important;position:fixed;top:0;left:-10000px;width:210mm;background:white;z-index:-1;');
+
+      try {
+        const pages = container.querySelectorAll('.print-page');
+        if (pages.length === 0) {
+          alert('印刷データが生成されていません。');
+          return false;
         }
 
-        if (allIssues.length > 0) {
-          y += 4;
-          doc.setFontSize(13);
-          doc.text('気になる箇所', 15, y);
-          y += 3;
-          doc.setDrawColor(239, 68, 68);
-          doc.setLineWidth(0.8);
-          doc.line(15, y, 80, y);
-          doc.setLineWidth(0.2);
-          y += 8;
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
+        const pageWidthMm = 210;
+        const pageHeightMm = 297;
 
-          doc.setFontSize(10);
-          for (const issue of allIssues) {
-            if (y > 260) {
-              doc.addPage();
-              y = 20;
+        // iPadのメモリ制限を考慮してスケールを調整
+        const isIOS = this._isIOS();
+        const primaryScale = isIOS ? 1.5 : 2;
+
+        for (let i = 0; i < pages.length; i++) {
+          const page = pages[i];
+          let canvas;
+          // 1回目: 通常スケール、失敗したら低スケールで再試行
+          try {
+            canvas = await html2canvas(page, {
+              scale: primaryScale,
+              useCORS: true,
+              allowTaint: false,
+              backgroundColor: '#ffffff',
+              logging: false,
+              imageTimeout: 8000
+            });
+          } catch (h2cErr) {
+            console.warn('html2canvas 1回目失敗、低解像度で再試行:', h2cErr);
+            try {
+              canvas = await html2canvas(page, {
+                scale: 1,
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: '#ffffff',
+                logging: false,
+                imageTimeout: 8000
+              });
+            } catch (retryErr) {
+              console.error('html2canvas 再試行も失敗:', retryErr);
+              alert('PDF画像化に失敗しました: ' + (retryErr.message || retryErr));
+              return false;
             }
-            const typeLabel = issue.type === 'contraction' ? '収縮（硬くなっている）' : '伸長（引っ張られている）';
-            const sideLabel = issue.side === 'both' ? '両側' : issue.side === 'right' ? '右側' : '左側';
-            doc.setFillColor(254, 242, 242);
-            doc.roundedRect(15, y - 4, 180, 10, 2, 2, 'F');
-            doc.setTextColor(220, 38, 38);
-            doc.text(`${issue.area}（${sideLabel}）- ${typeLabel}`, 20, y + 2);
-            doc.setTextColor(30, 41, 59);
-            y += 14;
+          }
+
+          let imgData;
+          try {
+            imgData = canvas.toDataURL('image/jpeg', 0.92);
+          } catch (dataErr) {
+            console.error('canvas.toDataURL失敗:', dataErr);
+            alert('PDF画像変換に失敗しました。画像がCORS制限に該当する可能性があります。');
+            return false;
+          }
+
+          const imgW = pageWidthMm;
+          const imgH = (canvas.height * pageWidthMm) / canvas.width;
+          if (i > 0) doc.addPage();
+          // A4の高さに収まらない場合は高さ合わせ
+          if (imgH > pageHeightMm) {
+            const scaledW = (canvas.width * pageHeightMm) / canvas.height;
+            const x = (pageWidthMm - scaledW) / 2;
+            doc.addImage(imgData, 'JPEG', x, 0, scaledW, pageHeightMm);
+          } else {
+            doc.addImage(imgData, 'JPEG', 0, 0, imgW, imgH);
           }
         }
+
+        this._hideLoadingOverlay();
+        this._savePdf(doc, filename);
+        return true;
+      } finally {
+        container.setAttribute('style', origStyle);
       }
+    } catch (e) {
+      console.error('PDF生成エラー:', e);
+      alert('PDFの出力に失敗しました: ' + (e.message || e));
+      return false;
+    } finally {
+      this._hideLoadingOverlay();
+    }
+  },
 
-      // --- Selfcare section ---
-      if (selfcareData && selfcareData.length > 0) {
-        if (y > 230) {
-          doc.addPage();
-          y = 20;
-        }
-        y += 5;
-        doc.setFontSize(13);
-        doc.setTextColor(30, 41, 59);
-        doc.text('セルフケア', 15, y);
-        y += 3;
-        doc.setDrawColor(34, 197, 94);
-        doc.setLineWidth(0.8);
-        doc.line(15, y, 90, y);
-        doc.setLineWidth(0.2);
-        y += 8;
-
-        doc.setFontSize(10);
-        for (const exercise of selfcareData) {
-          if (y > 250) {
-            doc.addPage();
-            y = 20;
-          }
-          doc.setFillColor(240, 253, 244);
-          doc.roundedRect(15, y - 4, 180, 24, 2, 2, 'F');
-          doc.setTextColor(21, 128, 61);
-          doc.setFontSize(11);
-          doc.text(exercise.name || '', 20, y + 2);
-          doc.setTextColor(30, 41, 59);
-          doc.setFontSize(9);
-          if (exercise.description) {
-            const descLines = doc.splitTextToSize(exercise.description, 160);
-            doc.text(descLines, 20, y + 9);
-          }
-          const setsInfo = [];
-          if (exercise.sets) setsInfo.push(exercise.sets);
-          if (exercise.duration) setsInfo.push(exercise.duration);
-          if (setsInfo.length > 0) {
-            doc.text(setsInfo.join(' / '), 20, y + 16);
-          }
-          y += 28;
-        }
+  // ===== 患者説明用PDF（印刷画面をそのままPDF化） =====
+  async exportPatientPdf(patientName, inspectionDate, diagnosisResult, contractionResult, selfcareData, opts) {
+    try {
+      // 印刷用HTMLをコンテナにレンダリング
+      if (typeof window.renderPrintContainer !== 'function') {
+        alert('印刷データの生成に失敗しました。ページを再読み込みしてください。');
+        return false;
       }
+      const date = inspectionDate || new Date().toISOString().split('T')[0];
+      await window.renderPrintContainer(patientName || '患者名未入力', date);
 
-      // --- Footer ---
-      this._addFooter(doc, '患者様用レポート');
-
-      // Save
-      const dateStr = (inspectionDate || new Date().toISOString().split('T')[0]).replace(/-/g, '');
+      const dateStr = date.replace(/-/g, '');
       const nameStr = patientName ? `_${patientName}` : '';
-      this._savePdf(doc, `検査レポート_${dateStr}${nameStr}.pdf`);
-      return true;
+      return await this._captureHtmlToPdf(`検査レポート_${dateStr}${nameStr}.pdf`);
     } catch (e) {
       console.error('患者用PDF出力エラー:', e);
       alert('PDFの出力に失敗しました: ' + e.message);
@@ -184,390 +196,26 @@ const PdfExport = {
     }
   },
 
-  // ===== 施術者用PDF（Clinical） =====
+  // ===== 施術者用PDF（印刷画面をそのままPDF化 + 施術者ラベル） =====
   async exportClinicalPdf(patientName, inspectionDate, diagnosisResult, contractionResult, detailData, weightBalance) {
     try {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF('p', 'mm', 'a4');
-      const causeInfo = InspectionLogic.causeLabels[diagnosisResult.primaryCause] || { icon: '?', label: '未判定', color: '#94a3b8' };
-      let y = 0;
-
-      // --- Header ---
-      doc.setFillColor(30, 41, 59);
-      doc.rect(0, 0, 210, 25, 'F');
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(14);
-      doc.text('検査レポート（施術者用）', 105, 10, { align: 'center' });
-      doc.setFontSize(8);
-      doc.text('※ 施術者専用 - 患者様への配布不可', 105, 17, { align: 'center' });
-
-      // --- Patient Info ---
-      doc.setTextColor(30, 41, 59);
-      doc.setFontSize(10);
-      y = 33;
-      doc.text(`お名前: ${patientName || '-'}`, 15, y);
-      doc.text(`検査日: ${inspectionDate || new Date().toLocaleDateString('ja-JP')}`, 130, y);
-      y += 3;
-      doc.setDrawColor(226, 232, 240);
-      doc.line(15, y, 195, y);
-      y += 8;
-
-      // --- Diagnosis Summary ---
-      doc.setFontSize(12);
-      doc.text('診断結果', 15, y);
-      y += 2;
-      doc.setDrawColor(37, 99, 235);
-      doc.setLineWidth(0.8);
-      doc.line(15, y, 60, y);
-      doc.setLineWidth(0.2);
-      y += 7;
-
-      doc.setFontSize(11);
-      doc.setTextColor(this._hexToRgb(causeInfo.color).r, this._hexToRgb(causeInfo.color).g, this._hexToRgb(causeInfo.color).b);
-      doc.text(`${causeInfo.icon} ${causeInfo.label}`, 20, y);
-      doc.setTextColor(30, 41, 59);
-      y += 7;
-      doc.setFontSize(9);
-      const summaryLines = doc.splitTextToSize(diagnosisResult.summary, 170);
-      doc.text(summaryLines, 20, y);
-      y += summaryLines.length * 5 + 5;
-
-      if (diagnosisResult.treatmentArea && diagnosisResult.treatmentArea !== 'none') {
-        doc.text(`施術の重点: ${diagnosisResult.treatmentArea}`, 20, y);
-        y += 7;
+      if (typeof window.renderPrintContainer !== 'function') {
+        alert('印刷データの生成に失敗しました。ページを再読み込みしてください。');
+        return false;
       }
+      const date = inspectionDate || new Date().toISOString().split('T')[0];
+      await window.renderPrintContainer(patientName || '患者名未入力', date);
 
-      // --- Examination Data Table ---
-      doc.setFontSize(12);
-      doc.setTextColor(30, 41, 59);
-      doc.text('検査データ', 15, y);
-      y += 2;
-      doc.setDrawColor(37, 99, 235);
-      doc.setLineWidth(0.8);
-      doc.line(15, y, 80, y);
-      doc.setLineWidth(0.2);
-      y += 7;
-
-      // Table header
-      const steps = diagnosisResult.steps || [];
-      if (steps.length > 0) {
-        doc.setFontSize(8);
-        doc.setFillColor(241, 245, 249);
-        doc.rect(15, y - 4, 180, 8, 'F');
-        const headers = ['ランドマーク'];
-        const colWidth = 40;
-        for (const step of steps) {
-          headers.push(step.name || '');
-        }
-        let x = 15;
-        doc.setTextColor(100, 116, 139);
-        for (const header of headers) {
-          doc.text(header, x + 2, y);
-          x += colWidth;
-        }
-        y += 6;
-
-        // Table rows
-        doc.setTextColor(30, 41, 59);
-        for (const [landmark, config] of Object.entries(InspectionLogic.landmarks)) {
-          x = 15;
-          const lmLabel = config.simpleName ? `${config.name}（${config.simpleName}）` : config.name;
-          doc.text(lmLabel, x + 2, y);
-          x += colWidth;
-          for (const step of steps) {
-            const val = (step.data && step.data[landmark]) || 0;
-            const label = InspectionLogic.valueLabels[val.toString()] || '-';
-            if (val < 0) doc.setTextColor(59, 130, 246);
-            else if (val > 0) doc.setTextColor(249, 115, 22);
-            else doc.setTextColor(34, 197, 94);
-            doc.text(label, x + 2, y);
-            doc.setTextColor(30, 41, 59);
-            x += colWidth;
-          }
-          y += 6;
-        }
-      }
-      y += 5;
-
-      // --- Step-by-Step Analysis ---
-      doc.setFontSize(12);
-      doc.text('段階別分析', 15, y);
-      y += 2;
-      doc.setDrawColor(37, 99, 235);
-      doc.setLineWidth(0.8);
-      doc.line(15, y, 70, y);
-      doc.setLineWidth(0.2);
-      y += 7;
-
-      doc.setFontSize(9);
-      if (steps.length >= 2 && steps[1].comparison) {
-        const comp = steps[1].comparison;
-        doc.text(`第1段階（立位→座位）: ${comp.hasFootInfluence ? '変化あり - 足部の影響' : '変化なし - 足部以外の要因'}`, 20, y);
-        y += 6;
-      }
-      if (steps.length >= 3 && steps[2].comparison) {
-        const comp = steps[2].comparison;
-        doc.text(`第2段階（座位→上半身）: ${comp.hasUpperBodyInfluence ? '変化あり - 上半身の影響' : '変化なし - 上半身以外の要因'}`, 20, y);
-        y += 6;
-      }
-      if (diagnosisResult.pattern && diagnosisResult.pattern.pattern !== 'normal') {
-        doc.text(`パターン: ${diagnosisResult.pattern.description}`, 20, y);
-        y += 6;
-      }
-      y += 5;
-
-      // --- Gravity & Sagittal Analysis ---
-      if (diagnosisResult.gravityResult) {
-        if (y > 240) { doc.addPage(); y = 20; }
-        const gr = diagnosisResult.gravityResult;
-        const gLabel = gr.side === 'left' ? '左重心' : gr.side === 'right' ? '右重心' : '均等';
-        y += 5;
-        doc.setFontSize(12);
-        doc.text('重心分析（構造医学的検査）', 15, y);
-        y += 2;
-        doc.setDrawColor(37, 99, 235);
-        doc.setLineWidth(0.8);
-        doc.line(15, y, 120, y);
-        doc.setLineWidth(0.2);
-        y += 7;
-
-        doc.setFontSize(11);
-        const scoreLeft = (gr.score && gr.score.left) || 0;
-        const scoreRight = (gr.score && gr.score.right) || 0;
-        doc.text(`判定: ${gLabel}（左荷重: ${scoreLeft}項目 / 右荷重: ${scoreRight}項目）`, 20, y);
-        y += 7;
-        doc.setFontSize(9);
-        for (const d of (gr.details || [])) {
-          if (y > 270) { doc.addPage(); y = 20; }
-          doc.text(`  ${d.label}: ${d.desc}`, 20, y);
-          y += 5;
-        }
-        y += 5;
-
-        // Sagittal plane analysis
-        if (typeof InspectionLogic !== 'undefined' && InspectionLogic.analyzeSagittal) {
-          const sagittal = InspectionLogic.analyzeSagittal(gr, diagnosisResult.gravityData);
-          if (sagittal) {
-            if (y > 230) { doc.addPage(); y = 20; }
-            doc.setFontSize(12);
-            doc.text('矢状面分析（前後の状態）', 15, y);
-            y += 2;
-            doc.setDrawColor(139, 92, 246);
-            doc.setLineWidth(0.8);
-            doc.line(15, y, 120, y);
-            doc.setLineWidth(0.2);
-            y += 7;
-
-            doc.setFontSize(9);
-            const summaryLines = doc.splitTextToSize(sagittal.summary, 170);
-            doc.text(summaryLines, 20, y);
-            y += summaryLines.length * 5 + 3;
-
-            doc.text(`骨盤: ${sagittal.pelvis.twist}`, 20, y); y += 5;
-            doc.text(`背骨: ${sagittal.spine.rotation}`, 20, y); y += 5;
-            doc.text(`肩: ${sagittal.shoulder.weightSide}`, 20, y); y += 5;
-            doc.text(`首: ${sagittal.neck.description}`, 20, y); y += 5;
-
-            doc.text(`前面収縮: ${sagittal.anterior.areas.join('・')}`, 20, y); y += 5;
-            doc.text(`後面影響: ${sagittal.posterior.areas.join('・')}`, 20, y); y += 5;
-            y += 3;
-          }
-        }
-      }
-
-      // --- Contraction Analysis ---
-      if (contractionResult) {
-        if (y > 220) {
-          doc.addPage();
-          y = 20;
-        }
-
-        doc.setFontSize(12);
-        doc.text('収縮・伸長分析', 15, y);
-        y += 2;
-        doc.setDrawColor(139, 92, 246);
-        doc.setLineWidth(0.8);
-        doc.line(15, y, 100, y);
-        doc.setLineWidth(0.2);
-        y += 7;
-
-        // Upper body detail
-        if (contractionResult.upper) {
-          doc.setFontSize(10);
-          doc.text('上半身ランドマーク:', 15, y);
-          y += 6;
-          doc.setFontSize(8);
-
-          for (const lm of (contractionResult.upper.landmarks || [])) {
-            const valLabel = InspectionLogic.valueLabels[(lm.value || 0).toString()] || '-';
-            doc.text(`  ${lm.name}: ${valLabel}`, 20, y);
-            y += 5;
-          }
-          y += 3;
-
-          for (const c of (contractionResult.upper.contractions || [])) {
-            const sideLabel = c.side === 'both' ? '両側' : c.side === 'right' ? '右側' : '左側';
-            doc.setTextColor(220, 38, 38);
-            doc.text(`  収縮: ${c.area}（${sideLabel}）`, 20, y);
-            doc.setTextColor(30, 41, 59);
-            y += 5;
-          }
-          for (const t of (contractionResult.upper.tensions || [])) {
-            const sideLabel = t.side === 'both' ? '両側' : t.side === 'right' ? '右側' : '左側';
-            doc.setTextColor(139, 92, 246);
-            doc.text(`  伸長: ${t.area}（${sideLabel}）`, 20, y);
-            doc.setTextColor(30, 41, 59);
-            y += 5;
-          }
-          y += 3;
-        }
-
-        // Lower body detail
-        if (contractionResult.lower) {
-          if (y > 250) {
-            doc.addPage();
-            y = 20;
-          }
-          doc.setFontSize(10);
-          doc.text('下半身ランドマーク:', 15, y);
-          y += 6;
-          doc.setFontSize(8);
-
-          for (const lm of (contractionResult.lower.landmarks || [])) {
-            const valLabel = InspectionLogic.valueLabels[(lm.value || 0).toString()] || '-';
-            doc.text(`  ${lm.name}: ${valLabel}`, 20, y);
-            y += 5;
-          }
-          y += 3;
-
-          for (const c of (contractionResult.lower.contractions || [])) {
-            const sideLabel = c.side === 'both' ? '両側' : c.side === 'right' ? '右側' : '左側';
-            doc.setTextColor(220, 38, 38);
-            doc.text(`  収縮: ${c.area}（${sideLabel}）`, 20, y);
-            doc.setTextColor(30, 41, 59);
-            y += 5;
-          }
-          for (const t of (contractionResult.lower.tensions || [])) {
-            const sideLabel = t.side === 'both' ? '両側' : t.side === 'right' ? '右側' : '左側';
-            doc.setTextColor(139, 92, 246);
-            doc.text(`  伸長: ${t.area}（${sideLabel}）`, 20, y);
-            doc.setTextColor(30, 41, 59);
-            y += 5;
-          }
-        }
-
-        // Detail data table
-        if (detailData) {
-          if (y > 230) {
-            doc.addPage();
-            y = 20;
-          }
-          y += 5;
-          doc.setFontSize(10);
-          doc.text('詳細ランドマークデータ:', 15, y);
-          y += 7;
-          doc.setFontSize(8);
-
-          if (detailData.upperDetail) {
-            for (const lm of InspectionLogic.upperDetailLandmarks) {
-              const val = detailData.upperDetail[lm.key];
-              if (val !== null && val !== undefined) {
-                const dlLabel = lm.simpleName ? `${lm.name}（${lm.simpleName}）` : lm.name;
-                doc.text(`  ${dlLabel}: ${InspectionLogic.valueLabels[val.toString()]}`, 20, y);
-                y += 5;
-              }
-            }
-          }
-          if (detailData.lowerDetail) {
-            for (const lm of InspectionLogic.lowerDetailLandmarks) {
-              const val = detailData.lowerDetail[lm.key];
-              if (val !== null && val !== undefined) {
-                const dlLabel = lm.simpleName ? `${lm.name}（${lm.simpleName}）` : lm.name;
-                doc.text(`  ${dlLabel}: ${InspectionLogic.valueLabels[val.toString()]}`, 20, y);
-                y += 5;
-              }
-            }
-          }
-        }
-      }
-
-      // --- Treatment Recommendations ---
-      if (y > 240) {
-        doc.addPage();
-        y = 20;
-      }
-      y += 5;
-      doc.setFontSize(12);
-      doc.setTextColor(30, 41, 59);
-      doc.text('施術プロトコル', 15, y);
-      y += 2;
-      doc.setDrawColor(245, 158, 11);
-      doc.setLineWidth(0.8);
-      doc.line(15, y, 95, y);
-      doc.setLineWidth(0.2);
-      y += 7;
-
-      doc.setFontSize(9);
-      if (typeof TreatmentProtocol !== 'undefined') {
-        const plan = TreatmentProtocol.generatePlan(diagnosisResult, contractionResult);
-        if (plan.mainProtocol) {
-          doc.text(`メインプロトコル: ${plan.mainProtocol.title}`, 20, y);
-          y += 6;
-          for (const tech of plan.mainProtocol.techniques) {
-            if (y > 270) { doc.addPage(); y = 20; }
-            doc.text(`  - ${tech.name}（${tech.target}）[${tech.duration}]`, 25, y);
-            y += 5;
-          }
-          y += 3;
-          if (plan.mainProtocol.checkpoints && plan.mainProtocol.checkpoints.length > 0) {
-            doc.text('チェックポイント:', 20, y);
-            y += 5;
-            for (const cp of plan.mainProtocol.checkpoints) {
-              doc.text(`  - ${cp}`, 25, y);
-              y += 5;
-            }
-          }
-          y += 3;
-        }
-
-        if (plan.areaProtocols.length > 0) {
-          for (const ap of plan.areaProtocols) {
-            if (y > 250) { doc.addPage(); y = 20; }
-            doc.text(`${ap.title}:`, 20, y);
-            y += 6;
-            for (const tech of ap.techniques) {
-              if (y > 270) { doc.addPage(); y = 20; }
-              doc.text(`  - ${tech.name}（${tech.target}）[${tech.duration}]`, 25, y);
-              y += 5;
-            }
-            y += 3;
-          }
-        }
-
-        if (plan.estimatedTime > 0) {
-          doc.text(`推定施術時間: 約${plan.estimatedTime}分`, 20, y);
-          y += 6;
-        }
-      } else {
-        doc.text(`主原因: ${causeInfo.label}`, 20, y);
-        y += 6;
-        doc.text(`重点部位: ${diagnosisResult.treatmentArea || '-'}`, 20, y);
-      }
-
-      // --- Footer ---
-      this._addFooter(doc, '施術者用レポート');
-
-      // Save
-      const dateStr = (inspectionDate || new Date().toISOString().split('T')[0]).replace(/-/g, '');
+      const dateStr = String(date).replace(/[-\/]/g, '');
       const nameStr = patientName ? `_${patientName}` : '';
-      this._savePdf(doc, `検査レポート_施術者用_${dateStr}${nameStr}.pdf`);
-      return true;
+      return await this._captureHtmlToPdf(`検査レポート_施術者用_${dateStr}${nameStr}.pdf`);
     } catch (e) {
       console.error('施術者用PDF出力エラー:', e);
-      alert('PDFの出力に失敗しました: ' + e.message);
+      alert('PDFの出力に失敗しました: ' + (e.message || e));
       return false;
     }
   },
+
 
   // Legacy method for backward compatibility
   async exportDiagnosis(patientName, inspectionDate, result) {
@@ -576,44 +224,202 @@ const PdfExport = {
 
   // --- Helper methods ---
 
-  // スマホ対応PDF保存（画面内にPDFビューアを表示）
-  _savePdf(doc, filename) {
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    if (isMobile) {
-      const blob = doc.output('blob');
-      const url = URL.createObjectURL(blob);
+  // SVG要素を画像(data URL)に変換
+  async _svgToImage(svgElement, width, height) {
+    return new Promise((resolve) => {
+      try {
+        const svgData = new XMLSerializer().serializeToString(svgElement);
+        const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(svgBlob);
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = width * 2;  // 高解像度
+          canvas.height = height * 2;
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          URL.revokeObjectURL(url);
+          resolve(canvas.toDataURL('image/png'));
+        };
+        img.onerror = () => {
+          URL.revokeObjectURL(url);
+          resolve(null);
+        };
+        img.src = url;
+      } catch (e) {
+        console.warn('SVG to image conversion failed:', e);
+        resolve(null);
+      }
+    });
+  },
 
-      // フルスクリーンのPDFビューアをオーバーレイ表示
-      const overlay = document.createElement('div');
-      overlay.id = 'pdfViewerOverlay';
-      overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:99999;background:#fff;display:flex;flex-direction:column;';
+  // 人体図をPDFに追加（DOM上 or オフスクリーン生成）
+  async _addBodyDiagramToPdf(doc, y, containerId, examDataOverride, detailDataOverride) {
+    let svg = null;
+    let tempContainer = null;
 
-      // ツールバー
-      const toolbar = document.createElement('div');
-      toolbar.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#1e293b;color:#fff;flex-shrink:0;';
-      toolbar.innerHTML = `
-        <button id="pdfViewerClose" style="background:none;border:1px solid rgba(255,255,255,0.3);color:#fff;font-size:15px;padding:6px 14px;border-radius:8px;cursor:pointer;">✕ 閉じる</button>
-        <span style="font-size:13px;flex:1;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0 8px;">${filename}</span>
-        <a id="pdfViewerDownload" href="${url}" download="${filename}" style="background:#3b82f6;color:#fff;text-decoration:none;font-size:14px;padding:6px 14px;border-radius:8px;">保存</a>
-      `;
-
-      // PDF表示用iframe
-      const iframe = document.createElement('iframe');
-      iframe.src = url;
-      iframe.style.cssText = 'flex:1;width:100%;border:none;';
-
-      overlay.appendChild(toolbar);
-      overlay.appendChild(iframe);
-      document.body.appendChild(overlay);
-
-      // 閉じるボタン
-      document.getElementById('pdfViewerClose').addEventListener('click', () => {
-        overlay.remove();
-        URL.revokeObjectURL(url);
-      });
-    } else {
-      doc.save(filename);
+    // まずDOM上のSVGを探す
+    const container = document.getElementById(containerId);
+    if (container) {
+      svg = container.querySelector('svg');
     }
+
+    // DOM上にない場合、オフスクリーンで生成
+    if (!svg && typeof BodyDiagram !== 'undefined') {
+      tempContainer = document.createElement('div');
+      tempContainer.id = '_pdfTempDiagram';
+      tempContainer.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:300px;height:580px;';
+      document.body.appendChild(tempContainer);
+
+      BodyDiagram.init('_pdfTempDiagram');
+
+      const eData = examDataOverride || (typeof examData !== 'undefined' ? examData : null);
+      const dData = detailDataOverride || (typeof detailData !== 'undefined' ? detailData : null);
+
+      if (dData && dData.upperDetail && dData.upperDetail.acromion !== null && dData.upperDetail.acromion !== undefined) {
+        BodyDiagram.updateUnified('_pdfTempDiagram', dData.upperDetail, dData.lowerDetail, eData?.standing);
+      } else if (eData && eData.standing) {
+        BodyDiagram.update('_pdfTempDiagram', 'firstStage', eData.standing);
+      }
+
+      svg = tempContainer.querySelector('svg');
+    }
+
+    if (!svg) return y;
+
+    const imgData = await this._svgToImage(svg, 300, 580);
+
+    // クリーンアップ
+    if (tempContainer) tempContainer.remove();
+
+    if (!imgData) return y;
+
+    const imgW = 55;
+    const imgH = imgW * (580 / 300);
+    const imgX = (210 - imgW) / 2;
+
+    if (y + imgH > 270) {
+      doc.addPage();
+      y = 20;
+    }
+    doc.addImage(imgData, 'PNG', imgX, y, imgW, imgH);
+    return y + imgH + 5;
+  },
+
+  // iOS/iPadOS判定（iPadOS 13+のデスクトップモード含む）
+  _isIOS() {
+    return /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  },
+
+  // スマホ・タブレット判定（iPadOSデスクトップモード含む）
+  _isMobile() {
+    return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || this._isIOS();
+  },
+
+  // スマホ対応PDF保存（共有/印刷/保存対応）
+  // 動作方針:
+  //   PC         → doc.save() で即ダウンロード
+  //   モバイル   → 完成通知オーバーレイを表示し、ユーザークリックで window.open / navigator.share を実行
+  //                （iOS Safari のポップアップブロック・非同期コンテキスト問題を回避するため）
+  _savePdf(doc, filename) {
+    const isMobile = this._isMobile();
+
+    if (!isMobile) {
+      try {
+        doc.save(filename);
+      } catch (e) {
+        console.error('PC PDF save error:', e);
+        alert('PDF保存に失敗しました: ' + e.message);
+      }
+      return;
+    }
+
+    // モバイル: Blob 生成
+    let blob, url;
+    try {
+      blob = doc.output('blob');
+      url = URL.createObjectURL(blob);
+    } catch (e) {
+      console.error('PDF blob生成エラー:', e);
+      alert('PDF生成に失敗しました: ' + e.message);
+      return;
+    }
+
+    // 既存オーバーレイがあれば削除
+    const existing = document.getElementById('pdfResultOverlay');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'pdfResultOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,0.88);display:flex;align-items:center;justify-content:center;padding:20px;-webkit-tap-highlight-color:transparent;';
+    overlay.innerHTML = `
+      <div style="background:white;border-radius:16px;padding:24px;max-width:400px;width:100%;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.3);max-height:90vh;overflow-y:auto;">
+        <div style="font-size:56px;margin-bottom:12px;line-height:1;">📄</div>
+        <h3 style="margin:0 0 8px;font-size:18px;color:#1e293b;font-weight:700;">PDFが完成しました</h3>
+        <p style="margin:0 0 18px;font-size:12px;color:#64748b;word-break:break-all;line-height:1.4;">${filename}</p>
+        <button id="pdfOpenBtn" type="button" style="display:block;width:100%;padding:14px;background:#3b82f6;color:white;border:none;border-radius:10px;font-size:16px;font-weight:600;margin-bottom:10px;cursor:pointer;-webkit-appearance:none;">PDFを開く</button>
+        <button id="pdfShareBtn" type="button" style="display:block;width:100%;padding:14px;background:#22c55e;color:white;border:none;border-radius:10px;font-size:16px;font-weight:600;margin-bottom:10px;cursor:pointer;-webkit-appearance:none;">共有 / 保存 / 印刷</button>
+        <button id="pdfCloseBtn" type="button" style="display:block;width:100%;padding:12px;background:#f1f5f9;color:#64748b;border:none;border-radius:10px;font-size:14px;cursor:pointer;-webkit-appearance:none;">閉じる</button>
+        <p style="margin:14px 0 0;font-size:11px;color:#94a3b8;line-height:1.6;text-align:left;">
+          <strong>iPad/iPhone の場合</strong><br>
+          「PDFを開く」で表示される画面の<br>
+          共有ボタン（□↑）から<br>
+          ・「ファイルに保存」で保存<br>
+          ・「プリント」で印刷できます
+        </p>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    const openBtn = overlay.querySelector('#pdfOpenBtn');
+    const shareBtn = overlay.querySelector('#pdfShareBtn');
+    const closeBtn = overlay.querySelector('#pdfCloseBtn');
+
+    const cleanup = () => {
+      if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+      // URLは少し遅延させて解放（新規タブ読込後に失効しないよう）
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    };
+
+    openBtn.addEventListener('click', () => {
+      // ユーザークリックから直接呼ぶ → iOSのポップアップブロックを回避
+      const win = window.open(url, '_blank');
+      if (!win || win.closed || typeof win.closed === 'undefined') {
+        // ポップアップブロックされた場合は同タブで開く
+        window.location.href = url;
+      }
+    });
+
+    shareBtn.addEventListener('click', async () => {
+      const file = new File([blob], filename, { type: 'application/pdf' });
+      try {
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: filename });
+          return;
+        }
+      } catch (e) {
+        if (e.name === 'AbortError') return;
+        console.warn('navigator.share failed:', e);
+      }
+      // フォールバック: downloadリンクを試す
+      try {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.rel = 'noopener';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } catch (e) {
+        // 最終フォールバック: 新規タブで開く
+        window.open(url, '_blank');
+      }
+    });
+
+    closeBtn.addEventListener('click', cleanup);
   },
 
   _addFooter(doc, reportType) {
