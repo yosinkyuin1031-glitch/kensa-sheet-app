@@ -2658,6 +2658,46 @@
 
     // 画像の読み込み完了を待ってから印刷（セルフケアイラスト対策）
     waitForImages(container).then(() => {
+      // 各 .print-page が A4 高さを超える場合は zoom で縮小し、必ず1枚に収める
+      const A4_WIDTH_PX = 794;
+      const A4_HEIGHT_PX = 1123;
+      const PRINT_PADDING_PX = 38;  // @media print の padding: 8mm 10mm ≒ 30〜38px
+      const targetInnerHeight = A4_HEIGHT_PX - PRINT_PADDING_PX;
+
+      const origStyle = container.getAttribute('style') || '';
+      container.setAttribute('style',
+        'display:block !important;position:fixed;top:0;left:-10000px;width:210mm;background:white;z-index:-1;');
+
+      const pages = Array.from(container.querySelectorAll('.print-page'));
+      const savedZooms = pages.map(p => p.style.zoom || '');
+      for (const p of pages) {
+        // 計測用に A4 幅固定、box-sizing を実印刷と同じ条件に
+        const prevCssText = p.style.cssText;
+        p.setAttribute('data-prev-style', prevCssText);
+        p.style.cssText = prevCssText +
+          ';width:' + A4_WIDTH_PX + 'px;max-width:' + A4_WIDTH_PX + 'px;padding:30px 38px;box-sizing:border-box;';
+        // 測定
+        const naturalH = p.scrollHeight;
+        if (naturalH > targetInnerHeight) {
+          const factor = Math.max(0.5, targetInnerHeight / naturalH);
+          p.style.zoom = String(factor);
+        }
+      }
+      // 元の位置スタイルに戻す（print-container は display:none に戻す）
+      container.setAttribute('style', origStyle);
+
+      // afterprint で zoom を元に戻す
+      const cleanup = () => {
+        pages.forEach((p, i) => {
+          const prev = p.getAttribute('data-prev-style') || '';
+          p.style.cssText = prev;
+          p.removeAttribute('data-prev-style');
+          p.style.zoom = savedZooms[i];
+        });
+        window.removeEventListener('afterprint', cleanup);
+      };
+      window.addEventListener('afterprint', cleanup);
+
       setTimeout(() => window.print(), 100);
     });
   }

@@ -3263,7 +3263,8 @@ body[data-view="patient"] .patient-treatment-hint p {
 @media print {
   /* アプリ全体を非表示、印刷コンテナのみ表示 */
   body, html {
-    margin: 0; padding: 0;
+    margin: 0 !important;
+    padding: 0 !important;
     background: white !important;
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
@@ -3272,6 +3273,8 @@ body[data-view="patient"] .patient-treatment-hint p {
 
   .print-container {
     display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   *, *::before, *::after {
@@ -3280,15 +3283,37 @@ body[data-view="patient"] .patient-treatment-hint p {
     color-adjust: exact !important;
   }
 
+  /* ブラウザの @page マージンを 0 にして A4 全面を使う */
   @page {
     size: A4;
-    margin: 8mm;
+    margin: 0;
   }
 
   /* SVGの色を確実に印刷 */
   svg, svg * {
     print-color-adjust: exact !important;
     -webkit-print-color-adjust: exact !important;
+  }
+
+  /* 各 .print-page を必ず 1 枚の A4 に収める */
+  .print-page {
+    width: 210mm !important;
+    height: 297mm !important;
+    max-width: 210mm !important;
+    max-height: 297mm !important;
+    min-height: 297mm !important;
+    margin: 0 !important;
+    padding: 8mm 10mm !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    page-break-after: always !important;
+    page-break-inside: avoid !important;
+    break-after: page !important;
+    break-inside: avoid !important;
+  }
+  .print-page:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
   }
 
   /* ページ区切り */
