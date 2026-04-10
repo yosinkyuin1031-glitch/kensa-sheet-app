@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bodycheck-v32-ipad-fix';
+const CACHE_NAME = 'bodycheck-v33-2page-fit';
 const urlsToCache = [
   '/',
   '/index.html',
