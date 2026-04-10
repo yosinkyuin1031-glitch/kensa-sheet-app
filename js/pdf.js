@@ -91,8 +91,45 @@ const PdfExport = {
       container.setAttribute('style',
         'display:block !important;position:fixed;top:0;left:-10000px;width:210mm;background:white;z-index:-1;');
 
+      // 各 .print-page に「必ずA4に収める」ためのフィット処理を適用
+      const pages = Array.from(container.querySelectorAll('.print-page'));
+      const savedPageStyles = pages.map(p => p.getAttribute('style') || '');
+      const savedInnerStyles = [];
+      // 210mm × 297mm を 96dpi 基準で px に換算
+      const A4_WIDTH_PX = 794;
+      const A4_HEIGHT_PX = 1123;
+
+      // 内部コンテンツを scale で縮小するためのラッパーを挿入
+      for (let i = 0; i < pages.length; i++) {
+        const page = pages[i];
+        // いったん A4 幅に固定して自然高さを計測
+        page.setAttribute('style',
+          'width:' + A4_WIDTH_PX + 'px !important;' +
+          'min-height:' + A4_HEIGHT_PX + 'px !important;' +
+          'max-height:' + A4_HEIGHT_PX + 'px !important;' +
+          'height:' + A4_HEIGHT_PX + 'px !important;' +
+          'box-sizing:border-box;overflow:hidden;' +
+          'display:block;background:white;'
+        );
+        // 既存の子要素を1つのラッパーで包んで transform: scale を適用
+        const inner = document.createElement('div');
+        inner.className = 'pdf-fit-inner';
+        inner.style.cssText = 'transform-origin:top left;width:' + A4_WIDTH_PX + 'px;';
+        while (page.firstChild) inner.appendChild(page.firstChild);
+        page.appendChild(inner);
+        // 自然高さ計測
+        const naturalH = inner.scrollHeight;
+        savedInnerStyles.push({ page, inner, naturalH });
+        // A4 高さを超える場合は scale で縮小
+        if (naturalH > A4_HEIGHT_PX) {
+          const factor = A4_HEIGHT_PX / naturalH;
+          inner.style.transform = 'scale(' + factor + ')';
+          // transformの分、ラッパー幅を逆スケールして中身がA4幅を使えるようにする
+          inner.style.width = (A4_WIDTH_PX / factor) + 'px';
+        }
+      }
+
       try {
-        const pages = container.querySelectorAll('.print-page');
         if (pages.length === 0) {
           alert('印刷データが生成されていません。');
           return false;
@@ -118,7 +155,11 @@ const PdfExport = {
               allowTaint: false,
               backgroundColor: '#ffffff',
               logging: false,
-              imageTimeout: 8000
+              imageTimeout: 8000,
+              width: A4_WIDTH_PX,
+              height: A4_HEIGHT_PX,
+              windowWidth: A4_WIDTH_PX,
+              windowHeight: A4_HEIGHT_PX
             });
           } catch (h2cErr) {
             console.warn('html2canvas 1回目失敗、低解像度で再試行:', h2cErr);
@@ -129,7 +170,11 @@ const PdfExport = {
                 allowTaint: true,
                 backgroundColor: '#ffffff',
                 logging: false,
-                imageTimeout: 8000
+                imageTimeout: 8000,
+                width: A4_WIDTH_PX,
+                height: A4_HEIGHT_PX,
+                windowWidth: A4_WIDTH_PX,
+                windowHeight: A4_HEIGHT_PX
               });
             } catch (retryErr) {
               console.error('html2canvas 再試行も失敗:', retryErr);
@@ -147,23 +192,22 @@ const PdfExport = {
             return false;
           }
 
-          const imgW = pageWidthMm;
-          const imgH = (canvas.height * pageWidthMm) / canvas.width;
           if (i > 0) doc.addPage();
-          // A4の高さに収まらない場合は高さ合わせ
-          if (imgH > pageHeightMm) {
-            const scaledW = (canvas.width * pageHeightMm) / canvas.height;
-            const x = (pageWidthMm - scaledW) / 2;
-            doc.addImage(imgData, 'JPEG', x, 0, scaledW, pageHeightMm);
-          } else {
-            doc.addImage(imgData, 'JPEG', 0, 0, imgW, imgH);
-          }
+          // 固定A4サイズで画像を貼り付け（縦横比は確実にA4）
+          doc.addImage(imgData, 'JPEG', 0, 0, pageWidthMm, pageHeightMm);
         }
 
         this._hideLoadingOverlay();
         this._savePdf(doc, filename);
         return true;
       } finally {
+        // ラッパーを解除し、元のスタイルに戻す
+        for (let i = 0; i < savedInnerStyles.length; i++) {
+          const { page, inner } = savedInnerStyles[i];
+          while (inner.firstChild) page.appendChild(inner.firstChild);
+          if (inner.parentNode === page) page.removeChild(inner);
+          page.setAttribute('style', savedPageStyles[i]);
+        }
         container.setAttribute('style', origStyle);
       }
     } catch (e) {

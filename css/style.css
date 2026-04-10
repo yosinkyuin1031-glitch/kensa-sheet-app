@@ -3637,6 +3637,21 @@ body[data-view="patient"] .patient-treatment-hint p {
   padding: 6px 8px;
   position: relative;
   break-inside: avoid;
+  min-width: 0;
+  overflow: hidden;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+/* グリッドアイテムがコンテンツに引っ張られて広がらないよう固定 */
+.print-selfcare-grid-2,
+.print-selfcare-grid-4 {
+  min-width: 0;
+}
+.print-selfcare-grid-2 > .print-selfcare-card,
+.print-selfcare-grid-4 > .print-selfcare-card {
+  min-width: 0;
+  max-width: 100%;
 }
 
 .print-selfcare-num {
@@ -3686,18 +3701,21 @@ body[data-view="patient"] .patient-treatment-hint p {
 
 .print-selfcare-illust svg,
 .print-selfcare-illust img {
-  width: 100%;
+  /* 画像のアスペクト比を必ず保つ（width:100%とmax-heightの組み合わせで潰れるのを防ぐ） */
+  width: auto !important;
+  height: auto !important;
   max-width: 120px;
-  height: auto;
   max-height: 90px;
   border-radius: 6px;
   object-fit: contain;
+  display: block;
+  margin: 0 auto;
 }
 
 .print-selfcare-grid-2 .print-selfcare-illust svg,
 .print-selfcare-grid-2 .print-selfcare-illust img {
-  max-width: 140px;
-  max-height: 100px;
+  max-width: 160px;
+  max-height: 120px;
 }
 
 .print-selfcare-steps {
