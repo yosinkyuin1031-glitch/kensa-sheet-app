@@ -211,9 +211,22 @@ const Storage = {
       if (extraFields.visitType) row.visit_type = extraFields.visitType;
       if (extraFields.medicalHistory) row.medical_history = extraFields.medicalHistory;
       if (extraFields.symptomDetail) row.symptom_detail = extraFields.symptomDetail;
-      if (extraFields.gravityData) row.gravity_data = extraFields.gravityData;
-      if (extraFields.gravityResult) row.gravity_result = extraFields.gravityResult;
+      // gravityData / gravityResult は diagnosis_result JSONB 内に格納されるため、
+      // 専用カラムへの書き込みは行わない（スキーマ差異によるエラー回避）
     }
+
+    // 防御コード: ホワイトリスト方式でスキーマに無いカラムを除外
+    // ks_examinations の既知カラムのみ残す
+    const SAFE_COLUMNS = new Set([
+      'clinic_id', 'patient_id', 'patient_name', 'exam_date', 'exam_data',
+      'diagnosis_result', 'detail_data', 'contraction_result', 'weight_balance',
+      'pain_level', 'chief_complaints', 'memo', 'summary', 'created_by',
+      'patient_age', 'patient_gender', 'patient_occupation', 'visit_type',
+      'medical_history', 'symptom_detail'
+    ]);
+    Object.keys(row).forEach(k => {
+      if (!SAFE_COLUMNS.has(k)) delete row[k];
+    });
 
     const { error } = await this._db()
       .from('ks_examinations')
@@ -393,6 +406,7 @@ const Storage = {
           <button type="button" class="btn btn-sm btn-primary karte-load-btn" data-id="${entry.id}">読み込み</button>
           <button type="button" class="btn btn-sm btn-secondary karte-pdf-btn" data-id="${entry.id}">PDF</button>
           <button type="button" class="btn btn-sm btn-secondary karte-clinical-pdf-btn" data-id="${entry.id}">施術者PDF</button>
+          <button type="button" class="btn btn-sm btn-accent karte-print-btn" data-id="${entry.id}">印刷</button>
           <button type="button" class="btn btn-sm btn-secondary karte-delete-btn" data-id="${entry.id}">削除</button>
         </div>
       </div>`;
@@ -432,6 +446,14 @@ const Storage = {
         e.stopPropagation();
         if (typeof window.exportClinicalPdfFromEntry === 'function') {
           await window.exportClinicalPdfFromEntry(btn.dataset.id);
+        }
+      });
+    });
+    listDiv.querySelectorAll('.karte-print-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        if (typeof window.printSheetFromEntry === 'function') {
+          await window.printSheetFromEntry(btn.dataset.id);
         }
       });
     });
