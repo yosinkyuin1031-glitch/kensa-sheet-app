@@ -3295,34 +3295,46 @@ body[data-view="patient"] .patient-treatment-hint p {
     -webkit-print-color-adjust: exact !important;
   }
 
-  /* 各 .print-page を必ず 1 枚の A4 に収める */
+  /* 各 .print-page を必ず 1 枚の A4 に収める
+     - height を 296mm にして mm→px 変換誤差によるわずかなオーバーフローを防ぐ
+     - page-break-after は付けない（最終ページに空白ページが生成されるのを防ぐ）
+     - 代わりに .print-page-back にのみ page-break-before を指定する */
   .print-page {
     width: 210mm !important;
-    height: 297mm !important;
+    height: 296mm !important;
     max-width: 210mm !important;
-    max-height: 297mm !important;
-    min-height: 297mm !important;
+    max-height: 296mm !important;
+    min-height: 0 !important;
     margin: 0 !important;
     padding: 8mm 10mm !important;
     box-sizing: border-box !important;
     overflow: hidden !important;
-    page-break-after: always !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
     page-break-inside: avoid !important;
-    break-after: page !important;
     break-inside: avoid !important;
   }
-  .print-page:last-child {
-    page-break-after: auto !important;
-    break-after: auto !important;
+
+  /* 裏面のみ新しいページへ */
+  .print-page-front {
+    page-break-after: always !important;
+    break-after: page !important;
+  }
+  .print-page-back {
+    page-break-before: always !important;
+    break-before: page !important;
   }
 
-  /* ページ区切り */
-  .print-page-back {
-    page-break-before: always;
-    break-before: page;
-  }
   .print-selfcare-card {
     break-inside: avoid;
+  }
+
+  /* 印刷コンテナ外に余計な要素が出ないよう body も隔離 */
+  body > *:not(.print-container) {
+    display: none !important;
+  }
+  .print-container > *:not(.print-page) {
+    display: none !important;
   }
 }
 
