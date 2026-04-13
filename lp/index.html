@@ -3,15 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>カラダマップ | 治療院向け検査記録アプリ - 3分で体の今を見える化</title>
-<meta name="description" content="治療家が作った検査アプリ。5段階の検査入力で原因部位を自動特定、患者用PDFを即出力。モニター先着5名3,980円/月。">
-<meta name="robots" content="index, follow">
-<meta property="og:title" content="カラダマップ | 治療院向け検査記録アプリ">
-<meta property="og:description" content="治療家が作った検査アプリ。5段階の検査入力で原因部位を自動特定、患者用PDFを即出力。">
-<meta property="og:type" content="website">
-<link rel="canonical" href="https://kensa-sheet-app.vercel.app/lp/">
+<title>カラダマップ - 整体院向け身体カラダマップ</title>
 <style>
-/* ========== リセット・ベース ========== */
 *, *::before, *::after {
   margin: 0;
   padding: 0;
@@ -32,9 +25,9 @@ a {
 
 img {
   max-width: 100%;
-  height: auto;
 }
 
+/* ユーティリティ */
 .container {
   max-width: 960px;
   margin: 0 auto;
@@ -54,93 +47,37 @@ img {
   letter-spacing: 0.02em;
 }
 
-.section-title .en {
+.section-title span {
   display: block;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 400;
   color: #2563eb;
   margin-bottom: 8px;
   letter-spacing: 0.1em;
 }
 
-/* ========== CTAボタン ========== */
-.cta-btn-primary {
-  display: inline-block;
-  background: #2563eb;
-  color: #fff;
-  font-size: 18px;
-  font-weight: 700;
-  padding: 18px 40px;
-  border-radius: 8px;
-  transition: background 0.2s;
-  letter-spacing: 0.02em;
-  border: none;
-  cursor: pointer;
-  text-align: center;
-}
-
-.cta-btn-primary:hover {
-  background: #1d4ed8;
-}
-
-.cta-btn-secondary {
-  display: inline-block;
-  background: transparent;
-  color: #fff;
-  font-size: 15px;
-  font-weight: 600;
-  padding: 14px 32px;
-  border-radius: 8px;
-  border: 2px solid rgba(255,255,255,0.5);
-  transition: all 0.2s;
-  cursor: pointer;
-  text-align: center;
-}
-
-.cta-btn-secondary:hover {
-  background: rgba(255,255,255,0.1);
-  border-color: rgba(255,255,255,0.8);
-}
-
-.cta-btn-secondary--dark {
-  color: #2563eb;
-  border-color: #2563eb;
-}
-
-.cta-btn-secondary--dark:hover {
-  background: #eff6ff;
-}
-
-.cta-btn-line {
+/* CTAボタン共通 */
+.cta-btn {
   display: inline-block;
   background: #06c755;
   color: #fff;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
-  padding: 16px 36px;
+  padding: 18px 48px;
   border-radius: 8px;
   transition: opacity 0.2s;
   letter-spacing: 0.02em;
 }
 
-.cta-btn-line:hover {
+.cta-btn:hover {
   opacity: 0.85;
 }
 
-.cta-sub {
+.cta-btn-sub {
   display: block;
   font-size: 12px;
   font-weight: 400;
   margin-top: 4px;
-  opacity: 0.8;
-}
-
-.cta-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  justify-content: center;
-  align-items: center;
 }
 
 /* ========== ヒーロー ========== */
@@ -198,13 +135,9 @@ img {
   line-height: 1.8;
 }
 
-.hero-cta {
-  margin-bottom: 40px;
-}
-
 .hero-screenshot {
   max-width: 700px;
-  margin: 0 auto;
+  margin: 40px auto 0;
   background: rgba(255,255,255,0.08);
   border: 1px solid rgba(255,255,255,0.15);
   border-radius: 12px;
@@ -219,7 +152,7 @@ img {
   box-shadow: 0 4px 20px rgba(0,0,0,0.3);
 }
 
-/* ========== 限定バナー ========== */
+/* 限定バナー */
 .limited-banner {
   background: linear-gradient(90deg, #dc2626, #ef4444);
   color: #fff;
@@ -230,7 +163,11 @@ img {
   letter-spacing: 0.04em;
 }
 
-/* ========== 悩みセクション ========== */
+.limited-banner strong {
+  font-size: 18px;
+}
+
+/* ========== 課題セクション ========== */
 .problems {
   background: #f8fafc;
 }
@@ -260,32 +197,33 @@ img {
   margin-top: 6px;
 }
 
-/* ========== カラダマップとは ========== */
-.about-box {
+/* ========== 解決策 ========== */
+.solution-box {
   background: linear-gradient(135deg, #eff6ff, #dbeafe);
   border-radius: 16px;
   padding: 48px 40px;
   text-align: center;
   max-width: 720px;
-  margin: 0 auto 48px;
+  margin: 0 auto;
 }
 
-.about-box h3 {
+.solution-box h3 {
   font-size: 24px;
   font-weight: 700;
   margin-bottom: 20px;
   color: #1e40af;
 }
 
-.about-box p {
+.solution-box p {
   font-size: 15px;
   color: #334155;
   line-height: 2;
 }
 
+/* ========== 機能カード ========== */
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 24px;
 }
 
@@ -327,21 +265,669 @@ img {
   line-height: 1.7;
 }
 
-/* ========== 操作の流れ ========== */
-.flow-steps {
+/* ========== デモスライドショー ========== */
+.demo-slideshow {
   max-width: 700px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.demo-slideshow-viewport {
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  background: #f1f5f9;
+}
+
+.demo-slideshow-viewport img {
+  width: 100%;
+  display: block;
+  transition: opacity 0.5s ease;
+}
+
+.demo-slideshow-caption {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 14px;
+  color: #64748b;
+  min-height: 2em;
+}
+
+.demo-slideshow-nav {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.demo-slideshow-nav button {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: none;
+  background: #cbd5e1;
+  cursor: pointer;
+  transition: background 0.2s;
+  padding: 0;
+}
+
+.demo-slideshow-nav button.active {
+  background: #2563eb;
+  width: 28px;
+  border-radius: 5px;
+}
+
+.demo-slideshow-arrows {
+  position: absolute;
+  top: 50%;
+  left: -16px;
+  right: -16px;
+  transform: translateY(-50%);
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.demo-slideshow-arrows button {
+  pointer-events: auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.9);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  cursor: pointer;
+  font-size: 18px;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.demo-slideshow-arrows button:hover {
+  background: #fff;
+}
+
+/* ========== ビフォーアフター訴求 ========== */
+.ba-section {
+  background: linear-gradient(135deg, #0f172a, #1e3a5f);
+  color: #fff;
+}
+
+.ba-section .section-title {
+  color: #fff;
+}
+
+.ba-section .section-title span {
+  color: #60a5fa;
+}
+
+.ba-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: start;
+  max-width: 900px;
   margin: 0 auto;
 }
 
-.flow-step {
-  display: flex;
-  gap: 24px;
-  align-items: flex-start;
-  margin-bottom: 40px;
+.ba-text h3 {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  line-height: 1.5;
 }
 
-.flow-step-number {
+.ba-text p {
+  font-size: 15px;
+  opacity: 0.85;
+  line-height: 2;
+  margin-bottom: 16px;
+}
+
+.ba-points {
+  list-style: none;
+}
+
+.ba-points li {
+  font-size: 14px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-left: 20px;
+  position: relative;
+}
+
+.ba-points li::before {
+  content: "-";
+  position: absolute;
+  left: 0;
+}
+
+.ba-mockup {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.ba-mockup-inner {
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* ビフォーアフター比較フルモック */
+.ba-full-mock {
+  background: #eef4fb;
+  border-radius: 12px;
+  padding: 24px 16px 20px;
+}
+
+.ba-full-mock-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 4px;
+}
+
+.ba-full-mock-date {
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 16px;
+}
+
+.ba-full-mock-hr {
+  border: none;
+  border-top: 2px solid #3b82f6;
+  margin-bottom: 16px;
+}
+
+.ba-diagrams-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.ba-diagram-col {
+  flex: 1;
+  text-align: center;
+}
+
+.ba-diagram-col .ba-col-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 8px;
+}
+
+.ba-diagram-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 8px 4px 4px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  border: 1px solid #e2e8f0;
+}
+
+.ba-arrow-col {
+  font-size: 28px;
+  color: #94a3b8;
   flex-shrink: 0;
+  padding: 0 4px;
+}
+
+.ba-diagnosis-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 100px;
+  margin-top: 8px;
+}
+
+.ba-summary-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.ba-summary-item {
+  flex: 1;
+  background: #fff;
+  border-radius: 8px;
+  padding: 12px 8px;
+  text-align: center;
+}
+
+.ba-summary-label {
+  font-size: 11px;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.ba-summary-value {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* ========== 導入メリット ========== */
+.merits-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+  text-align: center;
+}
+
+.merit-item {
+  padding: 24px 16px;
+}
+
+.merit-number {
+  font-size: 48px;
+  font-weight: 800;
+  color: #2563eb;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.merit-unit {
+  font-size: 16px;
+}
+
+.merit-item h4 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.merit-item p {
+  font-size: 13px;
+  color: #64748b;
+}
+
+/* ========== ギャラリー ========== */
+.gallery {
+  background: #f8fafc;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.gallery-item {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.gallery-item img {
+  width: 100%;
+  display: block;
+  aspect-ratio: 9 / 16;
+  object-fit: cover;
+  object-position: top;
+}
+
+.gallery-item svg {
+  width: 100%;
+  display: block;
+}
+
+.gallery-label {
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  color: #334155;
+}
+
+/* ========== 料金 ========== */
+.pricing {
+  text-align: center;
+}
+
+.pricing-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  max-width: 680px;
+  margin: 0 auto 40px;
+}
+
+.pricing-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 40px 32px;
+  position: relative;
+}
+
+.pricing-card.recommended {
+  border: 2px solid #2563eb;
+  box-shadow: 0 8px 32px rgba(37, 99, 235, 0.15);
+}
+
+.pricing-card.recommended::before {
+  content: "今だけ";
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #2563eb;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 4px 20px;
+  border-radius: 100px;
+}
+
+.pricing-label {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 16px;
+}
+
+.pricing-price {
+  font-size: 48px;
+  font-weight: 800;
+  color: #1a1a2e;
+  line-height: 1;
+}
+
+.pricing-price .yen {
+  font-size: 20px;
+  font-weight: 400;
+}
+
+.pricing-price .tax {
+  font-size: 13px;
+  font-weight: 400;
+  color: #64748b;
+}
+
+.pricing-price .period {
+  font-size: 16px;
+  font-weight: 400;
+  color: #64748b;
+}
+
+.pricing-card.regular .pricing-price {
+  color: #94a3b8;
+  text-decoration: line-through;
+}
+
+.pricing-note {
+  margin-top: 16px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.pricing-features {
+  list-style: none;
+  text-align: left;
+  margin-top: 24px;
+}
+
+.pricing-features li {
+  font-size: 14px;
+  padding: 6px 0;
+  padding-left: 20px;
+  position: relative;
+}
+
+.pricing-features li::before {
+  content: "-";
+  position: absolute;
+  left: 0;
+}
+
+.pricing-deadline {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 20px;
+  max-width: 480px;
+  margin: 0 auto 32px;
+}
+
+.pricing-deadline p {
+  font-size: 16px;
+  font-weight: 700;
+  color: #dc2626;
+}
+
+.pricing-deadline p.sub {
+  font-size: 13px;
+  font-weight: 400;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+/* Stripe決済ボタン */
+.stripe-checkout-section {
+  max-width: 480px;
+  margin: 40px auto 0;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 32px 28px;
+  text-align: left;
+}
+
+.stripe-checkout-section h4 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-align: center;
+  color: #1a1a2e;
+}
+
+.stripe-field {
+  margin-bottom: 16px;
+}
+
+.stripe-field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 6px;
+}
+
+.stripe-field input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 15px;
+  font-family: inherit;
+  transition: border-color 0.2s;
+  background: #fff;
+}
+
+.stripe-field input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+}
+
+.stripe-submit-btn {
+  width: 100%;
+  padding: 16px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 8px;
+  font-family: inherit;
+}
+
+.stripe-submit-btn:hover {
+  background: #1d4ed8;
+}
+
+.stripe-submit-btn:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
+
+.stripe-note {
+  font-size: 12px;
+  color: #94a3b8;
+  text-align: center;
+  margin-top: 12px;
+  line-height: 1.6;
+}
+
+.stripe-or {
+  text-align: center;
+  margin: 24px 0 16px;
+  font-size: 13px;
+  color: #94a3b8;
+  position: relative;
+}
+
+.stripe-or::before,
+.stripe-or::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 40%;
+  height: 1px;
+  background: #e2e8f0;
+}
+
+.stripe-or::before { left: 0; }
+.stripe-or::after { right: 0; }
+
+/* ========== ポジショニング ========== */
+.positioning-section {
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  color: #fff;
+  text-align: center;
+}
+
+.positioning-section .section-title { color: #fff; }
+.positioning-section .section-title span { color: rgba(255,255,255,0.7); }
+
+.positioning-box {
+  background: rgba(255,255,255,0.12);
+  border: 2px solid rgba(255,255,255,0.25);
+  border-radius: 16px;
+  padding: 32px 40px;
+  max-width: 720px;
+  margin: 0 auto 32px;
+  font-size: 16px;
+  line-height: 2;
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  max-width: 800px;
+  margin: 0 auto 32px;
+}
+
+.cat-card {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 12px;
+  padding: 24px 16px;
+  text-align: center;
+}
+
+.cat-card .cat-label {
+  font-size: 12px;
+  opacity: 0.7;
+  margin-bottom: 6px;
+}
+
+.cat-card h4 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.cat-card .cat-price {
+  font-size: 18px;
+  font-weight: 800;
+  color: #fbbf24;
+  margin-bottom: 6px;
+}
+
+.cat-card p {
+  font-size: 12px;
+  opacity: 0.8;
+  line-height: 1.6;
+}
+
+/* ========== 料金比較テーブル ========== */
+.compare-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  margin: 0 auto;
+  max-width: 800px;
+}
+
+.compare-table th {
+  background: #2563eb;
+  color: #fff;
+  padding: 14px 16px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.compare-table td {
+  padding: 14px 16px;
+  font-size: 13px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #334155;
+}
+
+.compare-table tr:nth-child(even) td { background: #f8fafc; }
+.compare-table tr:last-child td { border-bottom: none; }
+
+.compare-table tr.highlight td {
+  background: #eff6ff;
+  font-weight: 700;
+  color: #2563eb;
+  font-size: 14px;
+}
+
+/* ========== ワークフロー ========== */
+.workflow-steps {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 800px;
+  margin: 0 auto;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.workflow-step {
+  flex: 1;
+  min-width: 120px;
+  max-width: 160px;
+  text-align: center;
+}
+
+.workflow-step .step-circle {
   width: 48px;
   height: 48px;
   background: #2563eb;
@@ -352,273 +938,48 @@ img {
   justify-content: center;
   font-size: 20px;
   font-weight: 800;
+  margin: 0 auto 12px;
 }
 
-.flow-step-content h4 {
-  font-size: 18px;
-  font-weight: 700;
-  margin-bottom: 8px;
-}
-
-.flow-step-content p {
+.workflow-step h4 {
   font-size: 14px;
-  color: #64748b;
-  line-height: 1.7;
-}
-
-.flow-step-content img {
-  margin-top: 12px;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-}
-
-.video-placeholder {
-  max-width: 700px;
-  margin: 40px auto 0;
-  background: #f1f5f9;
-  border: 2px dashed #cbd5e1;
-  border-radius: 12px;
-  padding: 60px 20px;
-  text-align: center;
-  color: #64748b;
-  font-size: 15px;
-}
-
-/* ========== 導入された先生の声 ========== */
-.testimonials {
-  background: #f8fafc;
-}
-
-.testimonial-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 24px;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.testimonial-card {
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 32px 24px;
-}
-
-.testimonial-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.testimonial-photo {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  object-fit: cover;
-  background: #e2e8f0;
-}
-
-.testimonial-name {
-  font-size: 15px;
   font-weight: 700;
-}
-
-.testimonial-clinic {
-  font-size: 13px;
-  color: #64748b;
-}
-
-.testimonial-body {
-  font-size: 15px;
-  line-height: 1.8;
-  color: #334155;
-}
-
-/* ========== 料金プラン ========== */
-.pricing {
-  text-align: center;
-}
-
-.pricing-cards {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-  max-width: 900px;
-  margin: 0 auto 40px;
-}
-
-.pricing-card {
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 36px 24px;
-  position: relative;
-  background: #fff;
-}
-
-.pricing-card.recommended {
-  border: 2px solid #2563eb;
-  box-shadow: 0 8px 32px rgba(37, 99, 235, 0.15);
-}
-
-.pricing-card.recommended::before {
-  content: "先着5名限定";
-  position: absolute;
-  top: -14px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #dc2626;
-  color: #fff;
-  font-size: 13px;
-  font-weight: 700;
-  padding: 4px 20px;
-  border-radius: 100px;
-  white-space: nowrap;
-}
-
-.pricing-card.coming-soon {
-  opacity: 0.6;
-}
-
-.pricing-label {
-  font-size: 16px;
-  font-weight: 700;
-  color: #1a1a2e;
-  margin-bottom: 8px;
-}
-
-.pricing-price {
-  font-size: 42px;
-  font-weight: 800;
-  color: #1a1a2e;
-  line-height: 1.2;
   margin-bottom: 4px;
 }
 
-.pricing-price .yen {
-  font-size: 18px;
-  font-weight: 400;
-}
-
-.pricing-price .period {
-  font-size: 16px;
-  font-weight: 400;
-  color: #64748b;
-}
-
-.pricing-price .tax {
-  display: block;
+.workflow-step p {
   font-size: 12px;
-  font-weight: 400;
-  color: #94a3b8;
-}
-
-.pricing-original {
-  font-size: 14px;
-  color: #94a3b8;
-  text-decoration: line-through;
-  margin-bottom: 4px;
-}
-
-.pricing-save {
-  display: inline-block;
-  background: #fef2f2;
-  color: #dc2626;
-  font-size: 13px;
-  font-weight: 700;
-  padding: 4px 12px;
-  border-radius: 100px;
-  margin-bottom: 16px;
-}
-
-.pricing-note {
-  font-size: 13px;
   color: #64748b;
-  margin-top: 8px;
 }
 
-.pricing-features {
-  list-style: none;
-  text-align: left;
-  margin-top: 20px;
-}
-
-.pricing-features li {
-  font-size: 14px;
-  padding: 6px 0;
-  padding-left: 20px;
-  position: relative;
-  color: #334155;
-}
-
-.pricing-features li::before {
-  content: "-";
-  position: absolute;
-  left: 0;
-}
-
-.pricing-coming-soon-badge {
-  display: inline-block;
-  background: #f1f5f9;
-  color: #64748b;
-  font-size: 13px;
-  font-weight: 700;
-  padding: 8px 24px;
+.workflow-step img {
+  width: 100%;
   border-radius: 8px;
-  margin-top: 16px;
+  margin-top: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-/* ========== 開発者について ========== */
-.developer {
-  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
-  color: #fff;
-}
-
-.developer .section-title {
-  color: #fff;
-}
-
-.developer .section-title .en {
-  color: #60a5fa;
-}
-
-.developer-content {
+.workflow-arrow {
   display: flex;
-  gap: 40px;
   align-items: center;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.developer-photo-wrapper {
-  flex-shrink: 0;
-  width: 200px;
-}
-
-.developer-photo {
-  width: 200px;
-  height: 200px;
-  border-radius: 16px;
-  object-fit: cover;
-  background: rgba(255,255,255,0.1);
-}
-
-.developer-text h3 {
-  font-size: 22px;
+  padding-top: 12px;
+  color: #2563eb;
+  font-size: 20px;
   font-weight: 700;
-  margin-bottom: 4px;
 }
 
-.developer-text .developer-title {
-  font-size: 14px;
-  color: #60a5fa;
-  margin-bottom: 16px;
-}
-
-.developer-text p {
+.workflow-note {
+  text-align: center;
+  margin-top: 32px;
+  padding: 16px 24px;
+  background: #eff6ff;
+  border-radius: 10px;
   font-size: 15px;
-  line-height: 2;
-  opacity: 0.9;
+  font-weight: 700;
+  color: #1e40af;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* ========== FAQ ========== */
@@ -636,119 +997,90 @@ img {
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   margin-bottom: 12px;
-  overflow: hidden;
+  padding: 24px;
 }
 
 .faq-q {
-  padding: 20px 24px;
   font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  font-weight: 700;
+  margin-bottom: 12px;
+  padding-left: 28px;
+  position: relative;
 }
 
 .faq-q::before {
   content: "Q.";
+  position: absolute;
+  left: 0;
   color: #2563eb;
-  font-weight: 700;
-  margin-right: 8px;
-  flex-shrink: 0;
-}
-
-.faq-q::after {
-  content: "+";
-  font-size: 20px;
-  color: #94a3b8;
-  flex-shrink: 0;
-  margin-left: 12px;
-  transition: transform 0.2s;
-}
-
-.faq-item.open .faq-q::after {
-  content: "-";
+  font-weight: 800;
 }
 
 .faq-a {
-  display: none;
-  padding: 0 24px 20px;
   font-size: 14px;
-  color: #64748b;
+  color: #475569;
+  padding-left: 28px;
+  position: relative;
   line-height: 1.8;
 }
 
-.faq-item.open .faq-a {
-  display: block;
+.faq-a::before {
+  content: "A.";
+  position: absolute;
+  left: 0;
+  color: #64748b;
+  font-weight: 700;
 }
 
-/* ========== フッターCTA ========== */
-.footer-cta {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+/* ========== CTA ========== */
+.cta-section {
+  background: linear-gradient(135deg, #0f172a, #1e3a5f);
   color: #fff;
   text-align: center;
   padding: 80px 0;
 }
 
-.footer-cta h2 {
+.cta-section h2 {
   font-size: 28px;
   font-weight: 700;
   margin-bottom: 16px;
 }
 
-.footer-cta p {
+.cta-section p {
   font-size: 15px;
-  opacity: 0.85;
-  margin-bottom: 32px;
+  opacity: 0.8;
+  margin-bottom: 36px;
 }
 
-.footer-cta .cta-group {
-  margin-bottom: 24px;
+.cta-section .cta-btn {
+  font-size: 20px;
+  padding: 20px 56px;
 }
 
-.line-btn-wrapper {
-  margin-top: 16px;
-}
-
-.line-btn-wrapper p {
-  font-size: 13px;
+.cta-deadline {
+  margin-top: 20px;
+  font-size: 14px;
   opacity: 0.7;
-  margin-bottom: 8px;
 }
 
 /* ========== フッター ========== */
 .footer {
   background: #0f172a;
-  color: rgba(255,255,255,0.6);
+  color: rgba(255,255,255,0.5);
   text-align: center;
   padding: 32px 20px;
   font-size: 13px;
 }
 
 .footer a {
-  color: rgba(255,255,255,0.6);
-}
-
-.footer a:hover {
-  color: #fff;
+  color: rgba(255,255,255,0.7);
+  text-decoration: underline;
 }
 
 /* ========== レスポンシブ ========== */
 @media (max-width: 768px) {
-  .hero {
-    padding: 60px 0 40px;
-  }
-
-  .hero h1 {
-    font-size: 24px;
-  }
-
-  .hero p.lead {
-    font-size: 14px;
-  }
-
   .section {
-    padding: 60px 0;
+    padding: 56px 0;
   }
 
   .section-title {
@@ -756,472 +1088,810 @@ img {
     margin-bottom: 32px;
   }
 
-  .cta-btn-primary {
-    font-size: 16px;
-    padding: 16px 32px;
-    width: 100%;
-    max-width: 320px;
+  .hero {
+    padding: 56px 0 40px;
   }
 
-  .cta-btn-secondary {
-    font-size: 14px;
-    padding: 12px 24px;
+  .hero h1 {
+    font-size: 24px;
   }
 
-  .cta-group {
-    flex-direction: column;
-    align-items: center;
+  .hero .cta-btn {
+    display: block;
+    margin: 0 auto;
   }
 
-  .features-grid {
+  .hero a[target="_blank"] {
+    margin-left: 0 !important;
+    margin-top: 12px !important;
+  }
+
+  .ba-content {
     grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .ba-mockup {
+    order: -1;
+  }
+
+  .merits-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
   }
 
   .pricing-cards {
     grid-template-columns: 1fr;
-    max-width: 360px;
+    gap: 20px;
   }
 
-  .developer-content {
-    flex-direction: column;
-    text-align: center;
+  .solution-box {
+    padding: 32px 24px;
   }
 
-  .developer-photo-wrapper {
-    margin: 0 auto;
+  .gallery-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
   }
 
-  .testimonial-grid {
+  .category-grid {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
 
-  .flow-step {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
+  .workflow-steps {
+    gap: 4px;
   }
 
-  .about-box {
-    padding: 32px 20px;
+  .workflow-step {
+    min-width: 80px;
   }
 
-  .footer-cta h2 {
+  .workflow-arrow {
+    font-size: 14px;
+  }
+
+  .compare-table th,
+  .compare-table td {
+    padding: 10px 8px;
+    font-size: 11px;
+  }
+
+  .cta-section h2 {
     font-size: 22px;
+  }
+
+  .demo-slideshow-arrows {
+    left: 4px;
+    right: 4px;
+  }
+
+  .stripe-checkout-section {
+    padding: 24px 20px;
   }
 }
 </style>
-
-<script>
-// --- モニター残り枠数（ここを変更するだけで全CTAに反映） ---
-var MONITOR_REMAINING = 5;
-</script>
 </head>
 <body>
 
-<!-- ========== 限定バナー ========== -->
+<!-- 限定バナー -->
 <div class="limited-banner">
-  モニター募集中 -- 先着<span class="monitor-count">5</span>名限定 / 月額3,980円で永久据え置き
+  <strong>先着5名限定</strong> 歪みを可視化するカラダマップ -- モニター価格 3,980円/月（4月7日締切）
 </div>
 
-<!-- ========== 1. ファーストビュー ========== -->
+<!-- ヒーロー -->
 <section class="hero">
   <div class="container hero-inner">
-    <div class="hero-badge">治療家が作った、治療家のための検査アプリ</div>
-    <h1>3分で、<span class="accent">体の今</span>を見える化。<br>検査から説明まで、これ1つで完結します。</h1>
-    <p class="lead">5段階の検査入力で原因部位を自動特定。<br>患者さんにそのままPDFで渡せるから、信頼も紹介も増えていく。</p>
-
-    <div class="hero-cta">
-      <div class="cta-group">
-        <a href="#pricing" class="cta-btn-primary">
-          モニターに申し込む（残り<span class="monitor-count">5</span>名）
-          <span class="cta-sub">月額3,980円 / 永久据え置き</span>
-        </a>
-        <a href="https://kensa-sheet-app.vercel.app/demo/" class="cta-btn-secondary" target="_blank" rel="noopener">
-          まずデモを触ってみる
-          <span class="cta-sub">ログイン不要 / 3分で体験</span>
-        </a>
+    <div class="hero-badge">整体院 / 整骨院 / 鍼灸院 向け</div>
+    <h1>
+      歪みを<span class="accent">可視化</span>するだけで、<br>
+      <span class="accent">月商424万円</span>。週4日稼働。
+    </h1>
+    <p class="lead">
+      検査で歪みを可視化 → 患者が自分の体を理解 → 納得してリピート。<br>
+      このサイクルを回し続けた結果が、月商424万円。<br>
+      開発者自身が現場で使い続けて結果を出しているカラダマップです。
+    </p>
+    <a href="https://lin.ee/TC4uukz" class="cta-btn">
+      LINEで申し込む
+      <span class="cta-btn-sub">先着5名 モニター限定 3,980円/月</span>
+    </a>
+    <button onclick="tryDemo()" style="display:inline-block;background:transparent;border:2px solid rgba(255,255,255,0.5);color:#fff;font-size:15px;font-weight:600;padding:14px 36px;border-radius:8px;margin-left:12px;transition:background 0.2s;vertical-align:middle;cursor:pointer;font-family:inherit;">
+      無料でデモを試す
+      <span style="display:block;font-size:11px;font-weight:400;opacity:0.7;margin-top:2px;">アカウント登録不要</span>
+    </button>
       </div>
-    </div>
+</section>
 
-    <div class="hero-screenshot">
-      <img src="images/dashboard.png" alt="カラダマップ 検査画面">
+<!-- ビフォーアフター訴求 -->
+<section class="section ba-section">
+  <div class="container">
+    <h2 class="section-title">
+      <span>KEY FEATURE</span>
+      最大の強み：変化を可視化するビフォーアフター
+    </h2>
+    <div class="ba-content">
+      <div class="ba-text">
+        <h3>「変わった」を<br>数値と図で証明する</h3>
+        <p>
+          施術前後の検査データを自動で比較。人体図と数値の両方で変化を表示します。
+        </p>
+        <p>
+          患者が自分の目で改善を確認できるから、信頼が生まれ、次の来院につながります。
+        </p>
+        <ul class="ba-points">
+          <li>前回との人体図比較を並べて表示</li>
+          <li>改善箇所をハイライトで強調</li>
+          <li>数値の変化を自動で算出</li>
+          <li>経過グラフで長期的な改善も可視化</li>
+          <li>患者用レポートとしてPDF出力可能</li>
+        </ul>
+      </div>
+      <div class="ba-mockup">
+        <div class="ba-full-mock" style="padding:0;overflow:hidden;">
+          <img src="images/ba-comparison.png" alt="前回との比較 - 人体図で歪みの変化を可視化（2026/03/30）" style="width:100%;display:block;border-radius:12px;" loading="lazy">
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- ========== 2. こんな悩みありませんか？ ========== -->
+<!-- 開発者の想い -->
+<section class="section" style="background:#fff;">
+  <div class="container">
+    <h2 class="section-title">
+      <span>STORY</span>
+      なぜ、このアプリを作ったのか
+    </h2>
+    <div style="max-width:680px;margin:0 auto;">
+      <!-- 実績数字 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+        <div style="background:linear-gradient(135deg,#0f172a,#1e3a5f);border-radius:12px;padding:24px 16px;text-align:center;">
+          <div style="font-size:36px;font-weight:800;color:#60a5fa;line-height:1;">424<span style="font-size:16px;font-weight:400;color:#94a3b8;">万円</span></div>
+          <div style="font-size:12px;color:#94a3b8;margin-top:6px;">一人治療院の月商最高記録</div>
+        </div>
+        <div style="background:linear-gradient(135deg,#0f172a,#1e3a5f);border-radius:12px;padding:24px 16px;text-align:center;">
+          <div style="font-size:36px;font-weight:800;color:#22c55e;line-height:1;">200<span style="font-size:16px;font-weight:400;color:#94a3b8;">万円</span></div>
+          <div style="font-size:12px;color:#94a3b8;margin-top:6px;">週4日稼働で安定売上</div>
+        </div>
+      </div>
+      <div style="background:#f0f9ff;border:2px solid #bae6fd;border-radius:16px;padding:32px;margin-bottom:24px;display:flex;gap:24px;align-items:flex-start;">
+        <img src="images/oguchi-profile.jpg" alt="大口陽平" style="width:120px;height:120px;border-radius:50%;object-fit:cover;object-position:top;flex-shrink:0;border:3px solid #bae6fd;">
+        <div>
+        <p style="font-size:15px;color:#0369a1;font-weight:700;margin-bottom:12px;">大口神経整体院 院長 / 開発者</p>
+        <p style="font-size:22px;font-weight:800;color:#1a1a2e;margin-bottom:16px;">大口 陽平</p>
+        <p style="font-size:14px;color:#475569;line-height:2;">
+          重症専門の一人治療院として、この検査を武器に月商424万円を達成しました。<br>
+          現在は週4日稼働で月200万円を安定して出しています。<br><br>
+          神経整体・構造医学・東洋医学・仙腸関節療法など、さまざまな治療法を学んできました。<br>
+          その中で感じたのは、治療家のほとんどは「感覚系」で治療しているということ。<br>
+          感覚系の治療で良くなっても、患者さんからすると<strong>「なぜ良くなったのか」がわからない</strong>。
+        </p>
+        </div>
+      </div>
+      <div style="padding:0 8px;">
+        <p style="font-size:14px;color:#475569;line-height:2.2;margin-bottom:16px;">
+          患者さんに検査結果を見せると、大きな反応がありました。家で家族に「こういう風に歪んでたよ」と見せてくれて、それがきっかけで紹介にもつながりました。
+        </p>
+        <p style="font-size:14px;color:#475569;line-height:2.2;margin-bottom:16px;">
+          一方、周りの治療家に話を聞くと、こんな声が多かった。
+        </p>
+        <ul style="list-style:none;margin-bottom:20px;">
+          <li style="font-size:14px;color:#1a1a2e;padding:8px 0;padding-left:20px;position:relative;border-bottom:1px solid #f1f5f9;">
+            <span style="position:absolute;left:0;color:#e9520e;font-weight:700;">-</span>何の検査をすればいいかわからない
+          </li>
+          <li style="font-size:14px;color:#1a1a2e;padding:8px 0;padding-left:20px;position:relative;border-bottom:1px solid #f1f5f9;">
+            <span style="position:absolute;left:0;color:#e9520e;font-weight:700;">-</span>患者さんに説明がうまく伝わらない
+          </li>
+          <li style="font-size:14px;color:#1a1a2e;padding:8px 0;padding-left:20px;position:relative;border-bottom:1px solid #f1f5f9;">
+            <span style="position:absolute;left:0;color:#e9520e;font-weight:700;">-</span>施術者側だけが理解していて患者に共有できていない
+          </li>
+          <li style="font-size:14px;color:#1a1a2e;padding:8px 0;padding-left:20px;position:relative;">
+            <span style="position:absolute;left:0;color:#e9520e;font-weight:700;">-</span>スタッフが自分の治療や検査に自信を持てない
+          </li>
+        </ul>
+        <p style="font-size:15px;color:#1e40af;font-weight:700;line-height:2;background:#eff6ff;padding:20px 24px;border-radius:10px;">
+          今の体がどうなっているのか、それがどう変化して症状が変わったのか。状態と変化を「可視化」して伝えたい。<br>
+          開発者自身が現役の治療家だからこそ作れた、現場発の可視化アプリです。
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 課題セクション -->
 <section class="section problems">
   <div class="container">
     <h2 class="section-title">
-      <span class="en">PROBLEMS</span>
-      こんなこと、ありませんか？
+      <span>PROBLEM</span>
+      こんな悩み、ありませんか
     </h2>
     <ul class="problem-list">
       <li>
-        検査結果を紙に書いて、患者さんにうまく伝えきれない
-        <span class="sub">せっかく丁寧に検査しても、口頭だけでは伝わりにくい</span>
+        検査に時間がかかりすぎて、施術時間が削られる
+        <span class="sub">問診と検査だけで15分以上。施術の満足度に影響している。</span>
       </li>
       <li>
-        ビフォーアフターの変化を、感覚ではなくデータで見せたい
-        <span class="sub">「良くなっている」を患者さん自身が納得できる形にしたい</span>
+        患者に「どこが悪いか」を言葉だけで説明している
+        <span class="sub">口頭説明では伝わらない。納得感がなく、次回予約につながらない。</span>
       </li>
       <li>
-        家族への説明や紹介につながる"持ち帰れる資料"がない
-        <span class="sub">患者さんが家族に説明するとき、手ぶらになってしまう</span>
+        ビフォーアフターを見せる仕組みがない
+        <span class="sub">「良くなってますよ」と言っても、患者自身が変化を実感できない。</span>
+      </li>
+      <li>
+        検査記録が紙ベースで、過去データを探すのが大変
+        <span class="sub">カルテの山から前回の記録を探す手間。経過比較もできない。</span>
+      </li>
+      <li>
+        新人スタッフに検査の仕方を教えるのが難しい
+        <span class="sub">検査の手順や判断基準が属人化している。</span>
       </li>
     </ul>
   </div>
 </section>
 
-<!-- ========== 3. カラダマップとは ========== -->
+<!-- 解決策セクション -->
 <section class="section">
   <div class="container">
     <h2 class="section-title">
-      <span class="en">ABOUT</span>
-      カラダマップとは
+      <span>SOLUTION</span>
+      「可視化」で全部解決します
     </h2>
-
-    <div class="about-box">
-      <h3>検査の入力から、患者さんへの説明まで。<br>これ1つで完結する検査記録アプリです。</h3>
+    <div class="solution-box">
+      <h3>9箇所のチェックで歪みを可視化・自動判定</h3>
+      <!-- 3段階検査フロー図 -->
+      <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin:24px 0 20px;flex-wrap:wrap;">
+        <div style="background:#fff;border:2px solid #3b82f6;border-radius:12px;padding:16px 14px;text-align:center;min-width:120px;">
+          <svg viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg" style="width:48px;margin:0 auto 6px;display:block;">
+            <circle cx="30" cy="12" r="8" fill="#60a5fa"/>
+            <line x1="30" y1="20" x2="30" y2="50" stroke="#60a5fa" stroke-width="3" stroke-linecap="round"/>
+            <line x1="30" y1="50" x2="20" y2="70" stroke="#60a5fa" stroke-width="3" stroke-linecap="round"/>
+            <line x1="30" y1="50" x2="40" y2="70" stroke="#60a5fa" stroke-width="3" stroke-linecap="round"/>
+            <line x1="30" y1="30" x2="16" y2="40" stroke="#60a5fa" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="30" y1="30" x2="44" y2="40" stroke="#60a5fa" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="20" cy="70" r="3" fill="#f97316"/><circle cx="40" cy="70" r="3" fill="#3b82f6"/>
+            <circle cx="30" cy="30" r="3" fill="#22c55e"/>
+          </svg>
+          <div style="font-size:12px;font-weight:700;color:#1e40af;">STEP 1</div>
+          <div style="font-size:11px;color:#475569;">立位検査<br><span style="font-size:10px;color:#94a3b8;">3箇所</span></div>
+        </div>
+        <div style="font-size:20px;color:#2563eb;font-weight:700;">→</div>
+        <div style="background:#fff;border:2px solid #3b82f6;border-radius:12px;padding:16px 14px;text-align:center;min-width:120px;">
+          <svg viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg" style="width:48px;margin:0 auto 6px;display:block;">
+            <circle cx="30" cy="12" r="8" fill="#60a5fa"/>
+            <line x1="30" y1="20" x2="30" y2="45" stroke="#60a5fa" stroke-width="3" stroke-linecap="round"/>
+            <line x1="30" y1="45" x2="18" y2="70" stroke="#60a5fa" stroke-width="3" stroke-linecap="round"/>
+            <line x1="30" y1="45" x2="42" y2="70" stroke="#60a5fa" stroke-width="3" stroke-linecap="round"/>
+            <!-- 座ってる表現（横線で椅子） -->
+            <rect x="10" y="44" width="40" height="3" rx="1" fill="#cbd5e1"/>
+            <circle cx="18" cy="70" r="3" fill="#f97316"/><circle cx="42" cy="70" r="3" fill="#3b82f6"/>
+            <circle cx="30" cy="28" r="3" fill="#22c55e"/>
+          </svg>
+          <div style="font-size:12px;font-weight:700;color:#1e40af;">STEP 2</div>
+          <div style="font-size:11px;color:#475569;">座位検査<br><span style="font-size:10px;color:#94a3b8;">3箇所+比較</span></div>
+        </div>
+        <div style="font-size:20px;color:#2563eb;font-weight:700;">→</div>
+        <div style="background:#fff;border:2px solid #3b82f6;border-radius:12px;padding:16px 14px;text-align:center;min-width:120px;">
+          <svg viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg" style="width:48px;margin:0 auto 6px;display:block;">
+            <circle cx="30" cy="12" r="8" fill="#60a5fa"/>
+            <line x1="30" y1="20" x2="30" y2="55" stroke="#60a5fa" stroke-width="3" stroke-linecap="round"/>
+            <line x1="30" y1="30" x2="14" y2="42" stroke="#60a5fa" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="30" y1="30" x2="46" y2="42" stroke="#60a5fa" stroke-width="2.5" stroke-linecap="round"/>
+            <!-- 上半身ハイライト -->
+            <rect x="16" y="18" width="28" height="38" rx="6" fill="none" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="3,2"/>
+            <circle cx="14" cy="42" r="3" fill="#f97316"/><circle cx="46" cy="42" r="3" fill="#3b82f6"/>
+            <circle cx="20" cy="24" r="3" fill="#22c55e"/><circle cx="40" cy="24" r="3" fill="#22c55e"/>
+          </svg>
+          <div style="font-size:12px;font-weight:700;color:#1e40af;">STEP 3</div>
+          <div style="font-size:11px;color:#475569;">上半身検査<br><span style="font-size:10px;color:#94a3b8;">3箇所</span></div>
+        </div>
+      </div>
       <p>
-        立位・座位の検査を5段階で入力するだけで、<br>
-        体の状態をマップ化。原因部位を自動で特定して、<br>
-        そのままPDFで患者さんに渡せます。
+        足元影響、上半身影響、全体偏位、体幹回旋を自動で特定。<br>
+        結果は人体図イラストで表示。<br>
+        患者にそのまま見せるだけで、状態が一目で伝わります。
       </p>
     </div>
+  </div>
+</section>
 
+<!-- ポジショニング -->
+<section class="section positioning-section">
+  <div class="container">
+    <h2 class="section-title">
+      <span>POSITIONING</span>
+      「第4のカテゴリ」という新しい立ち位置
+    </h2>
+    <div class="category-grid">
+      <div class="cat-card">
+        <div class="cat-label">カテゴリ 1</div>
+        <h4>AI姿勢分析アプリ</h4>
+        <div class="cat-price">月1〜3万円</div>
+        <p>シセイカルテ、Sportip Proなど。カメラ撮影型で施術者の検査手技は記録できない。</p>
+      </div>
+      <div class="cat-card">
+        <div class="cat-label">カテゴリ 2</div>
+        <h4>電子カルテシステム</h4>
+        <div class="cat-price">月8,000〜15,000円</div>
+        <p>RIPCLE、ほねぺんなど。汎用カルテで検査に特化した機能がない。</p>
+      </div>
+      <div class="cat-card">
+        <div class="cat-label">カテゴリ 3</div>
+        <h4>紙の検査シート</h4>
+        <div class="cat-price">0円</div>
+        <p>データ蓄積・比較・共有が不可能。過去データとの比較は手作業。</p>
+      </div>
+    </div>
+    <div class="positioning-box">
+      カメラ撮影でもない、汎用カルテでもない、紙でもない。<br>
+      施術者が実際に触れて確認した左右差・ランドマークの変位を<br>
+      段階的に記録し、AIが原因を特定する<strong>新しい検査ツール</strong>。
+    </div>
+  </div>
+</section>
+
+<!-- 機能紹介 -->
+<section class="section" style="background:#f8fafc;">
+  <div class="container">
+    <h2 class="section-title">
+      <span>FEATURES</span>
+      主な機能
+    </h2>
     <div class="features-grid">
       <div class="feature-card">
-        <div class="feature-icon">1</div>
-        <h4>5段階で直感入力</h4>
-        <p>各部位を5段階でタップするだけ。検査時間を大幅に短縮できます。</p>
+        <div class="feature-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
+        </div>
+        <h4>3段階検査</h4>
+        <p>立位、座位、上半身の順で9箇所をチェック。歪みの原因を自動で判定します。</p>
       </div>
       <div class="feature-card">
-        <div class="feature-icon">2</div>
-        <h4>原因部位を自動特定</h4>
-        <p>入力された検査データから、問題のある部位を自動で判定。見落としを防ぎます。</p>
+        <div class="feature-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M12 11v10"/><path d="M8 21h8"/><path d="M7 15h10"/></svg>
+        </div>
+        <h4>人体図で可視化</h4>
+        <p>歪みの状態を人体図イラストで可視化。患者への説明がその場で完結します。</p>
       </div>
       <div class="feature-card">
-        <div class="feature-icon">3</div>
-        <h4>患者用PDFを即出力</h4>
-        <p>検査結果をPDFに変換。その場で患者さんに渡せるので、説明が伝わります。</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">4</div>
+        <div class="feature-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3m10 0h3a2 2 0 0 0 2-2v-3"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>
+        </div>
         <h4>ビフォーアフター比較</h4>
-        <p>施術前後の変化を一覧で確認。患者さん自身が「良くなった」を実感できます。</p>
+        <p>前回と今回の検査結果を人体図と数値で並べて比較。変化が一目瞭然です。</p>
       </div>
       <div class="feature-card">
-        <div class="feature-icon">5</div>
-        <h4>患者ごとの履歴管理</h4>
-        <p>検査履歴を患者ごとに記録。経過観察や次回の治療計画にそのまま使えます。</p>
+        <div class="feature-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 17l4-8 4 4 5-10"/></svg>
+        </div>
+        <h4>経過グラフ</h4>
+        <p>来院ごとの改善推移をグラフで表示。長期的な変化を患者と共有できます。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <h4>PDF出力</h4>
+        <p>患者用レポートと施術者用レポートをPDF出力。紙で渡すことも可能です。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 6v6l4 2"/></svg>
+        </div>
+        <h4>クラウド保存</h4>
+        <p>患者カルテはクラウドに自動保存。iPad、スマホ、PCどこからでもアクセスできます。</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ========== デモ誘導（中盤） ========== -->
-<section class="section" style="background: #eff6ff; padding: 48px 0;">
-  <div class="container" style="text-align: center;">
-    <h3 style="font-size: 22px; font-weight: 700; margin-bottom: 12px;">まずは触ってみてください</h3>
-    <p style="font-size: 15px; color: #64748b; margin-bottom: 24px;">ログイン不要、3分で操作感がわかります。</p>
-    <a href="https://kensa-sheet-app.vercel.app/demo/" class="cta-btn-secondary cta-btn-secondary--dark" target="_blank" rel="noopener">
-      デモ版を試してみる
-    </a>
-  </div>
-</section>
-
-<!-- ========== 4. 操作の流れ ========== -->
+<!-- アプリデモスライドショー -->
 <section class="section">
   <div class="container">
     <h2 class="section-title">
-      <span class="en">HOW IT WORKS</span>
-      操作の流れ
+      <span>DEMO</span>
+      実際のアプリ画面
     </h2>
-
-    <div class="flow-steps">
-      <div class="flow-step">
-        <div class="flow-step-number">1</div>
-        <div class="flow-step-content">
-          <h4>患者さんを登録する</h4>
-          <p>名前と基本情報を入力するだけ。1分もかかりません。</p>
-          <img src="images/patient-info.png" alt="患者情報入力画面" style="max-width: 400px;">
-        </div>
+    <div class="demo-slideshow" id="demoSlideshow">
+      <div class="demo-slideshow-viewport">
+        <img id="slideImg" src="images/patient-info.png" alt="デモ画面">
       </div>
-      <div class="flow-step">
-        <div class="flow-step-number">2</div>
-        <div class="flow-step-content">
-          <h4>立位・座位の検査を入力する</h4>
-          <p>各部位を5段階でタップ。直感的に操作できるので、検査しながら入力できます。</p>
-          <img src="images/standing-exam.png" alt="立位検査画面" style="max-width: 400px;">
-        </div>
+      <div class="demo-slideshow-arrows">
+        <button onclick="slideChange(-1)" aria-label="前へ">&lt;</button>
+        <button onclick="slideChange(1)" aria-label="次へ">&gt;</button>
       </div>
-      <div class="flow-step">
-        <div class="flow-step-number">3</div>
-        <div class="flow-step-content">
-          <h4>結果を確認してPDFを出力する</h4>
-          <p>検査結果が自動でマップ化。そのままPDFに変換して患者さんに渡せます。</p>
-          <img src="images/pdf-output.png" alt="PDF出力画面" style="max-width: 400px;">
-        </div>
-      </div>
-    </div>
-
-    <!-- 動画プレースホルダー -->
-    <div class="video-placeholder" data-video-url="">
-      操作デモ動画（準備中）
+      <div class="demo-slideshow-caption" id="slideCaption">ダッシュボード - 検査数・患者数・月別推移をひと目で確認</div>
+      <div class="demo-slideshow-nav" id="slideNav"></div>
     </div>
   </div>
 </section>
 
-<!-- ========== 5. 導入された先生の声 ========== -->
-<section class="section testimonials">
+<!-- ワークフロー -->
+<section class="section" style="background:#f8fafc;">
   <div class="container">
     <h2 class="section-title">
-      <span class="en">VOICE</span>
-      導入された先生の声
+      <span>WORKFLOW</span>
+      最短5分で検査からPDF出力まで完了
     </h2>
-
-    <div class="testimonial-grid">
-      <div class="testimonial-card">
-        <div class="testimonial-header">
-          <img src="" alt="導入先生の写真" class="testimonial-photo">
-          <div>
-            <div class="testimonial-name">A先生</div>
-            <div class="testimonial-clinic">整骨院経営 / 開業8年目</div>
-          </div>
-        </div>
-        <p class="testimonial-body">
-          検査時間が短縮されて、患者さんとの会話に集中できるようになりました。以前は紙に書いていたのですが、カラダマップに変えてからは説明がスムーズです。
-        </p>
+    <div class="workflow-steps">
+      <div class="workflow-step">
+        <div class="step-circle">1</div>
+        <h4>患者情報入力</h4>
+        <p>氏名・年齢・主訴<br>NRSで痛み数値化</p>
       </div>
-
-      <div class="testimonial-card">
-        <div class="testimonial-header">
-          <img src="" alt="導入先生の写真" class="testimonial-photo">
-          <div>
-            <div class="testimonial-name">B先生</div>
-            <div class="testimonial-clinic">整体院経営 / 開業5年目</div>
-          </div>
-        </div>
-        <p class="testimonial-body">
-          患者さんにPDFで渡せるので、家族からの紹介が増えました。「こんなに丁寧に診てもらえるんだ」と驚かれることが多いです。
-        </p>
+      <div class="workflow-arrow">→</div>
+      <div class="workflow-step">
+        <div class="step-circle">2</div>
+        <h4>立位検査</h4>
+        <p>乳様突起・肩甲下角<br>腸骨稜の左右差</p>
       </div>
+      <div class="workflow-arrow">→</div>
+      <div class="workflow-step">
+        <div class="step-circle">3</div>
+        <h4>座位検査</h4>
+        <p>足部の影響を<br>リアルタイム判定</p>
+      </div>
+      <div class="workflow-arrow">→</div>
+      <div class="workflow-step">
+        <div class="step-circle">4</div>
+        <h4>上半身検査</h4>
+        <p>肩峰・肘頭<br>茎状突起の左右差</p>
+      </div>
+      <div class="workflow-arrow">→</div>
+      <div class="workflow-step">
+        <div class="step-circle">5</div>
+        <h4>AI診断</h4>
+        <p>原因部位を自動特定<br>PDF＋セルフケア出力</p>
+      </div>
+    </div>
+    <div class="workflow-note">
+      AI姿勢分析はカメラ任せ。このアプリは「施術者の手で確認した結果」をデジタル化します。
+    </div>
+  </div>
+</section>
 
-      <div class="testimonial-card">
-        <div class="testimonial-header">
-          <img src="" alt="導入先生の写真" class="testimonial-photo">
-          <div>
-            <div class="testimonial-name">C先生</div>
-            <div class="testimonial-clinic">鍼灸院経営 / 開業3年目</div>
-          </div>
-        </div>
-        <p class="testimonial-body">
-          ビフォーアフターをデータで見せられるのが大きい。患者さん自身が変化を実感してくれるので、リピート率が上がりました。
-        </p>
+<!-- 導入メリット -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-title">
+      <span>MERIT</span>
+      導入するとこう変わる
+    </h2>
+    <div class="merits-grid">
+      <div class="merit-item">
+        <div class="merit-number">3<span class="merit-unit">分</span></div>
+        <h4>検査時間を大幅短縮</h4>
+        <p>9箇所のチェックを画面に沿って入力するだけ。手書きの記録も不要になります。</p>
+      </div>
+      <div class="merit-item">
+        <div class="merit-number">UP</div>
+        <h4>リピート率が上がる</h4>
+        <p>ビフォーアフターで変化を見せることで、患者の継続意欲が高まります。</p>
+      </div>
+      <div class="merit-item">
+        <div class="merit-number">UP</div>
+        <h4>患者満足度が上がる</h4>
+        <p>「ちゃんと検査してくれる院」という信頼感。口コミにもつながります。</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ========== 6. 料金プラン ========== -->
-<section class="section pricing" id="pricing">
+<!-- ギャラリー -->
+<section class="section gallery">
   <div class="container">
     <h2 class="section-title">
-      <span class="en">PRICING</span>
+      <span>SCREENS</span>
+      アプリ画面
+    </h2>
+    <div class="gallery-grid">
+      <!-- 0. ビフォーアフター比較（実際のアプリ画面） -->
+      <div class="gallery-item" style="grid-column: span 3;">
+        <img src="images/ba-comparison-2.png" alt="前回との比較 - 9箇所のランドマークで歪みの変化を可視化" style="aspect-ratio:auto;object-fit:contain;" loading="lazy">
+        <div class="gallery-label">前回との比較 - 歪みの変化を可視化</div>
+      </div>
+      <!-- 1. 患者情報入力 -->
+      <div class="gallery-item">
+        <img src="images/patient-info.png" alt="患者情報 - 主訴・痛みレベル(NRS)・年齢・性別を入力" loading="lazy">
+        <div class="gallery-label">Step1: 患者情報入力</div>
+      </div>
+      <!-- 2. 立位検査 -->
+      <div class="gallery-item">
+        <img src="images/standing-exam.png" alt="立位検査 - 3つのランドマークの左右差をワンタップ記録" loading="lazy">
+        <div class="gallery-label">Step2: 立位検査</div>
+      </div>
+      <!-- 3. 座位検査 -->
+      <div class="gallery-item">
+        <img src="images/seated-exam.png" alt="座位検査 - 立位との比較でリアルタイムに足部の影響を判定" loading="lazy">
+        <div class="gallery-label">Step3: 座位検査・比較</div>
+      </div>
+      <!-- 4. AI診断結果 -->
+      <div class="gallery-item">
+        <img src="images/diagnosis-result.png" alt="診断結果 - 原因部位と歪みパターンをAIが自動判定" loading="lazy">
+        <div class="gallery-label">AI診断結果</div>
+      </div>
+      <!-- 5. 検査データ＋セルフケア -->
+      <div class="gallery-item">
+        <img src="images/selfcare.png" alt="検査データ比較表・AIセルフケア提案を自動生成" loading="lazy">
+        <div class="gallery-label">検査データ・セルフケア提案</div>
+      </div>
+      <!-- 6. PDF出力 -->
+      <div class="gallery-item">
+        <img src="images/pdf-output.png" alt="PDF出力 - 患者用レポート・施術提案書をワンタップで生成" loading="lazy">
+        <div class="gallery-label">PDF・施術提案書出力</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 料金比較 -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-title">
+      <span>COMPARE</span>
+      他サービスとの料金比較
+    </h2>
+    <table class="compare-table">
+      <tr><th>サービス</th><th>月額</th><th>できること</th></tr>
+      <tr><td>シセイカルテ（AI姿勢分析）</td><td>推定10,000〜30,000円</td><td>カメラ撮影型。施術者の検査手技は記録不可</td></tr>
+      <tr><td>Sportip Pro（AI姿勢解析）</td><td>推定15,000〜30,000円</td><td>姿勢解析+予約+カルテ統合。高機能だが高額</td></tr>
+      <tr><td>RIPCLE（電子カルテ）</td><td>8,800円〜</td><td>汎用カルテ。検査特化の機能なし</td></tr>
+      <tr><td>紙の検査シート</td><td>0円</td><td>データ蓄積・比較・共有が不可能</td></tr>
+      <tr class="highlight"><td>カラダマップ</td><td>3,980円（モニター）</td><td>段階的原因特定 + PDF出力 + カルテ + NRS記録 + クラウド</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- 料金 -->
+<section class="section pricing">
+  <div class="container">
+    <h2 class="section-title">
+      <span>PRICING</span>
       料金プラン
     </h2>
 
+    <div class="pricing-deadline">
+      <p>先着5名限定 / 2026年4月7日(月)締切</p>
+      <p class="sub">モニター終了後は9,800円/月に値上げ予定。今なら<strong style="color:#dc2626;">月5,820円お得</strong>です。</p>
+    </div>
+
     <div class="pricing-cards">
-      <!-- モニタープラン -->
       <div class="pricing-card recommended">
-        <div class="pricing-label">モニタープラン</div>
-        <div class="pricing-original">通常 4,980円/月</div>
+        <div class="pricing-label">モニター限定価格</div>
         <div class="pricing-price">
           <span class="yen">¥</span>3,980<span class="period">/月</span>
-          <span class="tax">税込</span>
-        </div>
-        <div class="pricing-save">年間12,000円お得</div>
-        <ul class="pricing-features">
-          <li>全機能利用可能</li>
-          <li>この価格で永久据え置き</li>
-          <li>フィードバック協力が条件</li>
-          <li>最低契約期間 6ヶ月</li>
-          <li>先着<span class="monitor-count">5</span>名限定</li>
-        </ul>
-        <div style="margin-top: 24px;">
-          <a href="https://lin.ee/182seszw" class="cta-btn-primary" style="width: 100%; display: block;" target="_blank" rel="noopener">
-            モニターに申し込む（残り<span class="monitor-count">5</span>名）
-          </a>
-        </div>
-      </div>
-
-      <!-- 通常プラン -->
-      <div class="pricing-card">
-        <div class="pricing-label">通常プラン</div>
-        <div class="pricing-price">
-          <span class="yen">¥</span>4,980<span class="period">/月</span>
-          <span class="tax">税込</span>
+          <br><span class="tax">税込</span>
         </div>
         <ul class="pricing-features">
           <li>全機能利用可能</li>
-          <li>いつでも申し込み可能</li>
-          <li>最低契約期間 6ヶ月</li>
+          <li>患者データ無制限</li>
+          <li>PDF出力</li>
+          <li>クラウドデータ保存</li>
+          <li>アップデート無料</li>
           <li>導入サポート付き</li>
+          <li>最低利用期間：6ヶ月</li>
         </ul>
-        <div style="margin-top: 24px;">
-          <a href="https://lin.ee/182seszw" class="cta-btn-primary" style="width: 100%; display: block; background: #334155;" target="_blank" rel="noopener">
-            申し込む
-          </a>
-        </div>
       </div>
-
-      <!-- プロ版 -->
-      <div class="pricing-card coming-soon">
-        <div class="pricing-label">プロ版</div>
+      <div class="pricing-card regular">
+        <div class="pricing-label">通常価格（予定）</div>
         <div class="pricing-price">
           <span class="yen">¥</span>9,800<span class="period">/月</span>
-          <span class="tax">税込</span>
+          <br><span class="tax">税込</span>
         </div>
-        <ul class="pricing-features">
-          <li>全機能 + 高度分析</li>
-          <li>複数スタッフ対応</li>
-          <li>優先サポート</li>
-          <li>カスタマイズ相談可</li>
-        </ul>
-        <div class="pricing-coming-soon-badge">Coming Soon</div>
+        <div class="pricing-note">モニター終了後はこちらの価格になります</div>
       </div>
     </div>
 
-    <p style="font-size: 13px; color: #94a3b8; text-align: center;">
-      全プラン共通: 最低契約期間6ヶ月 / 途中解約の場合は残期間分の解約金が発生します
-    </p>
-  </div>
-</section>
+    <a href="https://lin.ee/TC4uukz" class="cta-btn">
+      LINEでモニター申し込み
+      <span class="cta-btn-sub">先着5名 残りわずか</span>
+    </a>
+    <div style="margin-top:16px;">
+      <button onclick="tryDemo()" style="display:inline-block;border:2px solid #2563eb;color:#2563eb;font-size:15px;font-weight:600;padding:12px 32px;border-radius:8px;cursor:pointer;background:transparent;font-family:inherit;">
+        まずは無料でデモを試す
+        <span style="display:block;font-size:11px;font-weight:400;color:#64748b;">アカウント登録不要</span>
+      </button>
+    </div>
 
-<!-- ========== 7. 開発者について ========== -->
-<section class="section developer">
-  <div class="container">
-    <h2 class="section-title">
-      <span class="en">DEVELOPER</span>
-      開発者について
-    </h2>
-
-    <div class="developer-content">
-      <div class="developer-photo-wrapper">
-        <img src="images/oguchi-profile.jpg" alt="大口陽平" class="developer-photo">
+    <!-- Stripe決済フォーム -->
+    <div class="stripe-checkout-section">
+      <h4>カード決済で今すぐ申し込む</h4>
+      <div class="stripe-field">
+        <label for="stripe-clinic">院名</label>
+        <input type="text" id="stripe-clinic" placeholder="例：山田整体院">
       </div>
-      <div class="developer-text">
-        <h3>大口 陽平</h3>
-        <div class="developer-title">大口神経整体院 院長 / 大口アプリラボ 代表</div>
-        <p>
-          整体院を経営しながら、現場で本当に必要なアプリを自分で作っています。
-          カラダマップは、自分が毎日の施術で「これがあったら」と思ったことをそのまま形にしたアプリです。
-          検査のたびに紙に書いて、患者さんにうまく伝わらない。そんな経験を何度もしてきました。
-          だから、現場で使いやすいことを何より大切にしています。
-          わからないことがあれば、いつでもLINEで聞いてください。
-        </p>
+      <div class="stripe-field">
+        <label for="stripe-email">メールアドレス</label>
+        <input type="email" id="stripe-email" placeholder="example@email.com">
       </div>
+      <button class="stripe-submit-btn" id="stripeCheckoutBtn" onclick="handleStripeCheckout()">
+        月額 3,980円で申し込む
+      </button>
+      <p class="stripe-note">
+        Stripeによる安全な決済処理。<br>
+        クレジットカード情報は当社サーバーに保存されません。
+      </p>
     </div>
   </div>
 </section>
 
-<!-- ========== 8. よくある質問 ========== -->
+<!-- FAQ -->
 <section class="section faq">
   <div class="container">
     <h2 class="section-title">
-      <span class="en">FAQ</span>
+      <span>FAQ</span>
       よくある質問
     </h2>
-
     <div class="faq-list">
       <div class="faq-item">
-        <div class="faq-q">パソコンが苦手でも使えますか？</div>
-        <div class="faq-a">はい、タップだけで操作できるように設計しています。導入時には使い方のサポートもしますので、安心してください。</div>
+        <div class="faq-q">iPadでも使えますか？</div>
+        <div class="faq-a">はい。iPad、スマートフォン、PCすべてに対応しています。ブラウザで動作するため、アプリのインストールは不要です。</div>
       </div>
       <div class="faq-item">
-        <div class="faq-q">スマホやタブレットでも使えますか？</div>
-        <div class="faq-a">はい、ブラウザで動くのでスマホ・タブレット・パソコン全てに対応しています。アプリのインストールは不要です。</div>
+        <div class="faq-q">患者データのセキュリティは大丈夫ですか？</div>
+        <div class="faq-a">Supabase認証を採用し、データはクラウドに暗号化して保存されます。アカウントごとにデータは完全に分離されています。</div>
       </div>
       <div class="faq-item">
-        <div class="faq-q">患者さんのデータは安全ですか？</div>
-        <div class="faq-a">データは暗号化して保存しています。院ごとにデータは完全に分離されており、他の院からアクセスすることはできません。</div>
+        <div class="faq-q">導入は難しいですか？</div>
+        <div class="faq-a">アカウントを発行後、すぐに使い始められます。操作方法の説明も行いますのでご安心ください。</div>
       </div>
       <div class="faq-item">
-        <div class="faq-q">モニターの条件は何ですか？</div>
-        <div class="faq-a">月に1回程度、使ってみた感想や改善点を教えていただくことが条件です。LINEで簡単にフィードバックいただければ大丈夫です。最低契約期間は6ヶ月です。</div>
+        <div class="faq-q">モニター価格はずっと続きますか？</div>
+        <div class="faq-a">モニター期間中にお申し込みいただいた方は、継続利用する限りモニター価格が適用されます。</div>
       </div>
       <div class="faq-item">
-        <div class="faq-q">デモ版と本番の違いは何ですか？</div>
-        <div class="faq-a">デモ版はサンプルデータで操作感を試せます。本番ではご自身の患者さんのデータを登録・管理でき、PDF出力なども全て使えます。</div>
+        <div class="faq-q">最低利用期間はありますか？</div>
+        <div class="faq-a">はい。モニター価格での提供のため、最低6ヶ月間のご利用をお願いしています。7ヶ月目以降はいつでも解約可能です。</div>
       </div>
       <div class="faq-item">
-        <div class="faq-q">解約はできますか？</div>
-        <div class="faq-a">最低契約期間（6ヶ月）経過後は、いつでも解約可能です。期間内の解約は残期間分の解約金が発生します。</div>
+        <div class="faq-q">既存の患者データを移行できますか？</div>
+        <div class="faq-a">CSV形式でのデータ移行に対応しています。詳細はLINEからお問い合わせください。</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ========== 9. フッターCTA + LINE誘導 ========== -->
-<section class="footer-cta">
+<!-- CTA -->
+<section class="cta-section">
   <div class="container">
-    <h2>まずは触って、確かめてみてください</h2>
-    <p>デモ版は無料で、ログインも不要です。<br>気になることがあればLINEでいつでも相談できます。</p>
-
-    <div class="cta-group">
-      <a href="#pricing" class="cta-btn-primary" style="background: #fff; color: #2563eb;">
-        モニターに申し込む（残り<span class="monitor-count">5</span>名）
-      </a>
-      <a href="https://kensa-sheet-app.vercel.app/demo/" class="cta-btn-secondary" target="_blank" rel="noopener">
-        デモ版を試してみる
-      </a>
+    <h2>歪みを可視化して、あなたの院も変わる</h2>
+    <p>可視化でリピート率を上げ、月商424万円を出したカラダマップ。モニター枠は先着5名限定。</p>
+    <a href="https://lin.ee/TC4uukz" class="cta-btn">
+      LINEで申し込む
+      <span class="cta-btn-sub">モニター限定 3,980円/月（通常9,800円）</span>
+    </a>
+    <div style="margin-top:16px;">
+      <button onclick="tryDemo()" style="display:inline-block;border:2px solid rgba(255,255,255,0.5);color:#fff;font-size:15px;font-weight:600;padding:12px 32px;border-radius:8px;cursor:pointer;background:transparent;font-family:inherit;">
+        無料でデモを試す
+        <span style="display:block;font-size:11px;font-weight:400;opacity:0.7;">アカウント登録不要</span>
+      </button>
     </div>
-
-    <div class="line-btn-wrapper">
-      <p>導入について相談したい方はこちら</p>
-      <a href="https://lin.ee/182seszw" class="cta-btn-line" target="_blank" rel="noopener">
-        LINEで相談する
-      </a>
-    </div>
+    <p class="cta-deadline">申し込み締切：2026年4月7日(月) / 通常価格9,800円に値上げ予定</p>
   </div>
 </section>
 
-<!-- ========== フッター ========== -->
+<!-- フッター -->
 <footer class="footer">
   <div class="container">
-    <p>カラダマップ | 大口アプリラボ</p>
-    <p style="margin-top: 8px;"><a href="https://lin.ee/182seszw" target="_blank" rel="noopener">LINEで相談する</a></p>
+    <p>大口神経整体院</p>
+    <p style="margin-top:8px;">
+      <a href="https://kensa-sheet-app.vercel.app" target="_blank">カラダマップ</a>
+    </p>
+    <p style="margin-top:12px;">&copy; 2026 大口神経整体院 All Rights Reserved.</p>
   </div>
 </footer>
 
-<!-- ========== JavaScript ========== -->
 <script>
-// モニター残り枠数の一括反映
-(function() {
-  var count = MONITOR_REMAINING;
-  var els = document.querySelectorAll('.monitor-count');
-  for (var i = 0; i < els.length; i++) {
-    els[i].textContent = count;
-  }
-})();
+// ===== デモスライドショー =====
+const slides = [
+  { src: "images/ba-comparison.png", caption: "前回との比較 - 9箇所のランドマークで歪みの変化を可視化" },
+  { src: "images/patient-info.png", caption: "Step1: 患者名・主訴・痛みレベル(NRS)を入力" },
+  { src: "images/standing-exam.png", caption: "Step2: 立位検査 - 3つのランドマークの左右差をワンタップ記録" },
+  { src: "images/seated-exam.png", caption: "Step3: 座位検査 - 立位との比較で足部の影響をリアルタイム判定" },
+  { src: "images/diagnosis-result.png", caption: "AI診断結果 - 足部の影響・原因部位を自動で特定" },
+  { src: "images/selfcare.png", caption: "検査データ比較表 + AIセルフケア提案を自動生成" },
+  { src: "images/pdf-output.png", caption: "PDF出力 - 患者用レポート・施術提案書をワンタップで生成" },
+];
 
-// FAQ アコーディオン
-(function() {
-  var items = document.querySelectorAll('.faq-item');
-  items.forEach(function(item) {
-    var q = item.querySelector('.faq-q');
-    q.addEventListener('click', function() {
-      var isOpen = item.classList.contains('open');
-      // 全部閉じる
-      items.forEach(function(i) { i.classList.remove('open'); });
-      // 自分だけ開く
-      if (!isOpen) {
-        item.classList.add('open');
-      }
-    });
+let currentSlide = 0;
+
+function initSlideshow() {
+  const nav = document.getElementById('slideNav');
+  if (!nav) return;
+  slides.forEach((_, i) => {
+    const btn = document.createElement('button');
+    btn.addEventListener('click', () => goToSlide(i));
+    if (i === 0) btn.classList.add('active');
+    nav.appendChild(btn);
   });
-})();
+}
+
+function goToSlide(i) {
+  currentSlide = i;
+  const img = document.getElementById('slideImg');
+  const caption = document.getElementById('slideCaption');
+  const nav = document.getElementById('slideNav');
+  if (!img || !caption || !nav) return;
+  img.style.opacity = '0';
+  setTimeout(() => {
+    img.src = slides[i].src;
+    img.alt = slides[i].caption;
+    caption.textContent = slides[i].caption;
+    img.style.opacity = '1';
+  }, 250);
+  nav.querySelectorAll('button').forEach((btn, j) => {
+    btn.classList.toggle('active', j === i);
+  });
+}
+
+function slideChange(dir) {
+  let next = currentSlide + dir;
+  if (next < 0) next = slides.length - 1;
+  if (next >= slides.length) next = 0;
+  goToSlide(next);
+}
+
+// 自動スライド
+let autoSlideTimer = setInterval(() => slideChange(1), 5000);
+document.getElementById('demoSlideshow')?.addEventListener('mouseenter', () => clearInterval(autoSlideTimer));
+document.getElementById('demoSlideshow')?.addEventListener('mouseleave', () => {
+  autoSlideTimer = setInterval(() => slideChange(1), 5000);
+});
+
+initSlideshow();
+
+// ===== Stripe決済 =====
+async function handleStripeCheckout() {
+  const clinicName = document.getElementById('stripe-clinic').value.trim();
+  const email = document.getElementById('stripe-email').value.trim();
+  const btn = document.getElementById('stripeCheckoutBtn');
+
+  if (!clinicName) {
+    alert('院名を入力してください');
+    return;
+  }
+  if (!email || !email.includes('@')) {
+    alert('メールアドレスを入力してください');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '処理中...';
+
+  try {
+    const res = await fetch('https://clinic-saas-lp.vercel.app/api/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        planName: 'カラダマップ モニタープラン',
+        email: email,
+        clinicName: clinicName,
+        amount: 3980,
+        paymentType: 'monthly',
+        selectedApps: ['kensa']
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      alert('決済ページの作成に失敗しました。LINEからお申し込みください。');
+      btn.disabled = false;
+      btn.textContent = '月額 3,980円で申し込む';
+    }
+  } catch (e) {
+    alert('通信エラーが発生しました。LINEからお申し込みください。');
+    btn.disabled = false;
+    btn.textContent = '月額 3,980円で申し込む';
+  }
+}
+
+// ===== デモ =====
+function tryDemo() {
+  window.location.href = '/demo/';
+}
 </script>
 
 </body>
