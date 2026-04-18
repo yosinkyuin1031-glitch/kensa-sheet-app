@@ -31,7 +31,7 @@
   <!-- デモバナー -->
   <div class="demo-banner">
     デモ版 - データはこの端末のみに保存されます
-    <a href="https://clinic-saas-lp.vercel.app/systems/kensa" target="_blank">製品ページへ</a>
+    <a href="/lp/" target="_blank">製品ページへ</a>
   </div>
 
   <!-- ===== ログイン画面 ===== -->
@@ -675,7 +675,7 @@
     login: function() { return Promise.resolve({ user: this.currentUser }); },
     signup: function() { return Promise.resolve({ user: this.currentUser }); },
     resetPassword: function() { return Promise.resolve(); },
-    logout: function() { window.location.href = 'https://clinic-saas-lp.vercel.app/systems/kensa'; },
+    logout: function() { window.location.href = '/lp/'; },
     _loadClinicId: function() { return Promise.resolve(); },
     getClinicId: function() { return this.currentClinicId; },
     getUserId: function() { return this.currentUser.id; },

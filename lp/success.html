@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>お申し込み完了 - カラダマップ</title>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+  color: #1a1a2e;
+  line-height: 1.8;
+  background: #f8fafc;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  text-align: center;
+}
+.success-icon {
+  width: 80px;
+  height: 80px;
+  background: #22c55e;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+}
+.success-icon svg {
+  width: 40px;
+  height: 40px;
+  fill: #fff;
+}
+h1 {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #1a1a2e;
+}
+.message {
+  font-size: 15px;
+  color: #475569;
+  margin-bottom: 32px;
+  line-height: 2;
+}
+.steps {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: left;
+  margin-bottom: 32px;
+  border: 1px solid #e2e8f0;
+}
+.steps h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #1e40af;
+}
+.steps ol {
+  padding-left: 20px;
+}
+.steps li {
+  font-size: 14px;
+  color: #475569;
+  margin-bottom: 8px;
+  line-height: 1.8;
+}
+.btn {
+  display: inline-block;
+  background: #2563eb;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 14px 40px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+.btn:hover { opacity: 0.85; }
+.line-link {
+  display: block;
+  margin-top: 16px;
+  color: #06c755;
+  font-size: 14px;
+  font-weight: 600;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="success-icon">
+    <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+  </div>
+  <h1>お申し込みありがとうございます</h1>
+  <p class="message">
+    カラダマップへのお申し込みが完了しました。<br>
+    14日間の無料トライアルがスタートします。
+  </p>
+  <div class="steps">
+    <h3>この後の流れ</h3>
+    <ol>
+      <li>ご登録いただいたメールアドレスに<strong>ログイン情報</strong>をお送りします</li>
+      <li>メール記載のURLからログインしてご利用開始</li>
+      <li>操作方法でわからないことがあればLINEからお気軽にどうぞ</li>
+    </ol>
+  </div>
+  <a href="/" class="btn">カラダマップ トップへ</a>
+  <a href="https://lin.ee/TC4uukz" class="line-link">ご質問・ご相談はLINEからどうぞ</a>
+</div>
+</body>
+</html>

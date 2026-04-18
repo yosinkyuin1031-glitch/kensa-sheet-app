@@ -1176,7 +1176,7 @@ img {
 
 <!-- 限定バナー -->
 <div class="limited-banner">
-  <strong>先着5名限定</strong> 歪みを可視化するカラダマップ -- モニター価格 3,980円/月（4月7日締切）
+  整体院向け身体検査アプリ <strong>カラダマップ</strong> -- 月額 3,980円で歪みを可視化
 </div>
 
 <!-- ヒーロー -->
@@ -1192,9 +1192,9 @@ img {
       このサイクルを回し続けた結果が、月商424万円。<br>
       開発者自身が現場で使い続けて結果を出しているカラダマップです。
     </p>
-    <a href="https://lin.ee/TC4uukz" class="cta-btn">
-      LINEで申し込む
-      <span class="cta-btn-sub">先着5名 モニター限定 3,980円/月</span>
+    <a href="#pricing" class="cta-btn" style="background:#2563eb;">
+      月額 3,980円で申し込む
+      <span class="cta-btn-sub">14日間無料トライアル付き</span>
     </a>
     <button onclick="tryDemo()" style="display:inline-block;background:transparent;border:2px solid rgba(255,255,255,0.5);color:#fff;font-size:15px;font-weight:600;padding:14px 36px;border-radius:8px;margin-left:12px;transition:background 0.2s;vertical-align:middle;cursor:pointer;font-family:inherit;">
       無料でデモを試す
@@ -1637,7 +1637,7 @@ img {
       <tr><td>Sportip Pro（AI姿勢解析）</td><td>推定15,000〜30,000円</td><td>姿勢解析+予約+カルテ統合。高機能だが高額</td></tr>
       <tr><td>RIPCLE（電子カルテ）</td><td>8,800円〜</td><td>汎用カルテ。検査特化の機能なし</td></tr>
       <tr><td>紙の検査シート</td><td>0円</td><td>データ蓄積・比較・共有が不可能</td></tr>
-      <tr class="highlight"><td>カラダマップ</td><td>3,980円（モニター）</td><td>段階的原因特定 + PDF出力 + カルテ + NRS記録 + クラウド</td></tr>
+      <tr class="highlight"><td>カラダマップ</td><td>3,980円/月</td><td>段階的原因特定 + PDF出力 + カルテ + NRS記録 + クラウド</td></tr>
     </table>
   </div>
 </section>
@@ -1650,17 +1650,12 @@ img {
       料金プラン
     </h2>
 
-    <div class="pricing-deadline">
-      <p>先着5名限定 / 2026年4月7日(月)締切</p>
-      <p class="sub">モニター終了後は9,800円/月に値上げ予定。今なら<strong style="color:#dc2626;">月5,820円お得</strong>です。</p>
-    </div>
-
-    <div class="pricing-cards">
+    <div id="pricing" class="pricing-cards">
       <div class="pricing-card recommended">
-        <div class="pricing-label">モニター限定価格</div>
+        <div class="pricing-label">ライトプラン</div>
         <div class="pricing-price">
           <span class="yen">¥</span>3,980<span class="period">/月</span>
-          <br><span class="tax">税込</span>
+          <br><span class="tax">税込 / 14日間無料トライアル付き</span>
         </div>
         <ul class="pricing-features">
           <li>全機能利用可能</li>
@@ -1672,30 +1667,11 @@ img {
           <li>最低利用期間：6ヶ月</li>
         </ul>
       </div>
-      <div class="pricing-card regular">
-        <div class="pricing-label">通常価格（予定）</div>
-        <div class="pricing-price">
-          <span class="yen">¥</span>9,800<span class="period">/月</span>
-          <br><span class="tax">税込</span>
-        </div>
-        <div class="pricing-note">モニター終了後はこちらの価格になります</div>
-      </div>
     </div>
 
-    <a href="https://lin.ee/TC4uukz" class="cta-btn">
-      LINEでモニター申し込み
-      <span class="cta-btn-sub">先着5名 残りわずか</span>
-    </a>
-    <div style="margin-top:16px;">
-      <button onclick="tryDemo()" style="display:inline-block;border:2px solid #2563eb;color:#2563eb;font-size:15px;font-weight:600;padding:12px 32px;border-radius:8px;cursor:pointer;background:transparent;font-family:inherit;">
-        まずは無料でデモを試す
-        <span style="display:block;font-size:11px;font-weight:400;color:#64748b;">アカウント登録不要</span>
-      </button>
-    </div>
-
-    <!-- Stripe決済フォーム -->
+    <!-- Stripe決済フォーム（メイン） -->
     <div class="stripe-checkout-section">
-      <h4>カード決済で今すぐ申し込む</h4>
+      <h4>カード決済で申し込む</h4>
       <div class="stripe-field">
         <label for="stripe-clinic">院名</label>
         <input type="text" id="stripe-clinic" placeholder="例：山田整体院">
@@ -1705,12 +1681,25 @@ img {
         <input type="email" id="stripe-email" placeholder="example@email.com">
       </div>
       <button class="stripe-submit-btn" id="stripeCheckoutBtn" onclick="handleStripeCheckout()">
-        月額 3,980円で申し込む
+        月額 3,980円で申し込む（14日間無料）
       </button>
       <p class="stripe-note">
-        Stripeによる安全な決済処理。<br>
-        クレジットカード情報は当社サーバーに保存されません。
+        Stripeによる安全な決済処理。クレジットカード情報は当社サーバーに保存されません。<br>
+        14日間の無料トライアル後に課金が開始されます。
       </p>
+    </div>
+
+    <div style="margin-top:24px;">
+      <button onclick="tryDemo()" style="display:inline-block;border:2px solid #2563eb;color:#2563eb;font-size:15px;font-weight:600;padding:12px 32px;border-radius:8px;cursor:pointer;background:transparent;font-family:inherit;">
+        まずは無料でデモを試す
+        <span style="display:block;font-size:11px;font-weight:400;color:#64748b;">アカウント登録不要</span>
+      </button>
+    </div>
+
+    <div style="margin-top:20px;">
+      <a href="https://lin.ee/TC4uukz" style="color:#06c755;font-size:14px;font-weight:600;text-decoration:underline;">
+        ご質問・ご相談はLINEからどうぞ
+      </a>
     </div>
   </div>
 </section>
@@ -1736,12 +1725,12 @@ img {
         <div class="faq-a">アカウントを発行後、すぐに使い始められます。操作方法の説明も行いますのでご安心ください。</div>
       </div>
       <div class="faq-item">
-        <div class="faq-q">モニター価格はずっと続きますか？</div>
-        <div class="faq-a">モニター期間中にお申し込みいただいた方は、継続利用する限りモニター価格が適用されます。</div>
+        <div class="faq-q">無料トライアル中に解約できますか？</div>
+        <div class="faq-a">はい。14日間の無料トライアル中に解約すれば、料金は一切かかりません。</div>
       </div>
       <div class="faq-item">
         <div class="faq-q">最低利用期間はありますか？</div>
-        <div class="faq-a">はい。モニター価格での提供のため、最低6ヶ月間のご利用をお願いしています。7ヶ月目以降はいつでも解約可能です。</div>
+        <div class="faq-a">はい。最低6ヶ月間のご利用をお願いしています。7ヶ月目以降はいつでも解約可能です。</div>
       </div>
       <div class="faq-item">
         <div class="faq-q">既存の患者データを移行できますか？</div>
@@ -1755,10 +1744,10 @@ img {
 <section class="cta-section">
   <div class="container">
     <h2>歪みを可視化して、あなたの院も変わる</h2>
-    <p>可視化でリピート率を上げ、月商424万円を出したカラダマップ。モニター枠は先着5名限定。</p>
-    <a href="https://lin.ee/TC4uukz" class="cta-btn">
-      LINEで申し込む
-      <span class="cta-btn-sub">モニター限定 3,980円/月（通常9,800円）</span>
+    <p>可視化でリピート率を上げ、月商424万円を出したカラダマップ。14日間無料でお試しいただけます。</p>
+    <a href="#pricing" class="cta-btn" style="background:#2563eb;">
+      月額 3,980円で申し込む
+      <span class="cta-btn-sub">14日間無料トライアル付き</span>
     </a>
     <div style="margin-top:16px;">
       <button onclick="tryDemo()" style="display:inline-block;border:2px solid rgba(255,255,255,0.5);color:#fff;font-size:15px;font-weight:600;padding:12px 32px;border-radius:8px;cursor:pointer;background:transparent;font-family:inherit;">
@@ -1766,7 +1755,9 @@ img {
         <span style="display:block;font-size:11px;font-weight:400;opacity:0.7;">アカウント登録不要</span>
       </button>
     </div>
-    <p class="cta-deadline">申し込み締切：2026年4月7日(月) / 通常価格9,800円に値上げ予定</p>
+    <div style="margin-top:12px;">
+      <a href="https://lin.ee/TC4uukz" style="color:rgba(255,255,255,0.8);font-size:14px;text-decoration:underline;">ご質問・ご相談はLINEからどうぞ</a>
+    </div>
   </div>
 </section>
 
@@ -1863,7 +1854,7 @@ async function handleStripeCheckout() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        planName: 'カラダマップ モニタープラン',
+        planName: 'カラダマップ ライトプラン',
         email: email,
         clinicName: clinicName,
         amount: 3980,
