@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bodycheck-v35-print-via-pdf';
+const CACHE_NAME = 'bodycheck-v39-null-fix';
 const urlsToCache = [
   '/',
   '/index.html',

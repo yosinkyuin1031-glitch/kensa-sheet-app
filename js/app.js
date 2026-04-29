@@ -2394,8 +2394,9 @@
       }
     });
 
-    // 患者用PDF（画面表示と同じセルフケアロジック）
-    document.getElementById('savePdfPatientBtn').addEventListener('click', () => {
+    // 患者用PDF（Pro版限定 - ボタンがない場合はスキップ）
+    const savePdfPatientBtn = document.getElementById('savePdfPatientBtn');
+    if (savePdfPatientBtn) savePdfPatientBtn.addEventListener('click', () => {
       if (!diagnosisResult) return;
       const patientName = document.getElementById('patientName').value;
       const inspectionDate = document.getElementById('inspectionDate').value;
@@ -2441,8 +2442,9 @@
       PdfExport.exportPatientPdf(patientName, inspectionDate, diagnosisResult, contractionResult, selfcareItems);
     });
 
-    // 施術者用PDF
-    document.getElementById('savePdfClinicalBtn').addEventListener('click', () => {
+    // 施術者用PDF（Pro版限定 - ボタンがない場合はスキップ）
+    const savePdfClinicalBtn = document.getElementById('savePdfClinicalBtn');
+    if (savePdfClinicalBtn) savePdfClinicalBtn.addEventListener('click', () => {
       if (!diagnosisResult) return;
       const patientName = document.getElementById('patientName').value;
       const inspectionDate = document.getElementById('inspectionDate').value;
@@ -2603,11 +2605,16 @@
   function setupPrintButtons() {
     const printBtn = document.getElementById('printSheetBtn');
     if (printBtn) {
-      printBtn.addEventListener('click', () => printSheet());
+      printBtn.style.display = '';
+      printBtn.addEventListener('click', async () => {
+        try { await printSheet(); } catch(e) { console.error('印刷エラー:', e); alert('印刷エラー: ' + e.message); }
+      });
     }
     const patientPrintBtn = document.getElementById('patientPrintBtn');
     if (patientPrintBtn) {
-      patientPrintBtn.addEventListener('click', () => printSheet());
+      patientPrintBtn.addEventListener('click', async () => {
+        try { await printSheet(); } catch(e) { console.error('印刷エラー:', e); alert('印刷エラー: ' + e.message); }
+      });
     }
   }
 
@@ -2635,28 +2642,16 @@
   async function printSheet() {
     if (!diagnosisResult) return;
 
-    // iOS Safari の window.print() は @page ルールを無視して余分な空白ページを
-    // 生成するため、PDF 出力パイプライン経由で印刷する。
-    // → PDF 生成 → オーバーレイの「共有 / 保存 / 印刷」から AirPrint で必ず2枚。
     const patientName = document.getElementById('patientName').value || '患者名未入力';
     const inspectionDate = document.getElementById('inspectionDate').value || new Date().toISOString().split('T')[0];
 
-    try {
-      if (typeof PdfExport !== 'undefined' && typeof PdfExport.exportPatientPdf === 'function') {
-        await PdfExport.exportPatientPdf(patientName, inspectionDate, diagnosisResult, contractionResult, []);
-        return;
-      }
-    } catch (e) {
-      console.error('印刷用PDF生成エラー:', e);
-    }
-
-    // フォールバック: 旧 window.print() フロー
+    // 印刷用HTMLを生成してwindow.print()で直接プリンターへ送る
     const container = document.getElementById('printContainer');
     if (!container) return;
     container.innerHTML = generatePrintPage1(patientName, inspectionDate)
                         + generatePrintPage2(patientName);
     const printDiagramEl = document.getElementById('print-diagram');
-    if (printDiagramEl) {
+    if (printDiagramEl && typeof BodyDiagram !== 'undefined') {
       BodyDiagram.init('print-diagram');
       if (detailData.upperDetail.acromion !== null || detailData.lowerDetail.greaterTrochanter !== null) {
         BodyDiagram.updateUnified('print-diagram', detailData.upperDetail, detailData.lowerDetail, examData.standing);
@@ -2664,9 +2659,8 @@
         BodyDiagram.update('print-diagram', 'firstStage', examData.standing);
       }
     }
-    waitForImages(container).then(() => {
-      setTimeout(() => window.print(), 100);
-    });
+    await waitForImages(container);
+    setTimeout(() => window.print(), 100);
   }
 
   // NRS痛みスケールSVG（印刷用）

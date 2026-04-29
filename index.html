@@ -536,11 +536,9 @@
         </div>
         <div class="action-bar-row action-bar-sub">
           <button type="button" id="saveHistoryBtn" class="btn btn-xs btn-secondary">保存</button>
-          <button type="button" id="savePdfPatientBtn" class="btn btn-xs btn-secondary">患者PDF</button>
-          <button type="button" id="savePdfClinicalBtn" class="btn btn-xs btn-secondary">施術者PDF</button>
-          <button type="button" id="printSheetBtn" class="btn btn-xs btn-secondary" style="display:none;">印刷</button>
-          <button type="button" id="compareBtn" class="btn btn-xs btn-secondary" style="display:none;">比較</button>
-          <button type="button" id="showTrendBtn" class="btn btn-xs btn-secondary" style="display:none;">経過</button>
+          <!-- PDF出力はPro版限定 -->
+          <button type="button" id="printSheetBtn" class="btn btn-xs btn-secondary">印刷</button>
+          <!-- 比較・経過はPro版限定 -->
         </div>
       </div>
     </section>
@@ -671,7 +669,7 @@
   <script src="js/selfcare.js?v=20260411a"></script>
   <script src="js/storage.js?v=20260411a"></script>
   <script src="js/pdf.js?v=20260411a"></script>
-  <script src="js/app.js?v=20260411a"></script>
+  <script src="js/app.js?v=20260419d"></script>
   <script>
     // フォールバック：app.jsでエラーが出た場合のログイン処理
     window.addEventListener('load', function() {
