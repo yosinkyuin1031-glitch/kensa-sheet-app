@@ -4366,3 +4366,330 @@ select:focus {
 }
 .step-row input, .tech-row input { flex: 1; }
 .tech-row { flex-wrap: wrap; }
+
+/* ===== 検査タイプ選択 ===== */
+.exam-type-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.exam-type-option {
+  display: block;
+  cursor: pointer;
+}
+.exam-type-option input[type="checkbox"] {
+  display: none;
+}
+.exam-type-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+  transition: all 0.18s;
+}
+.exam-type-option input[type="checkbox"]:checked + .exam-type-card {
+  border-color: #2563eb;
+  background: #eff6ff;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+}
+.exam-type-icon {
+  font-size: 2rem;
+}
+.exam-type-text {
+  flex: 1;
+}
+.exam-type-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #111827;
+}
+.exam-type-desc {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+/* ===== 写真撮影 ===== */
+.camera-stage {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #1f2937;
+  border-radius: 12px;
+}
+.camera-controls {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 10px;
+}
+.photo-slots {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.photo-slot {
+  flex: 1;
+  min-width: 140px;
+  border: 2px dashed #d1d5db;
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+  background: #f9fafb;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 170px;
+}
+.photo-slot.has-photo {
+  border-color: #2563eb;
+  border-style: solid;
+  background: #eff6ff;
+}
+.photo-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: #6b7280;
+}
+.photo-icon {
+  font-size: 2rem;
+}
+.photo-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.photo-preview {
+  width: 100%;
+  max-height: 180px;
+  object-fit: contain;
+  border-radius: 6px;
+}
+.photo-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.photo-hint {
+  font-size: 0.78rem;
+  color: #6b7280;
+  margin-top: 10px;
+}
+.btn-danger {
+  background: #ef4444;
+  color: white;
+  border: none;
+}
+.btn-danger:hover {
+  background: #dc2626;
+}
+
+/* ===== 構造検査 ===== */
+.posture-btn {
+  flex: 1;
+  min-width: 80px;
+  padding: 10px 8px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  color: #374151;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s;
+  text-align: center;
+}
+.posture-btn:hover {
+  border-color: #94a3b8;
+}
+.posture-btn.selected {
+  border-color: #2563eb;
+  background: #dbeafe;
+  color: #1e40af;
+}
+.structural-input {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.structural-result-card {
+  margin-top: 20px;
+  background: #fff;
+  border-radius: 10px;
+  border: 2px solid #2563eb;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.structural-result-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #1e293b, #334155);
+  color: white;
+}
+.structural-result-header h3 {
+  font-size: 0.95rem;
+  margin: 0;
+}
+.structural-result-icon {
+  font-size: 1.2rem;
+}
+#structuralResultContent,
+#diagnosisStructuralContent {
+  padding: 16px;
+}
+.structural-wb-badge {
+  display: inline-block;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+.wb-left { background: #fef2f2; color: #dc2626; }
+.wb-right { background: #fef2f2; color: #dc2626; }
+.wb-even { background: #f1f5f9; color: #64748b; }
+.structural-wb-desc {
+  font-size: 0.85rem;
+  color: #6b7280;
+  line-height: 1.6;
+  margin: 8px 0 12px;
+}
+.structural-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 6px;
+}
+.structural-detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  background: #f8fafc;
+  border-radius: 6px;
+  font-size: 0.8rem;
+}
+.structural-detail-label {
+  color: #6b7280;
+  font-weight: 500;
+}
+.structural-detail-value {
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+.structural-detail-value.wb-left { background: #fef2f2; color: #dc2626; }
+.structural-detail-value.wb-right { background: #eff6ff; color: #2563eb; }
+.structural-detail-value.wb-even { background: #f1f5f9; color: #64748b; }
+
+.posture-diagram-wrapper {
+  margin-top: 20px;
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.posture-diagram-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 12px;
+  text-align: center;
+}
+.posture-diagram-views {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.posture-view {
+  flex: 1;
+  min-width: 140px;
+  max-width: 220px;
+}
+.posture-view-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-align: center;
+  margin-bottom: 6px;
+}
+.posture-diagram-container {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 8px;
+}
+.posture-diagram-container svg {
+  width: 100%;
+  height: auto;
+}
+@media (max-width: 480px) {
+  .photo-slots { flex-direction: row; }
+  .posture-diagram-views { flex-direction: column; align-items: center; }
+  .posture-view { max-width: 280px; width: 100%; }
+}
+
+/* ===== 統合結果カード（写真+サマリー） ===== */
+.integrated-result-card {
+  margin-top: 16px;
+}
+.integrated-result-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 16px;
+  align-items: start;
+}
+.integrated-photo-pane {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.integrated-photo-label {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+.integrated-photo-frame {
+  width: 100%;
+  background: #f3f4f6;
+  border: 1px dashed #d1d5db;
+  border-radius: 10px;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.integrated-photo-frame img {
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+}
+.integrated-photo-empty {
+  color: #9ca3af;
+  font-size: 0.85rem;
+}
+.integrated-summary-pane {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+@media (max-width: 600px) {
+  .integrated-result-grid {
+    grid-template-columns: 1fr;
+  }
+}
