@@ -141,25 +141,25 @@
           <span class="step-number">3</span>
           <span class="step-label">写真撮影</span>
         </div>
-        <div class="wizard-connector"></div>
-        <div class="wizard-step" data-step="3" data-step-group="landmark">
+        <div class="wizard-connector" data-step-group="structural"></div>
+        <div class="wizard-step" data-step="3" data-step-group="structural">
           <span class="step-number">4</span>
-          <span class="step-label">立位検査</span>
+          <span class="step-label">構造検査</span>
         </div>
         <div class="wizard-connector" data-step-group="landmark"></div>
         <div class="wizard-step" data-step="4" data-step-group="landmark">
           <span class="step-number">5</span>
-          <span class="step-label">座位検査</span>
+          <span class="step-label">立位検査</span>
         </div>
         <div class="wizard-connector" data-step-group="landmark"></div>
         <div class="wizard-step" data-step="5" data-step-group="landmark">
           <span class="step-number">6</span>
-          <span class="step-label">上半身検査</span>
+          <span class="step-label">座位検査</span>
         </div>
-        <div class="wizard-connector" data-step-group="structural"></div>
-        <div class="wizard-step" data-step="6" data-step-group="structural">
+        <div class="wizard-connector" data-step-group="landmark"></div>
+        <div class="wizard-step" data-step="6" data-step-group="landmark">
           <span class="step-number">7</span>
-          <span class="step-label">構造検査</span>
+          <span class="step-label">上半身検査</span>
         </div>
         <div class="wizard-connector"></div>
         <div class="wizard-step" data-step="7">
@@ -349,8 +349,8 @@
         </div>
       </div>
 
-      <!-- ===== Step 3: 立位検査 ===== -->
-      <div class="wizard-panel" data-panel="3">
+      <!-- ===== Step 4: 立位検査 ===== -->
+      <div class="wizard-panel" data-panel="4">
         <div class="step-instruction">
           <div class="instruction-icon">🧍</div>
           <h3>立位検査</h3>
@@ -480,8 +480,8 @@
         </div>
       </div>
 
-      <!-- ===== Step 4: 座位検査 ===== -->
-      <div class="wizard-panel" data-panel="4">
+      <!-- ===== Step 5: 座位検査 ===== -->
+      <div class="wizard-panel" data-panel="5">
         <div class="step-instruction">
           <div class="instruction-icon">🪑</div>
           <h3>座位検査</h3>
@@ -530,8 +530,8 @@
         </div>
       </div>
 
-      <!-- ===== Step 5: 上半身検査 ===== -->
-      <div class="wizard-panel" data-panel="5">
+      <!-- ===== Step 6: 上半身検査 ===== -->
+      <div class="wizard-panel" data-panel="6">
         <div class="step-instruction">
           <div class="instruction-icon">💪</div>
           <h3>上半身検査</h3>
@@ -577,14 +577,14 @@
 
         <div class="form-actions">
           <button type="button" class="btn btn-secondary wizard-prev">← 戻る</button>
-          <!-- 構造検査ONなら「構造検査へ」、OFFなら「診断する」 -->
-          <button type="button" class="btn btn-primary wizard-next" id="upperBodyNextBtn" style="display:none;">構造検査へ →</button>
+          <!-- 上半身は最後のランドマーク検査なので、構造ONでも先に済んでいる前提で「診断する」一本に統一 -->
+          <button type="button" class="btn btn-primary wizard-next" id="upperBodyNextBtn" style="display:none;"></button>
           <button type="button" class="btn btn-primary" id="diagnoseBtn">診断する</button>
         </div>
       </div>
 
-      <!-- ===== Step 6: 構造医学検査（仰臥位） ===== -->
-      <div class="wizard-panel" data-panel="6">
+      <!-- ===== Step 3: 構造医学検査（仰臥位） ===== -->
+      <div class="wizard-panel" data-panel="3">
         <div class="step-instruction">
           <div class="instruction-icon">🔬</div>
           <h3>構造医学検査（仰臥位）</h3>
@@ -703,6 +703,8 @@
 
         <div class="form-actions">
           <button type="button" class="btn btn-secondary wizard-prev">← 戻る</button>
+          <!-- ランドマークONなら「立位検査へ」、OFFなら「診断する」 -->
+          <button type="button" class="btn btn-primary wizard-next" id="structuralNextBtn" style="display:none;">立位検査へ →</button>
           <button type="button" class="btn btn-primary" id="structuralDiagnoseBtn">診断する</button>
         </div>
       </div>
@@ -766,12 +768,19 @@
         </div>
       </div>
 
-      <!-- [3] 統合結果 + 後面写真の横並び -->
+      <!-- [3] 統合結果 + 後面写真+後面図の横並び -->
       <div id="diagnosisIntegratedSection" style="display:none;">
         <div class="form-card integrated-result-card">
           <h3 class="card-title">🎯 統合結果と患者写真</h3>
-          <div class="integrated-result-grid">
-            <div class="integrated-photo-pane">
+
+          <!-- 統合所見テキスト（写真有無に関わらず常に表示） -->
+          <div class="integrated-summary-pane">
+            <div id="integratedSummaryContent"></div>
+          </div>
+
+          <!-- 後面写真 + 後面図 の横並び（写真がある時のみ写真ペイン表示） -->
+          <div class="integrated-result-grid" id="integratedPhotoDiagramRow" style="margin-top:12px;">
+            <div class="integrated-photo-pane" id="integratedBackPhotoPane">
               <div class="integrated-photo-label">後面写真</div>
               <div id="integratedBackPhotoSlot" class="integrated-photo-frame">
                 <img id="integratedBackPhotoImg" alt="後面写真" style="display:none;">
@@ -779,8 +788,11 @@
               </div>
               <button type="button" id="integratedRetakeBtn" class="btn btn-sm btn-secondary" style="margin-top:8px;">写真を撮影/撮り直し</button>
             </div>
-            <div class="integrated-summary-pane">
-              <div id="integratedSummaryContent"></div>
+            <div class="integrated-diagram-pane" id="integratedBackDiagramPane">
+              <div class="integrated-photo-label">後面図（構造解析）</div>
+              <div class="integrated-diagram-frame">
+                <svg id="integratedBackDiagramSvg" viewBox="0 0 200 410" xmlns="http://www.w3.org/2000/svg"></svg>
+              </div>
             </div>
           </div>
         </div>

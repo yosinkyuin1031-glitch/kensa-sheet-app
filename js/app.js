@@ -904,13 +904,13 @@
   }
 
   // ステップ番号（0-7）と検査タイプを考慮した「次/前」のスキップ計算
+  // 新フロー: 0=患者情報 / 1=検査タイプ選択 / 2=写真 / 3=構造 / 4=立位 / 5=座位 / 6=上半身 / 7=結果
   function _isStepEnabled(step) {
-    // 0:患者情報 1:検査選択 2:写真 7:結果 はいつでも有効
     if (step === 0 || step === 1 || step === 2 || step === 7) return true;
-    // 3:立位 4:座位 5:上半身 はランドマーク選択時のみ
-    if (step === 3 || step === 4 || step === 5) return !!examTypes.landmark;
-    // 6:構造検査
-    if (step === 6) return !!examTypes.structural;
+    // 3: 構造検査
+    if (step === 3) return !!examTypes.structural;
+    // 4:立位 5:座位 6:上半身 はランドマーク選択時のみ
+    if (step === 4 || step === 5 || step === 6) return !!examTypes.landmark;
     return false;
   }
 
@@ -945,22 +945,31 @@
       el.classList.toggle('completed', s < step);
     });
 
-    if (step === 4) updateSeatedComparison();
-    if (step === 6) updateStructuralAnalysis();
+    // 新フロー対応: panel番号の変更 (3=構造 / 4=立位 / 5=座位 / 6=上半身)
+    if (step === 3) updateStructuralAnalysis();
+    if (step === 5) updateSeatedComparison();
 
-    // 上半身検査での次ボタン制御（構造ONなら「構造検査へ」、OFFなら「診断する」）
-    if (step === 5) {
-      const upperNext = document.getElementById('upperBodyNextBtn');
-      const upperDiag = document.getElementById('diagnoseBtn');
-      if (upperNext && upperDiag) {
-        if (examTypes.structural) {
-          upperNext.style.display = '';
-          upperDiag.style.display = 'none';
+    // 構造検査(panel 3)の次ボタン制御: ランドマークONなら「立位検査へ」、OFFなら「診断する」
+    if (step === 3) {
+      const structNext = document.getElementById('structuralNextBtn');
+      const structDiag = document.getElementById('structuralDiagnoseBtn');
+      if (structNext && structDiag) {
+        if (examTypes.landmark) {
+          structNext.style.display = '';
+          structDiag.style.display = 'none';
         } else {
-          upperNext.style.display = 'none';
-          upperDiag.style.display = '';
+          structNext.style.display = 'none';
+          structDiag.style.display = '';
         }
       }
+    }
+
+    // 上半身検査(panel 6)は最後のランドマーク検査なので、常に「診断する」一本
+    if (step === 6) {
+      const upperNext = document.getElementById('upperBodyNextBtn');
+      const upperDiag = document.getElementById('diagnoseBtn');
+      if (upperNext) upperNext.style.display = 'none';
+      if (upperDiag) upperDiag.style.display = '';
     }
 
     // ステップインジケーターの動的表示（landmark/structuralグループの可視性）
@@ -1016,7 +1025,10 @@
     } else if (currentStep === 2) {
       allFilled = true; // 写真撮影は任意
     } else if (currentStep === 3) {
-      // Step 3: 立位（詳細6 + 基本3）
+      // Step 3: 構造検査 (新フロー) — 最低1つ入力で許可
+      allFilled = Object.values(structuralData).some(v => v !== null);
+    } else if (currentStep === 4) {
+      // Step 4: 立位（詳細6 + 基本3）
       for (const lm of InspectionLogic.upperDetailLandmarks) {
         if (detailData.upperDetail[lm.key] === null) { allFilled = false; break; }
       }
@@ -1030,15 +1042,13 @@
           if (examData.standing[landmark] === null) { allFilled = false; break; }
         }
       }
-    } else if (currentStep === 4 || currentStep === 5) {
-      const position = currentStep === 4 ? 'seated' : 'upperBody';
+    } else if (currentStep === 5 || currentStep === 6) {
+      // Step 5=座位, Step 6=上半身
+      const position = currentStep === 5 ? 'seated' : 'upperBody';
       const data = examData[position];
       for (const landmark of Object.keys(InspectionLogic.landmarks)) {
         if (data[landmark] === null) { allFilled = false; break; }
       }
-    } else if (currentStep === 6) {
-      // 構造検査は最低1つは入力されていればOK
-      allFilled = Object.values(structuralData).some(v => v !== null);
     } else {
       return;
     }
@@ -1178,35 +1188,96 @@
   function renderStructuralSummaryHtml(wb) {
     let html = '';
     if (wb.side === 'left') {
-      html += `<div class="structural-wb-badge wb-left">⚖️ 左荷重（L:${wb.leftScore} / R:${wb.rightScore}）</div>`;
-      html += `<p class="structural-wb-desc">左側に体重がかかりやすい状態です。<br><strong>左側 → 前方に症状</strong>が出やすく、<strong>右側 → 後方に症状</strong>が出やすい傾向があります。</p>`;
+      html += `<div class="structural-wb-badge wb-left">⚖️ 左に体重がのっています（左:${wb.leftScore} / 右:${wb.rightScore}）</div>`;
+      html += `<p class="structural-wb-desc">左側に体重がのっている状態です。<br><strong>左の前面</strong>（首・胸・お腹・太もも前など）と <strong>右の後面</strong>（後頭・背中・お尻・もも裏など）に症状が出やすい傾向があります。</p>`;
     } else if (wb.side === 'right') {
-      html += `<div class="structural-wb-badge wb-right">⚖️ 右荷重（L:${wb.leftScore} / R:${wb.rightScore}）</div>`;
-      html += `<p class="structural-wb-desc">右側に体重がかかりやすい状態です。<br><strong>右側 → 前方に症状</strong>が出やすく、<strong>左側 → 後方に症状</strong>が出やすい傾向があります。</p>`;
+      html += `<div class="structural-wb-badge wb-right">⚖️ 右に体重がのっています（左:${wb.leftScore} / 右:${wb.rightScore}）</div>`;
+      html += `<p class="structural-wb-desc">右側に体重がのっている状態です。<br><strong>右の前面</strong>（首・胸・お腹・太もも前など）と <strong>左の後面</strong>（後頭・背中・お尻・もも裏など）に症状が出やすい傾向があります。</p>`;
     } else if (wb.side === 'even') {
-      html += `<div class="structural-wb-badge wb-even">⚖️ 均等（L:${wb.leftScore} / R:${wb.rightScore}）</div>`;
-      html += `<p class="structural-wb-desc">左右の荷重差は小さい状態です。</p>`;
+      html += `<div class="structural-wb-badge wb-even">⚖️ 左右の荷重はほぼ均等です（左:${wb.leftScore} / 右:${wb.rightScore}）</div>`;
+      html += `<p class="structural-wb-desc">左右の荷重差は小さい状態です。明確な前後・左右差は確認できません。</p>`;
     } else {
       html += `<div class="structural-wb-badge wb-even">未入力</div>`;
     }
     html += '<div class="structural-detail-grid">';
+    // 各項目: 検査の意味（meaning）と所見（finding）を補足
     const items = [
-      { key: 'legLength', label: '脚長差', left: 'leftShort', right: 'rightShort' },
-      { key: 'toeDorsiflexion', label: '母趾背屈力', left: 'leftStrong', right: 'rightStrong' },
-      { key: 'iliacCrest', label: '腸骨稜', left: 'rightHigh', right: 'leftHigh' },
-      { key: 'asisHeight', label: 'ASIS', left: 'rightHigh', right: 'leftHigh' },
-      { key: 'kneeRotation', label: '膝回旋', left: 'leftTight', right: 'rightTight' }
+      {
+        key: 'legLength',
+        label: '① 脚長差',
+        meaning: '内くるぶし（内果）の位置を左右比較。短い側が荷重側になりやすい',
+        left: 'leftShort', right: 'rightShort',
+        leftFinding: '左が短い → 左が荷重側',
+        rightFinding: '右が短い → 右が荷重側',
+        equalFinding: '左右ほぼ同じ'
+      },
+      {
+        key: 'toeDorsiflexion',
+        label: '② 母趾背屈力',
+        meaning: '親指を上に上げる力。強い側が荷重側になりやすい',
+        left: 'leftStrong', right: 'rightStrong',
+        leftFinding: '左が強い → 左が荷重側',
+        rightFinding: '右が強い → 右が荷重側',
+        equalFinding: '左右ほぼ同じ'
+      },
+      {
+        key: 'iliacCrest',
+        label: '③ 腸骨稜の高さ',
+        meaning: '腸骨稜＝骨盤上端の縁。仰臥位で低い側が荷重側で圧縮されている',
+        left: 'rightHigh', right: 'leftHigh',
+        // 注意: 「右が高い」= 左が低い = 左荷重
+        leftFinding: '右が高い（左が低い） → 左が荷重側',
+        rightFinding: '左が高い（右が低い） → 右が荷重側',
+        equalFinding: '左右ほぼ同じ'
+      },
+      {
+        key: 'asisHeight',
+        label: '④ ASIS（上前腸骨棘）',
+        meaning: 'ASIS＝骨盤の前にある骨の出っ張り。低い側が荷重側で圧縮されている',
+        left: 'rightHigh', right: 'leftHigh',
+        leftFinding: '右が高い（左が低い） → 左が荷重側',
+        rightFinding: '左が高い（右が低い） → 右が荷重側',
+        equalFinding: '左右ほぼ同じ'
+      },
+      {
+        key: 'kneeRotation',
+        label: '⑤ 膝屈曲位の回旋',
+        meaning: '膝を曲げて左右に倒し、突っ張る側を確認。硬い側が荷重側',
+        left: 'leftTight', right: 'rightTight',
+        leftFinding: '左が硬い → 左が荷重側',
+        rightFinding: '右が硬い → 右が荷重側',
+        equalFinding: '左右ほぼ同じ'
+      }
     ];
     for (const item of items) {
       const val = structuralData[item.key];
-      let indicator = '−';
-      let cls = '';
-      if (val === item.left) { indicator = '← L'; cls = 'wb-left'; }
-      else if (val === item.right) { indicator = 'R →'; cls = 'wb-right'; }
-      else if (val === 'equal') { indicator = '='; cls = 'wb-even'; }
-      html += `<div class="structural-detail-item">
-        <span class="structural-detail-label">${item.label}</span>
-        <span class="structural-detail-value ${cls}">${indicator}</span>
+      let indicator = '未入力';
+      let itemCls = '';
+      let valueCls = '';
+      let finding = '—';
+      if (val === item.left) {
+        indicator = '◀ 左';
+        itemCls = 'wb-left';
+        valueCls = 'wb-left';
+        finding = item.leftFinding;
+      } else if (val === item.right) {
+        indicator = '右 ▶';
+        itemCls = 'wb-right';
+        valueCls = 'wb-right';
+        finding = item.rightFinding;
+      } else if (val === 'equal') {
+        indicator = '＝ 均等';
+        itemCls = 'wb-even';
+        valueCls = 'wb-even';
+        finding = item.equalFinding;
+      }
+      html += `<div class="structural-detail-item ${itemCls}">
+        <div class="structural-detail-info">
+          <span class="structural-detail-label">${item.label}</span>
+          <span class="structural-detail-meaning">${item.meaning}</span>
+          <span class="structural-detail-finding">所見: ${finding}</span>
+        </div>
+        <span class="structural-detail-value ${valueCls}">${indicator}</span>
       </div>`;
     }
     html += '</div>';
@@ -1222,10 +1293,20 @@
     const b = document.getElementById(backId);
     const l = document.getElementById(leftId);
     const r = document.getElementById(rightId);
+    // viewBox を 320×440 に拡大して左右余白にラベルを配置
+    [f, b, l, r].forEach(el => { if (el) el.setAttribute('viewBox', '0 0 320 440'); });
     if (f) f.innerHTML = generateStructuralFrontSvg(wb);
     if (b) b.innerHTML = generateStructuralBackSvg(wb);
     if (l) l.innerHTML = generateSagittalSvg('left', wb);
     if (r) r.innerHTML = generateSagittalSvg('right', wb);
+    // 結果ページの後面図にも反映
+    if (forDiagnosis) {
+      const integ = document.getElementById('integratedBackDiagramSvg');
+      if (integ) {
+        integ.setAttribute('viewBox', '0 0 320 440');
+        integ.innerHTML = generateStructuralBackSvg(wb);
+      }
+    }
   }
 
   function _structDefs(id) {
@@ -1240,6 +1321,50 @@
         <feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-color="#00000015"/>
       </filter>
     </defs>`;
+  }
+
+  // ===== 共通ヘルパー: 状態ラベル（左右余白の縦並びサイドラベル）  =====
+  // side: 'left' | 'right' / items: [{label, sub, color, y}]
+  function _structSideLabels(side, items) {
+    if (!items || !items.length) return '';
+    // 左サイドはx=2~78、右サイドはx=242~318
+    const xText = side === 'left' ? 8 : 312;
+    const anchor = side === 'left' ? 'start' : 'end';
+    const lineX1 = side === 'left' ? 78 : 242;
+    let html = '';
+    for (const it of items) {
+      // リーダー線（ラベル → 図示位置 anchorX,anchorY）
+      if (it.anchorX != null && it.anchorY != null) {
+        html += `<line x1="${lineX1}" y1="${it.y + 2}" x2="${it.anchorX}" y2="${it.anchorY}" stroke="${it.color || '#94a3b8'}" stroke-width="0.6" stroke-dasharray="2,2" opacity="0.55"/>`;
+      }
+      // 凡例ドット
+      const dotX = side === 'left' ? 70 : 250;
+      html += `<circle cx="${dotX}" cy="${it.y + 2}" r="2.5" fill="${it.color || '#94a3b8'}"/>`;
+      html += `<text x="${xText}" y="${it.y}" font-size="9" fill="#1f2937" font-weight="600" text-anchor="${anchor}">${it.label}</text>`;
+      if (it.sub) {
+        html += `<text x="${xText}" y="${it.y + 11}" font-size="7" fill="#6b7280" text-anchor="${anchor}">${it.sub}</text>`;
+      }
+    }
+    return html;
+  }
+
+  // 共通: 荷重側の役割サマリーバッジ（下部）
+  function _structRoleBadge(wb) {
+    const wbColor = '#ef4444';
+    const nonWbColor = '#3b82f6';
+    if (wb.side === 'left') {
+      return `<rect x="20" y="416" width="280" height="20" rx="6" fill="${wbColor}" opacity="0.1"/>
+              <text x="160" y="430" font-size="9.5" fill="${wbColor}" font-weight="700" text-anchor="middle">左荷重 → 左前面 / 右後面に症状が出やすい</text>`;
+    }
+    if (wb.side === 'right') {
+      return `<rect x="20" y="416" width="280" height="20" rx="6" fill="${wbColor}" opacity="0.1"/>
+              <text x="160" y="430" font-size="9.5" fill="${wbColor}" font-weight="700" text-anchor="middle">右荷重 → 右前面 / 左後面に症状が出やすい</text>`;
+    }
+    if (wb.side === 'even') {
+      return `<rect x="20" y="416" width="280" height="20" rx="6" fill="#94a3b8" opacity="0.15"/>
+              <text x="160" y="430" font-size="9.5" fill="#475569" font-weight="700" text-anchor="middle">左右荷重ほぼ均等</text>`;
+    }
+    return '';
   }
 
   function generateStructuralFrontSvg(wb) {
@@ -1257,12 +1382,34 @@
     const icLeft = structuralData.iliacCrest;
     const pelvisRotDeg = icLeft === 'leftHigh' ? -4 : icLeft === 'rightHigh' ? 4 : 0;
 
+    // 左右サイドラベル（状態）— 余白側に配置してリーダー線で結ぶ
+    const leftItems = [];
+    const rightItems = [];
+    if (wbSide === 'left') {
+      leftItems.push({ label: '荷重側', sub: '前面に症状', color: wbColor, y: 220, anchorX: 92, anchorY: 220 });
+      // 前面の主働筋（荷重側＝左）
+      leftItems.push({ label: '胸鎖乳突筋', sub: '前面短縮', color: wbColor, y: 80, anchorX: 92, anchorY: 76 });
+      leftItems.push({ label: '大胸筋', sub: '前面短縮', color: wbColor, y: 130, anchorX: 92, anchorY: 130 });
+      leftItems.push({ label: '腸腰筋', sub: '前面短縮', color: wbColor, y: 170, anchorX: 92, anchorY: 220 });
+      leftItems.push({ label: '大腿四頭筋', sub: '前面短縮', color: wbColor, y: 290, anchorX: 92, anchorY: 290 });
+    }
+    if (wbSide === 'right') {
+      rightItems.push({ label: '荷重側', sub: '前面に症状', color: wbColor, y: 220, anchorX: 228, anchorY: 220 });
+      rightItems.push({ label: '胸鎖乳突筋', sub: '前面短縮', color: wbColor, y: 80, anchorX: 228, anchorY: 76 });
+      rightItems.push({ label: '大胸筋', sub: '前面短縮', color: wbColor, y: 130, anchorX: 228, anchorY: 130 });
+      rightItems.push({ label: '腸腰筋', sub: '前面短縮', color: wbColor, y: 170, anchorX: 228, anchorY: 220 });
+      rightItems.push({ label: '大腿四頭筋', sub: '前面短縮', color: wbColor, y: 290, anchorX: 228, anchorY: 290 });
+    }
+
     return `
     ${_structDefs('sf')}
-    ${wbSide === 'left' ? '<rect x="2" y="22" width="96" height="370" rx="8" fill="#ef4444" opacity="0.06"/>' : ''}
-    ${wbSide === 'right' ? '<rect x="102" y="22" width="96" height="370" rx="8" fill="#ef4444" opacity="0.06"/>' : ''}
-    <line x1="100" y1="20" x2="100" y2="390" stroke="#e2e8f0" stroke-width="0.5" stroke-dasharray="3"/>
-    <g filter="url(#sfShadow)">
+    <!-- 荷重側ハイライト（薄い色塗り） -->
+    ${wbSide === 'left' ? '<rect x="80" y="22" width="80" height="380" rx="8" fill="#ef4444" opacity="0.05"/>' : ''}
+    ${wbSide === 'right' ? '<rect x="160" y="22" width="80" height="380" rx="8" fill="#ef4444" opacity="0.05"/>' : ''}
+    <!-- 中心軸 -->
+    <line x1="160" y1="22" x2="160" y2="402" stroke="#e2e8f0" stroke-width="0.6" stroke-dasharray="4,3"/>
+    <!-- 身体（中央 80~240 に描画。元coords + 60 シフト） -->
+    <g filter="url(#sfShadow)" transform="translate(60,0)">
       <ellipse cx="100" cy="42" rx="22" ry="26" fill="url(#sfFace)" stroke="#c9a882" stroke-width="0.7"/>
       <ellipse cx="77" cy="42" rx="4" ry="7" fill="url(#sfSkin)" stroke="#c9a882" stroke-width="0.5"/>
       <ellipse cx="123" cy="42" rx="4" ry="7" fill="url(#sfSkin)" stroke="#c9a882" stroke-width="0.5"/>
@@ -1271,14 +1418,20 @@
       <path d="M76,204 Q74,220 72,250 Q70,280 72,310 Q73,330 74,350 Q75,360 72,${lFootY} L92,${lFootY} Q90,360 90,350 Q91,330 92,310 Q93,280 92,250 Q91,220 88,204" fill="url(#sfSkin)" stroke="#c9a882" stroke-width="0.6"/>
       <path d="M112,204 Q110,220 108,250 Q107,280 108,310 Q109,330 110,350 Q111,360 108,${rFootY} L128,${rFootY} Q126,360 126,350 Q127,330 128,310 Q129,280 128,250 Q127,220 124,204" fill="url(#sfSkin)" stroke="#c9a882" stroke-width="0.6"/>
     </g>
-    <g transform="rotate(${pelvisRotDeg},100,204)">
-      <line x1="68" y1="204" x2="132" y2="204" stroke="#f59e0b" stroke-width="1.8" opacity="0.7"/>
-      <circle cx="68" cy="204" r="3" fill="#f59e0b" opacity="0.8"/><circle cx="132" cy="204" r="3" fill="#f59e0b" opacity="0.8"/>
+    <!-- 骨盤ライン（傾斜） -->
+    <g transform="rotate(${pelvisRotDeg},160,204)">
+      <line x1="128" y1="204" x2="192" y2="204" stroke="#f59e0b" stroke-width="1.8" opacity="0.7"/>
+      <circle cx="128" cy="204" r="3" fill="#f59e0b" opacity="0.85"/>
+      <circle cx="192" cy="204" r="3" fill="#f59e0b" opacity="0.85"/>
     </g>
-    ${wbSide === 'left' ? `<polygon points="50,394 44,386 56,386" fill="${wbColor}"/><text x="50" y="404" font-size="7.5" fill="${wbColor}" font-weight="700" text-anchor="middle">荷重側</text>` : ''}
-    ${wbSide === 'right' ? `<polygon points="150,394 144,386 156,386" fill="${wbColor}"/><text x="150" y="404" font-size="7.5" fill="${wbColor}" font-weight="700" text-anchor="middle">荷重側</text>` : ''}
-    <text x="50" y="16" font-size="10" fill="${leftColor}" font-weight="700" text-anchor="middle">左</text>
-    <text x="150" y="16" font-size="10" fill="${rightColor}" font-weight="700" text-anchor="middle">右</text>
+    <!-- 上部「左/右」ラベル -->
+    <text x="115" y="16" font-size="11" fill="${leftColor}" font-weight="700" text-anchor="middle">左</text>
+    <text x="205" y="16" font-size="11" fill="${rightColor}" font-weight="700" text-anchor="middle">右</text>
+    <!-- 状態ラベル（左右マージン側） -->
+    ${_structSideLabels('left', leftItems)}
+    ${_structSideLabels('right', rightItems)}
+    <!-- 下部役割バッジ -->
+    ${_structRoleBadge(wb)}
     `;
   }
 
@@ -1287,31 +1440,39 @@
     const wbColor = '#ef4444';
     const nonWbColor = '#3b82f6';
     const neutralColor = '#94a3b8';
+    // 後面ビューでは見える左右が反転（観察者から見て）：左=画面右、右=画面左
     const leftColor = wbSide === 'left' ? wbColor : wbSide === 'right' ? nonWbColor : neutralColor;
     const rightColor = wbSide === 'right' ? wbColor : wbSide === 'left' ? nonWbColor : neutralColor;
     const icLeft = structuralData.iliacCrest;
     const pelvisRotDeg = icLeft === 'leftHigh' ? -4 : icLeft === 'rightHigh' ? 4 : 0;
-    let overlays = '';
-    const bC = nonWbColor;
+
+    // 非荷重側（後面に症状）— 後面では身体の対側
     const nwSide = wbSide === 'left' ? 'right' : wbSide === 'right' ? 'left' : null;
-    if (nwSide) {
-      const cx = nwSide === 'left' ? 82 : 118;
-      const x = cx - 15;
-      overlays += `<rect x="${x}" y="36" width="30" height="20" rx="8" fill="${bC}" opacity="0.2"/>`;
-      overlays += `<text x="${x+15}" y="49" font-size="5.5" fill="${bC}" font-weight="700" text-anchor="middle">後頭下筋</text>`;
-      overlays += `<rect x="${x-4}" y="92" width="38" height="55" rx="6" fill="${bC}" opacity="0.18"/>`;
-      overlays += `<text x="${x+15}" y="123" font-size="5.5" fill="${bC}" font-weight="700" text-anchor="middle">脊柱起立筋</text>`;
-      overlays += `<rect x="${x-2}" y="206" width="34" height="28" rx="8" fill="${bC}" opacity="0.2"/>`;
-      overlays += `<text x="${x+15}" y="224" font-size="5.5" fill="${bC}" font-weight="700" text-anchor="middle">臀筋群</text>`;
-      overlays += `<rect x="${x}" y="268" width="30" height="50" rx="6" fill="${bC}" opacity="0.18"/>`;
-      overlays += `<text x="${x+15}" y="297" font-size="5" fill="${bC}" font-weight="700" text-anchor="middle">ﾊﾑｽﾄﾘﾝｸﾞｽ</text>`;
+    const leftItems = [];
+    const rightItems = [];
+    // 非荷重側ラベル（後面・延長）
+    if (nwSide === 'left') {
+      // 後面ビューで「左」は画面右側（観察者視点）
+      rightItems.push({ label: '非荷重側', sub: '後面に症状', color: nonWbColor, y: 220, anchorX: 228, anchorY: 220 });
+      rightItems.push({ label: '後頭下筋', sub: '後面短縮', color: nonWbColor, y: 80, anchorX: 228, anchorY: 70 });
+      rightItems.push({ label: '脊柱起立筋', sub: '後面短縮', color: nonWbColor, y: 130, anchorX: 228, anchorY: 130 });
+      rightItems.push({ label: '臀筋群', sub: '後面短縮', color: nonWbColor, y: 230, anchorX: 228, anchorY: 240 });
+      rightItems.push({ label: 'ハムストリングス', sub: '後面短縮', color: nonWbColor, y: 290, anchorX: 228, anchorY: 290 });
+    } else if (nwSide === 'right') {
+      leftItems.push({ label: '非荷重側', sub: '後面に症状', color: nonWbColor, y: 220, anchorX: 92, anchorY: 220 });
+      leftItems.push({ label: '後頭下筋', sub: '後面短縮', color: nonWbColor, y: 80, anchorX: 92, anchorY: 70 });
+      leftItems.push({ label: '脊柱起立筋', sub: '後面短縮', color: nonWbColor, y: 130, anchorX: 92, anchorY: 130 });
+      leftItems.push({ label: '臀筋群', sub: '後面短縮', color: nonWbColor, y: 230, anchorX: 92, anchorY: 240 });
+      leftItems.push({ label: 'ハムストリングス', sub: '後面短縮', color: nonWbColor, y: 290, anchorX: 92, anchorY: 290 });
     }
+
     return `
     ${_structDefs('sb')}
-    ${wbSide === 'right' ? '<rect x="2" y="22" width="96" height="370" rx="8" fill="#3b82f6" opacity="0.05"/>' : ''}
-    ${wbSide === 'left' ? '<rect x="102" y="22" width="96" height="370" rx="8" fill="#3b82f6" opacity="0.05"/>' : ''}
-    <line x1="100" y1="20" x2="100" y2="390" stroke="#e2e8f0" stroke-width="0.5" stroke-dasharray="3"/>
-    <g filter="url(#sbShadow)">
+    <!-- 非荷重側ハイライト -->
+    ${nwSide === 'left' ? '<rect x="160" y="22" width="80" height="380" rx="8" fill="#3b82f6" opacity="0.05"/>' : ''}
+    ${nwSide === 'right' ? '<rect x="80" y="22" width="80" height="380" rx="8" fill="#3b82f6" opacity="0.05"/>' : ''}
+    <line x1="160" y1="22" x2="160" y2="402" stroke="#e2e8f0" stroke-width="0.6" stroke-dasharray="4,3"/>
+    <g filter="url(#sbShadow)" transform="translate(60,0)">
       <ellipse cx="100" cy="42" rx="22" ry="26" fill="url(#sbFace)" stroke="#c9a882" stroke-width="0.7"/>
       <path d="M91,66 Q92,72 90,78 L110,78 Q108,72 109,66" fill="url(#sbSkin)" stroke="#c9a882" stroke-width="0.5"/>
       <path d="M66,82 Q62,90 60,105 Q58,130 62,160 Q65,180 72,196 L76,204 Q88,210 100,212 Q112,210 124,204 L128,196 Q135,180 138,160 Q142,130 140,105 Q138,90 134,82 Z" fill="url(#sbSkin)" stroke="#c9a882" stroke-width="0.7"/>
@@ -1319,13 +1480,17 @@
       <path d="M76,204 Q74,220 72,250 Q70,280 72,310 Q73,330 74,350 Q75,360 72,368 L92,368 Q90,360 90,350 Q91,330 92,310 Q93,280 92,250 Q91,220 88,204" fill="url(#sbSkin)" stroke="#c9a882" stroke-width="0.6"/>
       <path d="M112,204 Q110,220 108,250 Q107,280 108,310 Q109,330 110,350 Q111,360 108,368 L128,368 Q126,360 126,350 Q127,330 128,310 Q129,280 128,250 Q127,220 124,204" fill="url(#sbSkin)" stroke="#c9a882" stroke-width="0.6"/>
     </g>
-    <g transform="rotate(${pelvisRotDeg},100,204)">
-      <line x1="68" y1="204" x2="132" y2="204" stroke="#f59e0b" stroke-width="1.8" opacity="0.7"/>
-      <circle cx="68" cy="204" r="3" fill="#f59e0b" opacity="0.8"/><circle cx="132" cy="204" r="3" fill="#f59e0b" opacity="0.8"/>
+    <g transform="rotate(${pelvisRotDeg},160,204)">
+      <line x1="128" y1="204" x2="192" y2="204" stroke="#f59e0b" stroke-width="1.8" opacity="0.7"/>
+      <circle cx="128" cy="204" r="3" fill="#f59e0b" opacity="0.85"/>
+      <circle cx="192" cy="204" r="3" fill="#f59e0b" opacity="0.85"/>
     </g>
-    ${overlays}
-    <text x="50" y="16" font-size="10" fill="${rightColor}" font-weight="700" text-anchor="middle">右</text>
-    <text x="150" y="16" font-size="10" fill="${leftColor}" font-weight="700" text-anchor="middle">左</text>
+    <!-- 後面では観察者視点で左右が反転 -->
+    <text x="115" y="16" font-size="11" fill="${rightColor}" font-weight="700" text-anchor="middle">右</text>
+    <text x="205" y="16" font-size="11" fill="${leftColor}" font-weight="700" text-anchor="middle">左</text>
+    ${_structSideLabels('left', leftItems)}
+    ${_structSideLabels('right', rightItems)}
+    ${_structRoleBadge(wb)}
     `;
   }
 
@@ -1336,8 +1501,9 @@
     const sideLabel = side === 'left' ? '左' : '右';
     const fColor = '#ef4444';
     const bColor = '#3b82f6';
+    // 身体は中央 (translate +60) に配置
     const sideBody = `
-    <g filter="url(#ss${side}Shadow)">
+    <g filter="url(#ss${side}Shadow)" transform="translate(60,0)">
       <ellipse cx="92" cy="42" rx="20" ry="24" fill="url(#ss${side}Face)" stroke="#c9a882" stroke-width="0.7"/>
       <ellipse cx="110" cy="40" rx="3.5" ry="6" fill="url(#ss${side}Skin)" stroke="#c9a882" stroke-width="0.5"/>
       <path d="M86,64 Q88,70 84,78 L104,80 Q106,72 104,64" fill="url(#ss${side}Skin)" stroke="#c9a882" stroke-width="0.5"/>
@@ -1346,44 +1512,43 @@
       <path d="M86,216 Q84,235 82,260 Q80,280 82,300 Q83,315 84,335 Q85,350 82,368 L98,368 Q96,350 96,335 Q97,315 98,300 Q100,280 98,260 Q97,235 96,216" fill="url(#ss${side}Skin)" stroke="#c9a882" stroke-width="0.6"/>
       <path d="M82,366 Q78,368 74,370 L98,370 Q96,368 98,366" fill="url(#ss${side}Skin)" stroke="#c9a882" stroke-width="0.5"/>
     </g>
-    <path d="M104,66 Q108,80 110,95 Q112,115 108,140 Q106,160 110,180 Q112,195 108,210" fill="none" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="3" opacity="0.6"/>`;
-    let muscleOverlays = '';
+    <path d="M164,66 Q168,80 170,95 Q172,115 168,140 Q166,160 170,180 Q172,195 168,210" fill="none" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="3" opacity="0.55"/>`;
+
+    // 状態ラベル：身体の前/後ろ側に振り分け（前面 = 左マージン or 右マージン）
+    // sagittal の前面は描画上の左側 (x<160)、後面は右側 (x>160) と仮定
+    let leftItems = []; // 前面側
+    let rightItems = []; // 後面側
     if (isWB) {
-      const areas = [
-        { y: 35, h: 28, x: 52, w: 32, label: '胸鎖乳突筋' },
-        { y: 88, h: 28, x: 50, w: 28, label: '大胸筋' },
-        { y: 168, h: 24, x: 58, w: 26, label: '腸腰筋' },
-        { y: 246, h: 40, x: 64, w: 24, label: '大腿四頭筋' }
-      ];
-      areas.forEach(a => {
-        muscleOverlays += `<rect x="${a.x}" y="${a.y}" width="${a.w}" height="${a.h}" rx="6" fill="${fColor}" opacity="0.18" stroke="${fColor}" stroke-width="0.5" stroke-opacity="0.3"/>`;
-        muscleOverlays += `<text x="${a.x + a.w/2}" y="${a.y + a.h/2 + 2}" font-size="6" fill="${fColor}" font-weight="700" text-anchor="middle">${a.label}</text>`;
-      });
+      // 荷重側 → 前面短縮
+      leftItems.push({ label: '荷重側', sub: '前面短縮', color: fColor, y: 200, anchorX: 130, anchorY: 200 });
+      leftItems.push({ label: '胸鎖乳突筋', sub: '前面', color: fColor, y: 60, anchorX: 130, anchorY: 70 });
+      leftItems.push({ label: '大胸筋', sub: '前面', color: fColor, y: 120, anchorX: 130, anchorY: 110 });
+      leftItems.push({ label: '腸腰筋', sub: '前面', color: fColor, y: 220, anchorX: 130, anchorY: 200 });
+      leftItems.push({ label: '大腿四頭筋', sub: '前面', color: fColor, y: 290, anchorX: 130, anchorY: 280 });
+    } else if (isNonWB) {
+      // 非荷重側 → 後面短縮
+      rightItems.push({ label: '非荷重側', sub: '後面短縮', color: bColor, y: 200, anchorX: 190, anchorY: 200 });
+      rightItems.push({ label: '後頭下筋', sub: '後面', color: bColor, y: 60, anchorX: 190, anchorY: 70 });
+      rightItems.push({ label: '脊柱起立筋', sub: '後面', color: bColor, y: 120, anchorX: 190, anchorY: 130 });
+      rightItems.push({ label: '臀筋群', sub: '後面', color: bColor, y: 220, anchorX: 190, anchorY: 230 });
+      rightItems.push({ label: 'ハムストリングス', sub: '後面', color: bColor, y: 290, anchorX: 190, anchorY: 290 });
     }
-    if (isNonWB) {
-      const areas = [
-        { y: 35, h: 28, x: 102, w: 32, label: '後頭下筋' },
-        { y: 88, h: 42, x: 108, w: 28, label: '脊柱起立筋' },
-        { y: 200, h: 28, x: 104, w: 28, label: '臀筋群' },
-        { y: 256, h: 40, x: 98, w: 22, label: 'ﾊﾑｽﾄﾘﾝｸﾞｽ' }
-      ];
-      areas.forEach(a => {
-        muscleOverlays += `<rect x="${a.x}" y="${a.y}" width="${a.w}" height="${a.h}" rx="6" fill="${bColor}" opacity="0.18" stroke="${bColor}" stroke-width="0.5" stroke-opacity="0.3"/>`;
-        muscleOverlays += `<text x="${a.x + a.w/2}" y="${a.y + a.h/2 + 2}" font-size="6" fill="${bColor}" font-weight="700" text-anchor="middle">${a.label}</text>`;
-      });
-    }
-    const roleText = isWB ? '荷重側 → 前面に症状' : isNonWB ? '非荷重側 → 後面に症状' : '';
-    const roleColor = isWB ? fColor : isNonWB ? bColor : '#94a3b8';
-    const badgeBg = isWB ? 'rgba(239,68,68,0.1)' : isNonWB ? 'rgba(59,130,246,0.1)' : 'transparent';
+
+    const roleText = isWB ? '荷重側 → 前面に症状' : isNonWB ? '非荷重側 → 後面に症状' : '左右荷重均等';
+    const roleColor = isWB ? fColor : isNonWB ? bColor : '#475569';
+    const badgeBg = isWB ? 'rgba(239,68,68,0.1)' : isNonWB ? 'rgba(59,130,246,0.1)' : 'rgba(148,163,184,0.15)';
+
     return `
     ${_structDefs('ss' + side)}
-    <text x="35" y="14" font-size="8" fill="#64748b" font-weight="600" text-anchor="middle">← 前面</text>
-    <text x="165" y="14" font-size="8" fill="#64748b" font-weight="600" text-anchor="middle">後面 →</text>
-    <line x1="100" y1="20" x2="100" y2="385" stroke="#e2e8f0" stroke-width="0.5" stroke-dasharray="4"/>
+    <!-- 前面/後面表示 -->
+    <text x="100" y="14" font-size="9" fill="#64748b" font-weight="600" text-anchor="middle">← 前面</text>
+    <text x="220" y="14" font-size="9" fill="#64748b" font-weight="600" text-anchor="middle">後面 →</text>
+    <line x1="160" y1="22" x2="160" y2="402" stroke="#e2e8f0" stroke-width="0.6" stroke-dasharray="4,3"/>
     ${sideBody}
-    ${muscleOverlays}
-    <rect x="10" y="388" width="180" height="16" rx="4" fill="${badgeBg}"/>
-    <text x="100" y="399" font-size="8" fill="${roleColor}" font-weight="700" text-anchor="middle">${sideLabel}側 ${roleText}</text>
+    ${_structSideLabels('left', leftItems)}
+    ${_structSideLabels('right', rightItems)}
+    <rect x="20" y="416" width="280" height="20" rx="6" fill="${badgeBg}"/>
+    <text x="160" y="430" font-size="9.5" fill="${roleColor}" font-weight="700" text-anchor="middle">${sideLabel}側 ${roleText}</text>
     `;
   }
 
@@ -1572,14 +1737,27 @@
   function updateIntegratedPhoto() {
     const img = document.getElementById('integratedBackPhotoImg');
     const empty = document.getElementById('integratedBackPhotoEmpty');
-    if (!img || !empty) return;
-    if (patientPhotos.back) {
-      img.src = patientPhotos.back;
-      img.style.display = 'block';
-      empty.style.display = 'none';
-    } else {
-      img.style.display = 'none';
-      empty.style.display = 'block';
+    if (img && empty) {
+      if (patientPhotos.back) {
+        img.src = patientPhotos.back;
+        img.style.display = 'block';
+        empty.style.display = 'none';
+      } else {
+        img.style.display = 'none';
+        empty.style.display = 'block';
+      }
+    }
+    // 横並び行の no-photo クラスを再評価
+    const row = document.getElementById('integratedPhotoDiagramRow');
+    if (row) {
+      row.classList.toggle('no-photo', !patientPhotos.back);
+      // 写真も構造もない場合は非表示、片方でもあれば表示
+      const hasStructural = !!(examTypes && examTypes.structural);
+      if (!patientPhotos.back && !hasStructural) {
+        row.style.display = 'none';
+      } else {
+        row.style.display = '';
+      }
     }
   }
 
@@ -1820,9 +1998,9 @@
     if (examTypes.structural) {
       const wb = calcWeightBearing();
       let label = '未入力';
-      if (wb.side === 'left') label = '左荷重 → 左前面/右後面に症状';
-      else if (wb.side === 'right') label = '右荷重 → 右前面/左後面に症状';
-      else if (wb.side === 'even') label = '左右荷重均等';
+      if (wb.side === 'left') label = '左に体重がのっている → 左前面 / 右後面に症状が出やすい';
+      else if (wb.side === 'right') label = '右に体重がのっている → 右前面 / 左後面に症状が出やすい';
+      else if (wb.side === 'even') label = '左右荷重ほぼ均等';
       html += `<div style="margin-bottom:8px;"><strong>⚖️ 構造検査:</strong> ${label}</div>`;
     }
     if (!examTypes.landmark && !examTypes.structural) {
@@ -1836,6 +2014,33 @@
       html += `<div><strong>痛み:</strong> NRS ${painLevel}/10</div>`;
     }
     summaryEl.innerHTML = html;
+
+    // 写真+図の横並び制御
+    const row = document.getElementById('integratedPhotoDiagramRow');
+    const diagPane = document.getElementById('integratedBackDiagramPane');
+    if (row && diagPane) {
+      // 「写真がある」= 後面写真がある（横並びで揃えるのが後面写真+後面図のため）
+      const hasBackPhoto = !!patientPhotos.back;
+      const hasStructural = !!examTypes.structural;
+      // 構造検査の図は構造ONの時だけ表示
+      diagPane.style.display = hasStructural ? '' : 'none';
+      // 写真がない場合: 写真ペイン非表示・図のみセンタリング
+      row.classList.toggle('no-photo', !hasBackPhoto);
+      // 写真も構造もない場合は行ごと非表示
+      if (!hasBackPhoto && !hasStructural) {
+        row.style.display = 'none';
+      } else {
+        row.style.display = '';
+      }
+      // 後面図SVGに反映
+      if (hasStructural) {
+        const integ = document.getElementById('integratedBackDiagramSvg');
+        if (integ) {
+          integ.setAttribute('viewBox', '0 0 320 440');
+          integ.innerHTML = generateStructuralBackSvg(calcWeightBearing());
+        }
+      }
+    }
   }
 
   // ===== 比較ボタンの表示制御 =====
@@ -4531,8 +4736,22 @@
     diagnosisResult = InspectionLogic.diagnose(examData);
     diagnosisResult.gravityResult = gravityResult;
     diagnosisResult.gravityData = { ...gravityData };
-    await renderDiagnosis(diagnosisResult);
-    showDetailedExam();
+    if (examTypes.structural) {
+      diagnosisResult.structuralData = { ...structuralData };
+      diagnosisResult.weightBearing = calcWeightBearing();
+    }
+    if (examTypes.landmark) {
+      await renderDiagnosis(diagnosisResult);
+      showDetailedExam();
+    } else {
+      const dc = document.getElementById('diagnosisContent');
+      if (dc) dc.innerHTML = '';
+      const ds = document.getElementById('detailedExamSection');
+      if (ds) ds.style.display = 'none';
+    }
+    // 構造検査セクションと統合結果も再描画
+    renderDiagnosisStructural();
+    renderIntegratedResult();
 
     // 収縮分析結果があれば復元
     if (entry.contractionResult && entry.contractionResult.upper && entry.contractionResult.lower) {

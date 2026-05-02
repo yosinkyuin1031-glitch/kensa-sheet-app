@@ -847,19 +847,31 @@ const BodyDiagram = {
           }, rArrow));
         }
 
-        const labelYOff = (key === 'lateralMalleolus') ? 16 : 20;
-        const labelY = pos.baseY + labelYOff;
-        const xOff = (key === 'greaterTrochanter') ? 30
-                    : (key === 'lateralMalleolus') ? 30
-                    : (key === 'patellaUpper') ? 30
-                    : 14;
+        // ラベルは左右マージン側に揃え、リーダー線でドットと結ぶ
+        // 左ラベルは x=14（左マージン）、右ラベルは x=286（右マージン）
+        const labelLeftX = 14;
+        const labelRightX = 286;
+        // リーダー線（左）
+        landmarkLayer.appendChild(this._createSVGEl('line', {
+          x1: pos.leftX - 6, y1: leftY,
+          x2: labelLeftX + 4, y2: leftY,
+          stroke: '#cbd5e1', 'stroke-width': 0.6,
+          'stroke-dasharray': '2,2', opacity: 0.65
+        }));
         landmarkLayer.appendChild(this._createSVGEl('text', {
-          x: pos.leftX - xOff, y: labelY, 'text-anchor': 'end',
-          'font-size': 7, fill: '#64748b', 'font-weight': 600
+          x: labelLeftX, y: leftY + 3, 'text-anchor': 'start',
+          'font-size': 8, fill: '#475569', 'font-weight': 600
         }, pos.label));
+        // リーダー線（右）
+        landmarkLayer.appendChild(this._createSVGEl('line', {
+          x1: pos.rightX + 6, y1: rightY,
+          x2: labelRightX - 4, y2: rightY,
+          stroke: '#cbd5e1', 'stroke-width': 0.6,
+          'stroke-dasharray': '2,2', opacity: 0.65
+        }));
         landmarkLayer.appendChild(this._createSVGEl('text', {
-          x: pos.rightX + xOff, y: labelY, 'text-anchor': 'start',
-          'font-size': 7, fill: '#64748b', 'font-weight': 600
+          x: labelRightX, y: rightY + 3, 'text-anchor': 'end',
+          'font-size': 8, fill: '#475569', 'font-weight': 600
         }, pos.label));
       }
     }
@@ -1057,16 +1069,15 @@ const BodyDiagram = {
     const trunkMidY = 190;
 
     // 4. 肩峰↔大転子の回旋判定
+    // ※ 「全体偏位」ラベルは体の中央で他のラベルと衝突するため削除
     let rotationLabel = '';
     let rotationColor = '#22c55e';
     if (acromVal != null && gtVal != null) {
       if (acromVal !== 0 && gtVal !== 0 && acromVal !== gtVal) {
         rotationLabel = '体幹回旋';
         rotationColor = '#f59e0b';
-      } else if (acromVal !== 0 && gtVal !== 0 && acromVal === gtVal) {
-        rotationLabel = '全体偏位';
-        rotationColor = '#ef4444';
       }
+      // 「全体偏位」ラベルは表示しない
     }
 
     // === 体幹中心ライン（肩峰→大転子） ===
