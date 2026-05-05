@@ -30,24 +30,58 @@ const BodyDiagram = {
   // 右側シフト計算: val=1で上(-TILT)、val=-1で下(+TILT)
   _rShift(val) { return -(val || 0) * this.TILT; },
 
-  // ===== ラベル衝突回避 =====
-  _placedLabels: [],
-  _resetPlacedLabels() { this._placedLabels = []; },
-  // 既存ラベルと重ならないY座標を返す（side: 'left'/'right'/'center'）
+  // ===== ラベル・バッジ・ドットの2次元衝突回避 =====
+  // 全要素を同じバウンディングボックス空間で管理する
+  _placedBoxes: [],
+  _resetPlacedLabels() { this._placedBoxes = []; },
+  // 後方互換: _findSafeY をbbox方式にラップ（既存コード呼び出しの互換性維持）
   _findSafeY(desiredY, side, height) {
-    const h = height || 22;
-    const sameSide = this._placedLabels.filter(l => l.side === side);
-    let y = desiredY;
+    const h = height || 18;
+    // sideをx座標域に変換（互換用ラフ判定）
+    let cx = 150, halfW = 22;
+    if (side === 'left' || side === 'left-label') { cx = -16; halfW = 22; }
+    else if (side === 'right' || side === 'right-label') { cx = 316; halfW = 22; }
+    const placed = this._reserveBox(cx - halfW, desiredY - h / 2, halfW * 2, h, { axis: 'y' });
+    return placed.y + h / 2;
+  },
+  // bbox を「衝突しない位置」に配置して登録する
+  // opts: { axis: 'y'|'xy', maxShift: number }
+  _reserveBox(x, y, w, h, opts) {
+    opts = opts || {};
+    const axis = opts.axis || 'y';
+    const pad = (opts.padding != null) ? opts.padding : 1.5;
+    let bx = x, by = y;
     let attempts = 0;
-    while (attempts < 20) {
-      const collision = sameSide.find(l => Math.abs(l.y - y) < (h + l.h) / 2 + 2);
-      if (!collision) break;
-      // 衝突 → 下にずらす
-      y = collision.y + (collision.h + h) / 2 + 3;
+    const maxAttempts = 40;
+    while (attempts < maxAttempts) {
+      const c = this._placedBoxes.find(b => this._overlaps(bx, by, w, h, b, pad));
+      if (!c) break;
+      if (axis === 'y') {
+        // 下方向に逃がす
+        by = c.y + c.h + pad + 0.5;
+      } else {
+        // xy: 試行ごとに方向を変える（下→上→右→左）
+        const phase = attempts % 4;
+        if (phase === 0) by = c.y + c.h + pad + 0.5;
+        else if (phase === 1) by = c.y - h - pad - 0.5;
+        else if (phase === 2) bx = c.x + c.w + pad + 0.5;
+        else bx = c.x - w - pad - 0.5;
+      }
       attempts++;
     }
-    this._placedLabels.push({ y, side, h });
-    return y;
+    const box = { x: bx, y: by, w, h };
+    this._placedBoxes.push(box);
+    return box;
+  },
+  _overlaps(x, y, w, h, b, pad) {
+    return !(x + w + pad <= b.x ||
+             b.x + b.w + pad <= x ||
+             y + h + pad <= b.y ||
+             b.y + b.h + pad <= y);
+  },
+  // 既存要素として（位置移動なしで）bboxを登録するだけ
+  _markBox(x, y, w, h) {
+    this._placedBoxes.push({ x, y, w, h });
   },
 
   // ===== 背面図SVG（セグメントをグループ化） =====
@@ -295,7 +329,11 @@ const BodyDiagram = {
       this._applyLowerDetailShifts(svg, data);
     }
 
-    // ===== ランドマークドット・ライン描画 =====
+    // 衝突空間リセット
+    this._resetPlacedLabels();
+
+    // ===== ランドマークドット・ライン描画（先にドットを衝突空間に登録） =====
+    const dotEntries = [];
     for (const [key, pos] of Object.entries(posMap)) {
       const val = data[key];
       if (val === null || val === undefined) continue;
@@ -318,6 +356,8 @@ const BodyDiagram = {
         fill: val === -1 ? '#3b82f6' : val === 1 ? '#f97316' : '#22c55e',
         stroke: 'white', 'stroke-width': 2
       }));
+      // ドットを衝突空間に登録
+      this._markBox(pos.leftX - 7, leftY - 7, 14, 14);
 
       // 右ドット
       landmarkLayer.appendChild(this._createSVGEl('circle', {
@@ -325,7 +365,14 @@ const BodyDiagram = {
         fill: val === 1 ? '#3b82f6' : val === -1 ? '#f97316' : '#22c55e',
         stroke: 'white', 'stroke-width': 2
       }));
+      this._markBox(pos.rightX - 7, rightY - 7, 14, 14);
 
+      dotEntries.push({ key, pos, val, leftY, rightY });
+    }
+
+    // ===== 矢印・ラベルを後でレイアウト（衝突回避） =====
+    for (const e of dotEntries) {
+      const { pos, val, leftY, rightY } = e;
       if (val !== 0) {
         const lArrow = val === -1 ? '↑' : '↓';
         const lColor = val === -1 ? '#3b82f6' : '#f97316';
@@ -333,6 +380,7 @@ const BodyDiagram = {
           x: pos.leftX - 14, y: leftY + 4, 'text-anchor': 'end',
           'font-size': 10, fill: lColor, 'font-weight': 700
         }, lArrow));
+        this._markBox(pos.leftX - 22, leftY - 4, 12, 12);
 
         const rArrow = val === 1 ? '↑' : '↓';
         const rColor = val === 1 ? '#3b82f6' : '#f97316';
@@ -340,23 +388,29 @@ const BodyDiagram = {
           x: pos.rightX + 14, y: rightY + 4, 'text-anchor': 'start',
           'font-size': 10, fill: rColor, 'font-weight': 700
         }, rArrow));
+        this._markBox(pos.rightX + 10, rightY - 4, 12, 12);
       }
 
-      // ラベル（外側マージンへ配置 + 点線リーダー線）
-      // 左右どちらか低い側を選んで配置（情報量・読みやすさ重視）
-      // 右側マージンに固定配置（状態バッジは中央寄りなので衝突しない）
-      const labelMarginX = -32; // 左マージン
-      const lineFromX = pos.leftX - 6;
+      // 解剖ラベルはドット近くに配置（ドットの少し外側、衝突回避でずらす）
+      const label = pos.label;
+      const fontSize = 9;
+      const labelW = label.length * fontSize + 4;
+      const labelH = fontSize + 4;
+      // 左ラベル: ドットの左外側に配置
+      const lDesiredX = pos.leftX - 22 - labelW;
+      const lDesiredY = leftY - labelH / 2;
+      const lBox = this._reserveBox(lDesiredX, lDesiredY, labelW, labelH, { axis: 'xy', padding: 1.5 });
+      // リーダー線（短く・薄く）
       landmarkLayer.appendChild(this._createSVGEl('line', {
-        x1: lineFromX, y1: leftY,
-        x2: labelMarginX + 6, y2: leftY,
-        stroke: '#cbd5e1', 'stroke-width': 0.6,
-        'stroke-dasharray': '2,2', opacity: 0.6
+        x1: pos.leftX - 8, y1: leftY,
+        x2: lBox.x + labelW, y2: lBox.y + labelH / 2,
+        stroke: '#cbd5e1', 'stroke-width': 0.5,
+        'stroke-dasharray': '2,2', opacity: 0.5
       }));
       landmarkLayer.appendChild(this._createSVGEl('text', {
-        x: labelMarginX, y: leftY + 3, 'text-anchor': 'start',
-        'font-size': 9, fill: '#475569', 'font-weight': 600
-      }, pos.label));
+        x: lBox.x, y: lBox.y + labelH - 3, 'text-anchor': 'start',
+        'font-size': fontSize, fill: '#475569', 'font-weight': 600
+      }, label));
     }
 
     // ===== 詰まり・伸びインジケーター =====
@@ -499,92 +553,43 @@ const BodyDiagram = {
 
       if (valA === null || valA === undefined || valB === null || valB === undefined) continue;
       if (valA === 0 && valB === 0) continue;
-      if (valA === valB) continue; // 同方向ずれ = 全乱（圧迫はない）
-      if (valA === 0 || valB === 0) continue; // 片方が正常なら圧迫判定しない
+      if (valA === valB) continue;
+      if (valA === 0 || valB === 0) continue;
 
-      // 値が互い違い = 一方が詰まり、反対側が伸び
-      // valA=1, valB=-1: 左側 上で下がり→下で上がり = 左詰まり
-      // valA=-1, valB=1: 右側 上で下がり→下で上がり = 右詰まり
       const leftCompressed = (valA === 1 && valB === -1);
       const rightCompressed = (valA === -1 && valB === 1);
 
       const posA = this.positions[type][keyA];
       const posB = this.positions[type][keyB];
       const midY = (posA.baseY + posB.baseY) / 2;
-      const spanY = (posB.baseY - posA.baseY) * 0.3;
 
-      // 詰まり側（赤）
       const compSide = leftCompressed ? 'left' : 'right';
-      const compX = compSide === 'left' ? 105 : 195;
+      const compXBase = compSide === 'left' ? 105 : 195;
       const compLabel = compSide === 'left' ? '左' : '右';
-      const stretchX = compSide === 'left' ? 195 : 105;
+      const stretchXBase = compSide === 'left' ? 195 : 105;
       const stretchLabel = compSide === 'left' ? '右' : '左';
 
-      // === 詰まりインジケーター ===
-      // 背景
+      // バッジを衝突回避で配置（小型化）
+      const badgeW = 32, badgeH = 18;
+      const compBox = this._reserveBox(compXBase - badgeW / 2, midY - badgeH / 2, badgeW, badgeH, { axis: 'xy', padding: 2 });
       indicatorLayer.appendChild(this._createSVGEl('rect', {
-        x: compX - 22, y: midY - 28, width: 44, height: 56,
-        rx: 8, fill: 'rgba(239,68,68,0.12)', stroke: '#ef4444',
-        'stroke-width': 1.5, 'stroke-dasharray': '4,2'
-      }));
-
-      // 圧迫矢印 ↓↑（上から押し下げ、下から押し上げ）
-      indicatorLayer.appendChild(this._createSVGEl('text', {
-        x: compX, y: midY - 10, 'text-anchor': 'middle',
-        'font-size': 16, fill: '#ef4444', 'font-weight': 900
-      }, '↓'));
-      indicatorLayer.appendChild(this._createSVGEl('text', {
-        x: compX, y: midY + 16, 'text-anchor': 'middle',
-        'font-size': 16, fill: '#ef4444', 'font-weight': 900
-      }, '↑'));
-
-      // ラベル「詰」
-      indicatorLayer.appendChild(this._createSVGEl('rect', {
-        x: compX - 14, y: midY - 4, width: 28, height: 18,
-        rx: 4, fill: '#ef4444'
+        x: compBox.x, y: compBox.y, width: badgeW, height: badgeH,
+        rx: 6, fill: '#ef4444', opacity: 0.92
       }));
       indicatorLayer.appendChild(this._createSVGEl('text', {
-        x: compX, y: midY + 10, 'text-anchor': 'middle',
-        'font-size': 11, fill: 'white', 'font-weight': 800
+        x: compBox.x + badgeW / 2, y: compBox.y + badgeH - 5, 'text-anchor': 'middle',
+        'font-size': 10, fill: 'white', 'font-weight': 800
       }, `${compLabel}詰`));
 
-      // === 伸びインジケーター ===
+      const stretchBox = this._reserveBox(stretchXBase - badgeW / 2, midY - badgeH / 2, badgeW, badgeH, { axis: 'xy', padding: 2 });
       indicatorLayer.appendChild(this._createSVGEl('rect', {
-        x: stretchX - 22, y: midY - 28, width: 44, height: 56,
-        rx: 8, fill: 'rgba(139,92,246,0.1)', stroke: '#8b5cf6',
-        'stroke-width': 1.2, 'stroke-dasharray': '4,2'
-      }));
-
-      // 牽引矢印 ↑↓（上は上へ、下は下へ伸長される）
-      indicatorLayer.appendChild(this._createSVGEl('text', {
-        x: stretchX, y: midY - 10, 'text-anchor': 'middle',
-        'font-size': 14, fill: '#8b5cf6', 'font-weight': 700
-      }, '↑'));
-      indicatorLayer.appendChild(this._createSVGEl('text', {
-        x: stretchX, y: midY + 16, 'text-anchor': 'middle',
-        'font-size': 14, fill: '#8b5cf6', 'font-weight': 700
-      }, '↓'));
-
-      // ラベル「伸」
-      indicatorLayer.appendChild(this._createSVGEl('rect', {
-        x: stretchX - 14, y: midY - 4, width: 28, height: 18,
-        rx: 4, fill: '#8b5cf6'
+        x: stretchBox.x, y: stretchBox.y, width: badgeW, height: badgeH,
+        rx: 6, fill: '#8b5cf6', opacity: 0.88
       }));
       indicatorLayer.appendChild(this._createSVGEl('text', {
-        x: stretchX, y: midY + 10, 'text-anchor': 'middle',
-        'font-size': 11, fill: 'white', 'font-weight': 800
+        x: stretchBox.x + badgeW / 2, y: stretchBox.y + badgeH - 5, 'text-anchor': 'middle',
+        'font-size': 10, fill: 'white', 'font-weight': 800
       }, `${stretchLabel}伸`));
-
-      // 横の圧迫ライン（筋肉の圧縮を表現）
-      const compLineX1 = compSide === 'left' ? 120 : 165;
-      const compLineX2 = compSide === 'left' ? 145 : 190;
-      for (let j = -2; j <= 2; j++) {
-        const ly = midY + j * 6;
-        indicatorLayer.appendChild(this._createSVGEl('line', {
-          x1: compLineX1, y1: ly, x2: compLineX2, y2: ly,
-          stroke: '#ef4444', 'stroke-width': 1.5, opacity: 0.35 - Math.abs(j) * 0.06
-        }));
-      }
     }
   },
 
@@ -772,6 +777,8 @@ const BodyDiagram = {
     this._applyUnifiedShifts(svg, allData);
 
     // === 立位基本3点（乳様突起・肩甲下角・腸骨稜）のドット描画 ===
+    // 後で配置するラベルのデータを集める
+    const standingLabelQueue = [];
     if (!simple) {
       const standingPosMap = this.positions.firstStage;
       for (const [key, pos] of Object.entries(standingPosMap)) {
@@ -786,11 +793,13 @@ const BodyDiagram = {
           fill: val === -1 ? '#3b82f6' : val === 1 ? '#f97316' : '#22c55e',
           stroke: 'white', 'stroke-width': 1.5
         }));
+        this._markBox(pos.leftX - 6, leftY - 6, 12, 12);
         landmarkLayer.appendChild(this._createSVGEl('circle', {
           cx: pos.rightX, cy: rightY, r: 5,
           fill: val === 1 ? '#3b82f6' : val === -1 ? '#f97316' : '#22c55e',
           stroke: 'white', 'stroke-width': 1.5
         }));
+        this._markBox(pos.rightX - 6, rightY - 6, 12, 12);
 
         // 立位ドットの↑↓矢印
         if (val !== 0) {
@@ -800,32 +809,23 @@ const BodyDiagram = {
             x: pos.leftX, y: leftY - 10, 'text-anchor': 'middle',
             'font-size': 9, fill: lColor, 'font-weight': 700
           }, lArrow));
+          this._markBox(pos.leftX - 5, leftY - 18, 10, 10);
           const rArrow = val === 1 ? '↑' : '↓';
           const rColor = val === 1 ? '#3b82f6' : '#f97316';
           landmarkLayer.appendChild(this._createSVGEl('text', {
             x: pos.rightX, y: rightY - 10, 'text-anchor': 'middle',
             'font-size': 9, fill: rColor, 'font-weight': 700
           }, rArrow));
+          this._markBox(pos.rightX - 5, rightY - 18, 10, 10);
         }
 
-        // 立位ラベル（左マージンに配置）
-        const stLabelX = -32;
-        const stLabelY = this._findSafeY(leftY, 'left-label', 12);
-        landmarkLayer.appendChild(this._createSVGEl('line', {
-          x1: pos.leftX - 6, y1: leftY,
-          x2: stLabelX + 6, y2: stLabelY,
-          stroke: '#e2e8f0', 'stroke-width': 0.5,
-          'stroke-dasharray': '2,2', opacity: 0.55
-        }));
-        landmarkLayer.appendChild(this._createSVGEl('text', {
-          x: stLabelX, y: stLabelY + 3, 'text-anchor': 'start',
-          'font-size': 7, fill: '#94a3b8', 'font-weight': 600
-        }, pos.label));
+        standingLabelQueue.push({ pos, leftY, rightY, isStanding: true });
       }
     }
 
     // === 詳細6ランドマークのドット描画（接続線なし） ===
     const posMap = this.unifiedPositions;
+    const detailLabelQueue = [];
     for (const [key, pos] of Object.entries(posMap)) {
       const val = allData[key];
       if (val === null || val === undefined) continue;
@@ -843,6 +843,7 @@ const BodyDiagram = {
         fill: val === -1 ? '#3b82f6' : val === 1 ? '#f97316' : '#22c55e',
         stroke: 'white', 'stroke-width': dotSW
       }));
+      this._markBox(pos.leftX - dotR - 1, leftY - dotR - 1, (dotR + 1) * 2, (dotR + 1) * 2);
 
       // 右ドット
       landmarkLayer.appendChild(this._createSVGEl('circle', {
@@ -850,8 +851,8 @@ const BodyDiagram = {
         fill: val === 1 ? '#3b82f6' : val === -1 ? '#f97316' : '#22c55e',
         stroke: 'white', 'stroke-width': dotSW
       }));
+      this._markBox(pos.rightX - dotR - 1, rightY - dotR - 1, (dotR + 1) * 2, (dotR + 1) * 2);
 
-      // 矢印・ラベルはsimpleモードでは省略
       if (!simple) {
         if (val !== 0) {
           const lArrow = val === -1 ? '↑' : '↓';
@@ -860,48 +861,30 @@ const BodyDiagram = {
             x: pos.leftX, y: leftY - 10, 'text-anchor': 'middle',
             'font-size': 9, fill: lColor, 'font-weight': 700
           }, lArrow));
+          this._markBox(pos.leftX - 5, leftY - 18, 10, 10);
           const rArrow = val === 1 ? '↑' : '↓';
           const rColor = val === 1 ? '#3b82f6' : '#f97316';
           landmarkLayer.appendChild(this._createSVGEl('text', {
             x: pos.rightX, y: rightY - 10, 'text-anchor': 'middle',
             'font-size': 9, fill: rColor, 'font-weight': 700
           }, rArrow));
+          this._markBox(pos.rightX - 5, rightY - 18, 10, 10);
         }
-
-        // ラベルは拡張viewBoxの外側マージンに配置、リーダー線でドットと結ぶ
-        // 左ラベル x=-32（左外側）、右ラベル x=332（右外側）
-        // ラベル衝突回避（左右別トラッカー）
-        const labelLeftX = -32;
-        const labelRightX = 332;
-        const labelLeftY = this._findSafeY(leftY, 'left-label', 12);
-        const labelRightY = this._findSafeY(rightY, 'right-label', 12);
-        // リーダー線（左）
-        landmarkLayer.appendChild(this._createSVGEl('line', {
-          x1: pos.leftX - 6, y1: leftY,
-          x2: labelLeftX + 6, y2: labelLeftY,
-          stroke: '#cbd5e1', 'stroke-width': 0.6,
-          'stroke-dasharray': '2,2', opacity: 0.7
-        }));
-        landmarkLayer.appendChild(this._createSVGEl('text', {
-          x: labelLeftX, y: labelLeftY + 3, 'text-anchor': 'start',
-          'font-size': 8, fill: '#475569', 'font-weight': 600
-        }, pos.label));
-        // リーダー線（右）
-        landmarkLayer.appendChild(this._createSVGEl('line', {
-          x1: pos.rightX + 6, y1: rightY,
-          x2: labelRightX - 6, y2: labelRightY,
-          stroke: '#cbd5e1', 'stroke-width': 0.6,
-          'stroke-dasharray': '2,2', opacity: 0.7
-        }));
-        landmarkLayer.appendChild(this._createSVGEl('text', {
-          x: labelRightX, y: labelRightY + 3, 'text-anchor': 'end',
-          'font-size': 8, fill: '#475569', 'font-weight': 600
-        }, pos.label));
+        detailLabelQueue.push({ pos, leftY, rightY, isStanding: false });
       }
     }
 
-    // ラベル衝突回避トラッカーをリセット
-    this._resetPlacedLabels();
+    // ===== ラベルレイアウト（ドット近接配置・bbox衝突回避） =====
+    if (!simple) {
+      // 立位3点を先に（薄いラベル）
+      for (const item of standingLabelQueue) {
+        this._placeAnatomicalLabel(landmarkLayer, item.pos, item.leftY, true);
+      }
+      // 詳細6点（濃いラベル）
+      for (const item of detailLabelQueue) {
+        this._placeAnatomicalLabel(landmarkLayer, item.pos, item.leftY, false);
+      }
+    }
 
     if (simple) {
       // simpleモード: パーツ色分けだけ（ラベルなし）
@@ -986,6 +969,53 @@ const BodyDiagram = {
     }
   },
 
+  // ===== 解剖ラベルをドットの近くに配置（衝突回避） =====
+  // ドットの左外側を第一候補、ダメなら少し離れた候補位置を順に試す
+  _placeAnatomicalLabel(layer, pos, leftY, isStanding) {
+    const label = pos.label;
+    const fontSize = isStanding ? 8 : 9;
+    const charW = isStanding ? 7.2 : 8.5;
+    const labelW = label.length * charW + 4;
+    const labelH = fontSize + 4;
+    const fill = isStanding ? '#94a3b8' : '#475569';
+
+    // 候補位置（優先順）：左ドットの左外側 → 上 → 下、それでもダメなら左マージン
+    const dotX = pos.leftX, dotY = leftY;
+    const offsets = [
+      { x: dotX - 12 - labelW, y: dotY - labelH / 2 },         // 左外側（同じ高さ）
+      { x: dotX - 10 - labelW, y: dotY - labelH - 4 },          // 左上
+      { x: dotX - 10 - labelW, y: dotY + 4 },                    // 左下
+      { x: dotX + 14, y: dotY - labelH / 2 - 14 },               // 右上（左ドットの右）※ただし右ドットには近づきすぎない
+    ];
+
+    let placed = null;
+    for (const o of offsets) {
+      // 試しに置いてみる（衝突なし限定）
+      const collision = this._placedBoxes.find(b => this._overlaps(o.x, o.y, labelW, labelH, b, 1.5));
+      if (!collision) {
+        placed = { x: o.x, y: o.y, w: labelW, h: labelH };
+        this._placedBoxes.push(placed);
+        break;
+      }
+    }
+    // すべてダメ → 左マージンに落とす（衝突回避でY調整）
+    if (!placed) {
+      placed = this._reserveBox(-32, dotY - labelH / 2, labelW, labelH, { axis: 'y', padding: 1.5 });
+    }
+
+    // リーダー線（短く・薄く）
+    layer.appendChild(this._createSVGEl('line', {
+      x1: dotX - 7, y1: dotY,
+      x2: placed.x + labelW, y2: placed.y + labelH / 2,
+      stroke: '#cbd5e1', 'stroke-width': 0.5,
+      'stroke-dasharray': '2,2', opacity: 0.5
+    }));
+    layer.appendChild(this._createSVGEl('text', {
+      x: placed.x, y: placed.y + labelH - 3, 'text-anchor': 'start',
+      'font-size': fontSize, fill, 'font-weight': 600
+    }, label));
+  },
+
   // ===== 全身連続の詰まり・伸びインジケーター =====
   // 各区間を腕・脚の実際の位置に配置
   _drawUnifiedCompressionIndicators(svg, data) {
@@ -1052,27 +1082,25 @@ const BodyDiagram = {
       contractedParts.forEach(p => this._highlightPart(svg, p, 'rgba(239,68,68,0.30)'));
       tensionedParts.forEach(p => this._highlightPart(svg, p, 'rgba(168,85,247,0.22)'));
 
-      // 衝突回避でY座標を決定
-      const compY = this._findSafeY(rawMidY, compSide, 22);
-      const stretchY = this._findSafeY(rawMidY, stretchSideKey, 22);
-
-      // 縮みインジケーター
+      // バッジを衝突回避で配置（小型化＋xy方向に逃げる）
+      const badgeW = 36, badgeH = 17;
+      const compBox = this._reserveBox(compX - badgeW / 2, rawMidY - badgeH / 2, badgeW, badgeH, { axis: 'xy', padding: 2 });
       indicatorLayer.appendChild(this._createSVGEl('rect', {
-        x: compX - 22, y: compY - 10, width: 44, height: 20,
-        rx: 6, fill: '#ef4444', opacity: 0.9
+        x: compBox.x, y: compBox.y, width: badgeW, height: badgeH,
+        rx: 5, fill: '#ef4444', opacity: 0.92
       }));
       indicatorLayer.appendChild(this._createSVGEl('text', {
-        x: compX, y: compY + 4, 'text-anchor': 'middle',
+        x: compBox.x + badgeW / 2, y: compBox.y + badgeH - 5, 'text-anchor': 'middle',
         'font-size': 9, fill: 'white', 'font-weight': 800
       }, `${compLabel}縮`));
 
-      // 伸びインジケーター
+      const stretchBox = this._reserveBox(stretchX - badgeW / 2, rawMidY - badgeH / 2, badgeW, badgeH, { axis: 'xy', padding: 2 });
       indicatorLayer.appendChild(this._createSVGEl('rect', {
-        x: stretchX - 22, y: stretchY - 10, width: 44, height: 20,
-        rx: 6, fill: '#8b5cf6', opacity: 0.85
+        x: stretchBox.x, y: stretchBox.y, width: badgeW, height: badgeH,
+        rx: 5, fill: '#8b5cf6', opacity: 0.88
       }));
       indicatorLayer.appendChild(this._createSVGEl('text', {
-        x: stretchX, y: stretchY + 4, 'text-anchor': 'middle',
+        x: stretchBox.x + badgeW / 2, y: stretchBox.y + badgeH - 5, 'text-anchor': 'middle',
         'font-size': 9, fill: 'white', 'font-weight': 800
       }, `${stretchLabel}伸`));
     }
@@ -1126,15 +1154,16 @@ const BodyDiagram = {
       }));
     }
 
-    // === 回旋ラベル（体幹中央に大きく） ===
+    // === 回旋ラベル（体幹中央・bbox衝突回避） ===
     if (rotationLabel) {
-      const safeY = this._findSafeY(trunkMidY, 'center', 26);
+      const rW = 60, rH = 22;
+      const rBox = this._reserveBox(cx - rW / 2, trunkMidY - rH / 2, rW, rH, { axis: 'xy', padding: 2 });
       indicatorLayer.appendChild(this._createSVGEl('rect', {
-        x: cx - 32, y: safeY - 12, width: 64, height: 24,
-        rx: 12, fill: rotationColor, opacity: 0.9
+        x: rBox.x, y: rBox.y, width: rW, height: rH,
+        rx: 11, fill: rotationColor, opacity: 0.9
       }));
       indicatorLayer.appendChild(this._createSVGEl('text', {
-        x: cx, y: safeY + 4, 'text-anchor': 'middle',
+        x: rBox.x + rW / 2, y: rBox.y + rH - 6, 'text-anchor': 'middle',
         'font-size': 11, fill: 'white', 'font-weight': 800
       }, rotationLabel));
     }
@@ -1187,30 +1216,26 @@ const BodyDiagram = {
       const stretchSide = leftCompressed ? '右' : '左';
       const compX = leftCompressed ? seg.leftX : seg.rightX;
       const stretchX = leftCompressed ? seg.rightX : seg.leftX;
-      const compSideKey = leftCompressed ? 'left' : 'right';
-      const stretchSideKey = leftCompressed ? 'right' : 'left';
 
-      // 衝突回避でY座標を決定
-      const compY = this._findSafeY(rawMidY, compSideKey, 20);
-      const stretchY = this._findSafeY(rawMidY, stretchSideKey, 20);
-
-      // 詰まりラベル（赤）「右縮」「左縮」
+      // バッジ配置（bbox衝突回避・xy両方向に逃げる）
+      const bW = 32, bH = 16;
+      const compBox = this._reserveBox(compX - bW / 2, rawMidY - bH / 2, bW, bH, { axis: 'xy', padding: 2 });
       indicatorLayer.appendChild(this._createSVGEl('rect', {
-        x: compX - 16, y: compY - 9, width: 32, height: 18,
-        rx: 6, fill: '#ef4444', opacity: 0.9
+        x: compBox.x, y: compBox.y, width: bW, height: bH,
+        rx: 5, fill: '#ef4444', opacity: 0.92
       }));
       indicatorLayer.appendChild(this._createSVGEl('text', {
-        x: compX, y: compY + 4, 'text-anchor': 'middle',
+        x: compBox.x + bW / 2, y: compBox.y + bH - 4, 'text-anchor': 'middle',
         'font-size': 9, fill: 'white', 'font-weight': 800
       }, `${compSide}縮`));
 
-      // 伸びラベル（紫）「左伸び」「右伸び」
+      const stretchBox = this._reserveBox(stretchX - bW / 2, rawMidY - bH / 2, bW, bH, { axis: 'xy', padding: 2 });
       indicatorLayer.appendChild(this._createSVGEl('rect', {
-        x: stretchX - 16, y: stretchY - 9, width: 32, height: 18,
-        rx: 6, fill: '#8b5cf6', opacity: 0.85
+        x: stretchBox.x, y: stretchBox.y, width: bW, height: bH,
+        rx: 5, fill: '#8b5cf6', opacity: 0.88
       }));
       indicatorLayer.appendChild(this._createSVGEl('text', {
-        x: stretchX, y: stretchY + 4, 'text-anchor': 'middle',
+        x: stretchBox.x + bW / 2, y: stretchBox.y + bH - 4, 'text-anchor': 'middle',
         'font-size': 9, fill: 'white', 'font-weight': 800
       }, `${stretchSide}伸`));
     }
@@ -1255,6 +1280,7 @@ const BodyDiagram = {
         x: downX, y: ep.y + 5, 'text-anchor': 'middle',
         'font-size': 14, fill: '#ef4444', 'font-weight': 900
       }, '×'));
+      this._markBox(downX - 13, ep.y - 13, 26, 26);
     }
   },
 
