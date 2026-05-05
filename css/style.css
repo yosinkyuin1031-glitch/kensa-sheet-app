@@ -3805,8 +3805,8 @@ select:focus {
   outline: none;
 }
 
-/* 年齢プルダウン（モバイルiOS自動ズーム防止＋大きく表示） */
-select.age-select {
+/* 年齢入力欄（モバイルiOS自動ズーム防止＋大きく表示） */
+input.age-input {
   width: 100%;
   font-size: 18px !important;
   padding: 14px 16px !important;
@@ -3817,11 +3817,8 @@ select.age-select {
   border-radius: var(--radius-sm);
   background: var(--card-bg);
   color: var(--text);
-  appearance: menulist;
-  -webkit-appearance: menulist;
-  cursor: pointer;
 }
-select.age-select:focus {
+input.age-input:focus {
   border-color: var(--primary);
   outline: none;
   box-shadow: 0 0 0 3px var(--primary-light);

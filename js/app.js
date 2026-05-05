@@ -58,19 +58,7 @@
   let _cameraSource = null;        // 'step' or 'modal'
 
   // ===== 認証・初期化 =====
-  function populateAgeSelect() {
-    const sel = document.getElementById('patientAge');
-    if (!sel || sel.options.length > 1) return;
-    for (let i = 0; i <= 120; i++) {
-      const opt = document.createElement('option');
-      opt.value = i;
-      opt.textContent = `${i}歳`;
-      sel.appendChild(opt);
-    }
-  }
-
   async function initAuth() {
-    populateAgeSelect();
     try {
     await SupabaseAuth.init();
     } catch(e) {
