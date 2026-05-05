@@ -58,7 +58,19 @@
   let _cameraSource = null;        // 'step' or 'modal'
 
   // ===== 認証・初期化 =====
+  function populateAgeSelect() {
+    const sel = document.getElementById('patientAge');
+    if (!sel || sel.options.length > 1) return;
+    for (let i = 0; i <= 120; i++) {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = `${i}歳`;
+      sel.appendChild(opt);
+    }
+  }
+
   async function initAuth() {
+    populateAgeSelect();
     try {
     await SupabaseAuth.init();
     } catch(e) {
@@ -904,13 +916,13 @@
   }
 
   // ステップ番号（0-7）と検査タイプを考慮した「次/前」のスキップ計算
-  // 新フロー: 0=患者情報 / 1=検査タイプ選択 / 2=写真 / 3=構造 / 4=立位 / 5=座位 / 6=上半身 / 7=結果
+  // 新フロー: 0=患者情報 / 1=検査タイプ選択 / 2=写真 / 3=立位 / 4=座位 / 5=上半身 / 6=構造 / 7=結果
   function _isStepEnabled(step) {
     if (step === 0 || step === 1 || step === 2 || step === 7) return true;
-    // 3: 構造検査
-    if (step === 3) return !!examTypes.structural;
-    // 4:立位 5:座位 6:上半身 はランドマーク選択時のみ
-    if (step === 4 || step === 5 || step === 6) return !!examTypes.landmark;
+    // 3:立位 4:座位 5:上半身 はランドマーク選択時のみ
+    if (step === 3 || step === 4 || step === 5) return !!examTypes.landmark;
+    // 6: 構造検査
+    if (step === 6) return !!examTypes.structural;
     return false;
   }
 
@@ -945,31 +957,31 @@
       el.classList.toggle('completed', s < step);
     });
 
-    // 新フロー対応: panel番号の変更 (3=構造 / 4=立位 / 5=座位 / 6=上半身)
-    if (step === 3) updateStructuralAnalysis();
-    if (step === 5) updateSeatedComparison();
+    // 新フロー対応: panel番号の変更 (3=立位 / 4=座位 / 5=上半身 / 6=構造)
+    if (step === 6) updateStructuralAnalysis();
+    if (step === 4) updateSeatedComparison();
 
-    // 構造検査(panel 3)の次ボタン制御: ランドマークONなら「立位検査へ」、OFFなら「診断する」
-    if (step === 3) {
+    // 構造検査(panel 6)は最終検査ステップなので、常に「診断する」一本
+    if (step === 6) {
       const structNext = document.getElementById('structuralNextBtn');
       const structDiag = document.getElementById('structuralDiagnoseBtn');
-      if (structNext && structDiag) {
-        if (examTypes.landmark) {
-          structNext.style.display = '';
-          structDiag.style.display = 'none';
-        } else {
-          structNext.style.display = 'none';
-          structDiag.style.display = '';
-        }
-      }
+      if (structNext) structNext.style.display = 'none';
+      if (structDiag) structDiag.style.display = '';
     }
 
-    // 上半身検査(panel 6)は最後のランドマーク検査なので、常に「診断する」一本
-    if (step === 6) {
+    // 上半身検査(panel 5)の次ボタン制御: 構造ONなら「構造検査へ」、OFFなら「診断する」
+    if (step === 5) {
       const upperNext = document.getElementById('upperBodyNextBtn');
       const upperDiag = document.getElementById('diagnoseBtn');
-      if (upperNext) upperNext.style.display = 'none';
-      if (upperDiag) upperDiag.style.display = '';
+      if (upperNext && upperDiag) {
+        if (examTypes.structural) {
+          upperNext.style.display = '';
+          upperDiag.style.display = 'none';
+        } else {
+          upperNext.style.display = 'none';
+          upperDiag.style.display = '';
+        }
+      }
     }
 
     // ステップインジケーターの動的表示（landmark/structuralグループの可視性）
@@ -1024,11 +1036,11 @@
       allFilled = examTypes.landmark || examTypes.structural;
     } else if (currentStep === 2) {
       allFilled = true; // 写真撮影は任意
-    } else if (currentStep === 3) {
-      // Step 3: 構造検査 (新フロー) — 最低1つ入力で許可
+    } else if (currentStep === 6) {
+      // Step 6: 構造検査 (新フロー) — 最低1つ入力で許可
       allFilled = Object.values(structuralData).some(v => v !== null);
-    } else if (currentStep === 4) {
-      // Step 4: 立位（詳細6 + 基本3）
+    } else if (currentStep === 3) {
+      // Step 3: 立位（詳細6 + 基本3）
       for (const lm of InspectionLogic.upperDetailLandmarks) {
         if (detailData.upperDetail[lm.key] === null) { allFilled = false; break; }
       }
@@ -1042,9 +1054,9 @@
           if (examData.standing[landmark] === null) { allFilled = false; break; }
         }
       }
-    } else if (currentStep === 5 || currentStep === 6) {
-      // Step 5=座位, Step 6=上半身
-      const position = currentStep === 5 ? 'seated' : 'upperBody';
+    } else if (currentStep === 4 || currentStep === 5) {
+      // Step 4=座位, Step 5=上半身
+      const position = currentStep === 4 ? 'seated' : 'upperBody';
       const data = examData[position];
       for (const landmark of Object.keys(InspectionLogic.landmarks)) {
         if (data[landmark] === null) { allFilled = false; break; }
@@ -1182,7 +1194,8 @@
     if (content) {
       content.innerHTML = renderStructuralSummaryHtml(wb);
     }
-    drawStructuralDiagrams(wb, false);
+    // 構造解析図（4視点SVG）は廃止。判定テキストのみ表示。
+    // drawStructuralDiagrams(wb, false);
   }
 
   function renderStructuralSummaryHtml(wb) {
@@ -1971,7 +1984,8 @@
     const wb = calcWeightBearing();
     content.innerHTML = renderStructuralSummaryHtml(wb);
     section.style.display = 'block';
-    drawStructuralDiagrams(wb, true);
+    // 構造解析図（4視点SVG）は廃止。判定テキストのみ表示。
+    // drawStructuralDiagrams(wb, true);
   }
 
   // ===== 統合結果（写真+サマリー） =====
@@ -2015,31 +2029,13 @@
     }
     summaryEl.innerHTML = html;
 
-    // 写真+図の横並び制御
+    // 後面写真の表示制御（後面図SVGは廃止）
+    // 写真がある時のみ写真ペインを表示。写真がない時は行ごと非表示。
     const row = document.getElementById('integratedPhotoDiagramRow');
-    const diagPane = document.getElementById('integratedBackDiagramPane');
-    if (row && diagPane) {
-      // 「写真がある」= 後面写真がある（横並びで揃えるのが後面写真+後面図のため）
+    if (row) {
       const hasBackPhoto = !!patientPhotos.back;
-      const hasStructural = !!examTypes.structural;
-      // 構造検査の図は構造ONの時だけ表示
-      diagPane.style.display = hasStructural ? '' : 'none';
-      // 写真がない場合: 写真ペイン非表示・図のみセンタリング
-      row.classList.toggle('no-photo', !hasBackPhoto);
-      // 写真も構造もない場合は行ごと非表示
-      if (!hasBackPhoto && !hasStructural) {
-        row.style.display = 'none';
-      } else {
-        row.style.display = '';
-      }
-      // 後面図SVGに反映
-      if (hasStructural) {
-        const integ = document.getElementById('integratedBackDiagramSvg');
-        if (integ) {
-          integ.setAttribute('viewBox', '0 0 320 440');
-          integ.innerHTML = generateStructuralBackSvg(calcWeightBearing());
-        }
-      }
+      row.classList.add('no-photo');
+      row.style.display = hasBackPhoto ? '' : 'none';
     }
   }
 

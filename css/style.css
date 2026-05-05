@@ -3805,6 +3805,15 @@ select:focus {
   outline: none;
 }
 
+/* 年齢プルダウン（モバイルiOS自動ズーム防止＋大きく表示） */
+.age-select {
+  font-size: 16px;
+  padding: 10px 12px;
+  min-height: 44px;
+  height: 44px;
+  line-height: 1.4;
+}
+
 /* ===== 検査結果サマリー (Step 5) ===== */
 .summary-patient-card {
   background: var(--card-bg);

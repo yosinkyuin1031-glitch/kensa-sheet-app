@@ -126,6 +126,7 @@
     <section id="exam-section" class="tab-content active">
 
       <!-- ウィザード進行バー（連結線・番号は動的描画） -->
+      <!-- 新フロー: 0=患者情報 / 1=検査タイプ / 2=写真 / 3=立位 / 4=座位 / 5=上半身 / 6=構造 / 7=結果 -->
       <div class="wizard-progress" id="wizardProgress">
         <div class="wizard-step active" data-step="0">
           <span class="step-number">1</span>
@@ -141,25 +142,25 @@
           <span class="step-number">3</span>
           <span class="step-label">写真撮影</span>
         </div>
-        <div class="wizard-connector" data-step-group="structural"></div>
-        <div class="wizard-step" data-step="3" data-step-group="structural">
+        <div class="wizard-connector" data-step-group="landmark"></div>
+        <div class="wizard-step" data-step="3" data-step-group="landmark">
           <span class="step-number">4</span>
-          <span class="step-label">構造検査</span>
+          <span class="step-label">立位検査</span>
         </div>
         <div class="wizard-connector" data-step-group="landmark"></div>
         <div class="wizard-step" data-step="4" data-step-group="landmark">
           <span class="step-number">5</span>
-          <span class="step-label">立位検査</span>
+          <span class="step-label">座位検査</span>
         </div>
         <div class="wizard-connector" data-step-group="landmark"></div>
         <div class="wizard-step" data-step="5" data-step-group="landmark">
           <span class="step-number">6</span>
-          <span class="step-label">座位検査</span>
-        </div>
-        <div class="wizard-connector" data-step-group="landmark"></div>
-        <div class="wizard-step" data-step="6" data-step-group="landmark">
-          <span class="step-number">7</span>
           <span class="step-label">上半身検査</span>
+        </div>
+        <div class="wizard-connector" data-step-group="structural"></div>
+        <div class="wizard-step" data-step="6" data-step-group="structural">
+          <span class="step-number">7</span>
+          <span class="step-label">構造検査</span>
         </div>
         <div class="wizard-connector"></div>
         <div class="wizard-step" data-step="7">
@@ -191,7 +192,9 @@
           <div class="form-row">
             <div class="form-group">
               <label for="patientAge">年齢</label>
-              <input type="number" id="patientAge" placeholder="45" min="0" max="120">
+              <select id="patientAge" class="age-select">
+                <option value="">選択してください</option>
+              </select>
             </div>
             <div class="form-group">
               <label for="patientGender">性別</label>
@@ -349,8 +352,8 @@
         </div>
       </div>
 
-      <!-- ===== Step 4: 立位検査 ===== -->
-      <div class="wizard-panel" data-panel="4">
+      <!-- ===== Step 3: 立位検査 ===== -->
+      <div class="wizard-panel" data-panel="3">
         <div class="step-instruction">
           <div class="instruction-icon">🧍</div>
           <h3>立位検査</h3>
@@ -480,8 +483,8 @@
         </div>
       </div>
 
-      <!-- ===== Step 5: 座位検査 ===== -->
-      <div class="wizard-panel" data-panel="5">
+      <!-- ===== Step 4: 座位検査 ===== -->
+      <div class="wizard-panel" data-panel="4">
         <div class="step-instruction">
           <div class="instruction-icon">🪑</div>
           <h3>座位検査</h3>
@@ -530,8 +533,8 @@
         </div>
       </div>
 
-      <!-- ===== Step 6: 上半身検査 ===== -->
-      <div class="wizard-panel" data-panel="6">
+      <!-- ===== Step 5: 上半身検査 ===== -->
+      <div class="wizard-panel" data-panel="5">
         <div class="step-instruction">
           <div class="instruction-icon">💪</div>
           <h3>上半身検査</h3>
@@ -577,14 +580,14 @@
 
         <div class="form-actions">
           <button type="button" class="btn btn-secondary wizard-prev">← 戻る</button>
-          <!-- 上半身は最後のランドマーク検査なので、構造ONでも先に済んでいる前提で「診断する」一本に統一 -->
-          <button type="button" class="btn btn-primary wizard-next" id="upperBodyNextBtn" style="display:none;"></button>
-          <button type="button" class="btn btn-primary" id="diagnoseBtn">診断する</button>
+          <!-- 構造ONなら「構造検査へ」、OFFなら「診断する」 -->
+          <button type="button" class="btn btn-primary wizard-next" id="upperBodyNextBtn">構造検査へ →</button>
+          <button type="button" class="btn btn-primary" id="diagnoseBtn" style="display:none;">診断する</button>
         </div>
       </div>
 
-      <!-- ===== Step 3: 構造医学検査（仰臥位） ===== -->
-      <div class="wizard-panel" data-panel="3">
+      <!-- ===== Step 6: 構造医学検査（仰臥位） ===== -->
+      <div class="wizard-panel" data-panel="6">
         <div class="step-instruction">
           <div class="instruction-icon">🔬</div>
           <h3>構造医学検査（仰臥位）</h3>
@@ -670,41 +673,12 @@
           <div id="structuralResultContent"></div>
         </div>
 
-        <!-- 構造解析図 -->
-        <div class="posture-diagram-wrapper" id="structuralDiagramArea" style="display:none;">
-          <div class="posture-diagram-title">構造解析図</div>
-          <div class="posture-diagram-views">
-            <div class="posture-view">
-              <div class="posture-view-label">正面図</div>
-              <div class="posture-diagram-container" id="structuralFrontDiagram">
-                <svg id="structuralFrontSvg" viewBox="0 0 200 410" xmlns="http://www.w3.org/2000/svg"></svg>
-              </div>
-            </div>
-            <div class="posture-view">
-              <div class="posture-view-label">後面図</div>
-              <div class="posture-diagram-container" id="structuralBackDiagram">
-                <svg id="structuralBackSvg" viewBox="0 0 200 410" xmlns="http://www.w3.org/2000/svg"></svg>
-              </div>
-            </div>
-            <div class="posture-view">
-              <div class="posture-view-label">左側面（矢状面）</div>
-              <div class="posture-diagram-container" id="structuralLeftSideDiagram">
-                <svg id="structuralLeftSideSvg" viewBox="0 0 200 410" xmlns="http://www.w3.org/2000/svg"></svg>
-              </div>
-            </div>
-            <div class="posture-view">
-              <div class="posture-view-label">右側面（矢状面）</div>
-              <div class="posture-diagram-container" id="structuralRightSideDiagram">
-                <svg id="structuralRightSideSvg" viewBox="0 0 200 410" xmlns="http://www.w3.org/2000/svg"></svg>
-              </div>
-            </div>
-          </div>
-        </div>
+        <!-- 構造解析図は廃止。判定テキスト（左荷重/右荷重バッジ＋詳細グリッド）のみ表示する -->
 
         <div class="form-actions">
           <button type="button" class="btn btn-secondary wizard-prev">← 戻る</button>
-          <!-- ランドマークONなら「立位検査へ」、OFFなら「診断する」 -->
-          <button type="button" class="btn btn-primary wizard-next" id="structuralNextBtn" style="display:none;">立位検査へ →</button>
+          <!-- 構造検査は最終ステップ。常に「診断する」 -->
+          <button type="button" class="btn btn-primary wizard-next" id="structuralNextBtn" style="display:none;"></button>
           <button type="button" class="btn btn-primary" id="structuralDiagnoseBtn">診断する</button>
         </div>
       </div>
@@ -739,36 +713,11 @@
         <div class="form-card structural-result-card-result">
           <h3 class="card-title">⚖️ 構造検査結果（荷重判定）</h3>
           <div id="diagnosisStructuralContent"></div>
-          <div class="posture-diagram-views" id="diagnosisStructuralDiagrams" style="margin-top:14px;">
-            <div class="posture-view">
-              <div class="posture-view-label">正面</div>
-              <div class="posture-diagram-container">
-                <svg id="postureDiagFrontSvg" viewBox="0 0 200 410" xmlns="http://www.w3.org/2000/svg"></svg>
-              </div>
-            </div>
-            <div class="posture-view">
-              <div class="posture-view-label">後面</div>
-              <div class="posture-diagram-container">
-                <svg id="postureDiagBackSvg" viewBox="0 0 200 410" xmlns="http://www.w3.org/2000/svg"></svg>
-              </div>
-            </div>
-            <div class="posture-view">
-              <div class="posture-view-label">左側面</div>
-              <div class="posture-diagram-container">
-                <svg id="postureDiagLeftSvg" viewBox="0 0 200 410" xmlns="http://www.w3.org/2000/svg"></svg>
-              </div>
-            </div>
-            <div class="posture-view">
-              <div class="posture-view-label">右側面</div>
-              <div class="posture-diagram-container">
-                <svg id="postureDiagRightSvg" viewBox="0 0 200 410" xmlns="http://www.w3.org/2000/svg"></svg>
-              </div>
-            </div>
-          </div>
+          <!-- 4視点SVG（正面・後面・左右側面）は廃止。判定テキスト＋詳細グリッドのみ表示 -->
         </div>
       </div>
 
-      <!-- [3] 統合結果 + 後面写真+後面図の横並び -->
+      <!-- [3] 統合結果 + 後面写真（後面図SVGは廃止） -->
       <div id="diagnosisIntegratedSection" style="display:none;">
         <div class="form-card integrated-result-card">
           <h3 class="card-title">🎯 統合結果と患者写真</h3>
@@ -778,8 +727,8 @@
             <div id="integratedSummaryContent"></div>
           </div>
 
-          <!-- 後面写真 + 後面図 の横並び（写真がある時のみ写真ペイン表示） -->
-          <div class="integrated-result-grid" id="integratedPhotoDiagramRow" style="margin-top:12px;">
+          <!-- 後面写真（写真がある時のみ表示。後面図SVGは廃止） -->
+          <div class="integrated-result-grid no-photo" id="integratedPhotoDiagramRow" style="margin-top:12px;display:none;">
             <div class="integrated-photo-pane" id="integratedBackPhotoPane">
               <div class="integrated-photo-label">後面写真</div>
               <div id="integratedBackPhotoSlot" class="integrated-photo-frame">
@@ -787,12 +736,6 @@
                 <div id="integratedBackPhotoEmpty" class="integrated-photo-empty">写真未撮影</div>
               </div>
               <button type="button" id="integratedRetakeBtn" class="btn btn-sm btn-secondary" style="margin-top:8px;">写真を撮影/撮り直し</button>
-            </div>
-            <div class="integrated-diagram-pane" id="integratedBackDiagramPane">
-              <div class="integrated-photo-label">後面図（構造解析）</div>
-              <div class="integrated-diagram-frame">
-                <svg id="integratedBackDiagramSvg" viewBox="0 0 200 410" xmlns="http://www.w3.org/2000/svg"></svg>
-              </div>
             </div>
           </div>
         </div>
