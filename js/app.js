@@ -841,6 +841,21 @@
     });
     if (tabName === 'history') refreshHistory();
     if (tabName === 'report') renderReport();
+    // タブ切替時はページ最上部から見えるようスクロール
+    // 診断結果タブは結果セクションの先頭、それ以外は window 最上部
+    try {
+      const target = document.getElementById(`${tabName}-section`);
+      if (target && typeof target.scrollIntoView === 'function') {
+        // 次フレームに遅延（display切替直後だと位置が確定しないことがある）
+        requestAnimationFrame(() => {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    } catch (_) {
+      window.scrollTo(0, 0);
+    }
   }
 
   // ===== ウィザードナビゲーション =====
@@ -1312,14 +1327,7 @@
     if (b) b.innerHTML = generateStructuralBackSvg(wb);
     if (l) l.innerHTML = generateSagittalSvg('left', wb);
     if (r) r.innerHTML = generateSagittalSvg('right', wb);
-    // 結果ページの後面図にも反映
-    if (forDiagnosis) {
-      const integ = document.getElementById('integratedBackDiagramSvg');
-      if (integ) {
-        integ.setAttribute('viewBox', '0 0 320 440');
-        integ.innerHTML = generateStructuralBackSvg(wb);
-      }
-    }
+    // 結果ページの後面図SVGは廃止（統合結果セクション削除に伴う）
   }
 
   function _structDefs(id) {
@@ -1591,11 +1599,7 @@
       stopCameraBtn.addEventListener('click', () => stopCamera());
     }
 
-    // 結果画面の撮り直しボタン
-    const integratedRetakeBtn = document.getElementById('integratedRetakeBtn');
-    if (integratedRetakeBtn) {
-      integratedRetakeBtn.addEventListener('click', () => openCameraModal('back'));
-    }
+    // 結果画面の撮り直しボタンは廃止（統合結果セクション削除）
     const cameraModalCapture = document.getElementById('cameraModalCapture');
     if (cameraModalCapture) {
       cameraModalCapture.addEventListener('click', () => captureCurrentFrame());
@@ -1747,31 +1751,10 @@
     return path;
   }
 
+  // 統合結果セクション廃止に伴い no-op（後方互換のため関数自体は残す）
+  // 後面写真の撮影機能と Supabase Storage アップロードは維持
   function updateIntegratedPhoto() {
-    const img = document.getElementById('integratedBackPhotoImg');
-    const empty = document.getElementById('integratedBackPhotoEmpty');
-    if (img && empty) {
-      if (patientPhotos.back) {
-        img.src = patientPhotos.back;
-        img.style.display = 'block';
-        empty.style.display = 'none';
-      } else {
-        img.style.display = 'none';
-        empty.style.display = 'block';
-      }
-    }
-    // 横並び行の no-photo クラスを再評価
-    const row = document.getElementById('integratedPhotoDiagramRow');
-    if (row) {
-      row.classList.toggle('no-photo', !patientPhotos.back);
-      // 写真も構造もない場合は非表示、片方でもあれば表示
-      const hasStructural = !!(examTypes && examTypes.structural);
-      if (!patientPhotos.back && !hasStructural) {
-        row.style.display = 'none';
-      } else {
-        row.style.display = '';
-      }
-    }
+    // 統合結果UIは廃止。何もしない。
   }
 
   // ===== 座位検査：比較結果 =====
@@ -1988,55 +1971,9 @@
     // drawStructuralDiagrams(wb, true);
   }
 
-  // ===== 統合結果（写真+サマリー） =====
+  // 統合結果セクションは廃止。後方互換のため空関数を残す。
   function renderIntegratedResult() {
-    const section = document.getElementById('diagnosisIntegratedSection');
-    const summaryEl = document.getElementById('integratedSummaryContent');
-    if (!section || !summaryEl) return;
-    section.style.display = 'block';
-    updateIntegratedPhoto();
-
-    let html = '<h4 style="margin-top:0;">統合所見</h4>';
-    // ランドマーク所見
-    if (examTypes.landmark && diagnosisResult && !diagnosisResult.structuralOnly) {
-      const cause = InspectionLogic.causeLabels && diagnosisResult.primaryCause
-        ? InspectionLogic.causeLabels[diagnosisResult.primaryCause]
-        : null;
-      if (cause) {
-        html += `<div style="margin-bottom:8px;"><strong>${cause.icon || ''} ${cause.label || ''}</strong>`;
-        if (cause.description) html += `<div style="font-size:0.85rem;color:#6b7280;">${cause.description}</div>`;
-        html += `</div>`;
-      }
-    }
-    // 構造所見
-    if (examTypes.structural) {
-      const wb = calcWeightBearing();
-      let label = '未入力';
-      if (wb.side === 'left') label = '左に体重がのっている → 左前面 / 右後面に症状が出やすい';
-      else if (wb.side === 'right') label = '右に体重がのっている → 右前面 / 左後面に症状が出やすい';
-      else if (wb.side === 'even') label = '左右荷重ほぼ均等';
-      html += `<div style="margin-bottom:8px;"><strong>⚖️ 構造検査:</strong> ${label}</div>`;
-    }
-    if (!examTypes.landmark && !examTypes.structural) {
-      html += '<p>検査データがありません。</p>';
-    }
-    // 主訴・痛み
-    if (chiefComplaintText) {
-      html += `<div style="margin-top:6px;"><strong>主訴:</strong> ${chiefComplaintText}</div>`;
-    }
-    if (painLevel != null) {
-      html += `<div><strong>痛み:</strong> NRS ${painLevel}/10</div>`;
-    }
-    summaryEl.innerHTML = html;
-
-    // 後面写真の表示制御（後面図SVGは廃止）
-    // 写真がある時のみ写真ペインを表示。写真がない時は行ごと非表示。
-    const row = document.getElementById('integratedPhotoDiagramRow');
-    if (row) {
-      const hasBackPhoto = !!patientPhotos.back;
-      row.classList.add('no-photo');
-      row.style.display = hasBackPhoto ? '' : 'none';
-    }
+    // 統合結果UIは削除済み。何もしない。
   }
 
   // ===== 比較ボタンの表示制御 =====

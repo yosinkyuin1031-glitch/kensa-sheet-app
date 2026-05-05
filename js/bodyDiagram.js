@@ -54,7 +54,7 @@ const BodyDiagram = {
   createBodySVG(prefix) {
     const p = prefix || '';
     return `
-    <svg viewBox="0 0 300 580" xmlns="http://www.w3.org/2000/svg" class="body-svg" data-prefix="${p}">
+    <svg viewBox="-40 0 380 580" xmlns="http://www.w3.org/2000/svg" class="body-svg" data-prefix="${p}">
       <defs>
         <radialGradient id="${p}jointGrad">
           <stop offset="0%" stop-color="#fbbf24"/>
@@ -219,10 +219,10 @@ const BodyDiagram = {
         </g>
       </g>
 
-      <!-- 左右ラベル -->
-      <text x="16" y="18" font-size="13" fill="#64748b" font-weight="700"
+      <!-- 左右ラベル（拡張viewBoxの外側マージンに配置） -->
+      <text x="-32" y="18" font-size="13" fill="#64748b" font-weight="700"
         stroke="white" stroke-width="3" paint-order="stroke">左</text>
-      <text x="272" y="18" font-size="13" fill="#64748b" font-weight="700"
+      <text x="332" y="18" font-size="13" fill="#64748b" font-weight="700" text-anchor="end"
         stroke="white" stroke-width="3" paint-order="stroke">右</text>
       <text x="150" y="570" text-anchor="middle" font-size="10" fill="#94a3b8" font-weight="500">背面図（患者目線）</text>
 
@@ -342,10 +342,20 @@ const BodyDiagram = {
         }, rArrow));
       }
 
-      // ラベル
+      // ラベル（外側マージンへ配置 + 点線リーダー線）
+      // 左右どちらか低い側を選んで配置（情報量・読みやすさ重視）
+      // 右側マージンに固定配置（状態バッジは中央寄りなので衝突しない）
+      const labelMarginX = -32; // 左マージン
+      const lineFromX = pos.leftX - 6;
+      landmarkLayer.appendChild(this._createSVGEl('line', {
+        x1: lineFromX, y1: leftY,
+        x2: labelMarginX + 6, y2: leftY,
+        stroke: '#cbd5e1', 'stroke-width': 0.6,
+        'stroke-dasharray': '2,2', opacity: 0.6
+      }));
       landmarkLayer.appendChild(this._createSVGEl('text', {
-        x: 150, y: pos.baseY - 14, 'text-anchor': 'middle',
-        'font-size': 9, fill: '#64748b', 'font-weight': 600
+        x: labelMarginX, y: leftY + 3, 'text-anchor': 'start',
+        'font-size': 9, fill: '#475569', 'font-weight': 600
       }, pos.label));
     }
 
@@ -752,6 +762,9 @@ const BodyDiagram = {
     svg.querySelectorAll('.seg').forEach(g => g.removeAttribute('transform'));
     this._resetParts(svg);
 
+    // ラベル衝突回避トラッカーをリセット（左右ラベル群の重なり防止）
+    this._resetPlacedLabels();
+
     // 全データを統合
     const allData = { ...upperData, ...lowerData };
 
@@ -795,9 +808,17 @@ const BodyDiagram = {
           }, rArrow));
         }
 
-        // 立位ラベル
+        // 立位ラベル（左マージンに配置）
+        const stLabelX = -32;
+        const stLabelY = this._findSafeY(leftY, 'left-label', 12);
+        landmarkLayer.appendChild(this._createSVGEl('line', {
+          x1: pos.leftX - 6, y1: leftY,
+          x2: stLabelX + 6, y2: stLabelY,
+          stroke: '#e2e8f0', 'stroke-width': 0.5,
+          'stroke-dasharray': '2,2', opacity: 0.55
+        }));
         landmarkLayer.appendChild(this._createSVGEl('text', {
-          x: 150, y: pos.baseY - 10, 'text-anchor': 'middle',
+          x: stLabelX, y: stLabelY + 3, 'text-anchor': 'start',
           'font-size': 7, fill: '#94a3b8', 'font-weight': 600
         }, pos.label));
       }
@@ -847,30 +868,33 @@ const BodyDiagram = {
           }, rArrow));
         }
 
-        // ラベルは左右マージン側に揃え、リーダー線でドットと結ぶ
-        // 左ラベルは x=14（左マージン）、右ラベルは x=286（右マージン）
-        const labelLeftX = 14;
-        const labelRightX = 286;
+        // ラベルは拡張viewBoxの外側マージンに配置、リーダー線でドットと結ぶ
+        // 左ラベル x=-32（左外側）、右ラベル x=332（右外側）
+        // ラベル衝突回避（左右別トラッカー）
+        const labelLeftX = -32;
+        const labelRightX = 332;
+        const labelLeftY = this._findSafeY(leftY, 'left-label', 12);
+        const labelRightY = this._findSafeY(rightY, 'right-label', 12);
         // リーダー線（左）
         landmarkLayer.appendChild(this._createSVGEl('line', {
           x1: pos.leftX - 6, y1: leftY,
-          x2: labelLeftX + 4, y2: leftY,
+          x2: labelLeftX + 6, y2: labelLeftY,
           stroke: '#cbd5e1', 'stroke-width': 0.6,
-          'stroke-dasharray': '2,2', opacity: 0.65
+          'stroke-dasharray': '2,2', opacity: 0.7
         }));
         landmarkLayer.appendChild(this._createSVGEl('text', {
-          x: labelLeftX, y: leftY + 3, 'text-anchor': 'start',
+          x: labelLeftX, y: labelLeftY + 3, 'text-anchor': 'start',
           'font-size': 8, fill: '#475569', 'font-weight': 600
         }, pos.label));
         // リーダー線（右）
         landmarkLayer.appendChild(this._createSVGEl('line', {
           x1: pos.rightX + 6, y1: rightY,
-          x2: labelRightX - 4, y2: rightY,
+          x2: labelRightX - 6, y2: labelRightY,
           stroke: '#cbd5e1', 'stroke-width': 0.6,
-          'stroke-dasharray': '2,2', opacity: 0.65
+          'stroke-dasharray': '2,2', opacity: 0.7
         }));
         landmarkLayer.appendChild(this._createSVGEl('text', {
-          x: labelRightX, y: rightY + 3, 'text-anchor': 'end',
+          x: labelRightX, y: labelRightY + 3, 'text-anchor': 'end',
           'font-size': 8, fill: '#475569', 'font-weight': 600
         }, pos.label));
       }

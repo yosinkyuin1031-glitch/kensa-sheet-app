@@ -717,29 +717,8 @@
         </div>
       </div>
 
-      <!-- [3] 統合結果 + 後面写真（後面図SVGは廃止） -->
-      <div id="diagnosisIntegratedSection" style="display:none;">
-        <div class="form-card integrated-result-card">
-          <h3 class="card-title">🎯 統合結果と患者写真</h3>
-
-          <!-- 統合所見テキスト（写真有無に関わらず常に表示） -->
-          <div class="integrated-summary-pane">
-            <div id="integratedSummaryContent"></div>
-          </div>
-
-          <!-- 後面写真（写真がある時のみ表示。後面図SVGは廃止） -->
-          <div class="integrated-result-grid no-photo" id="integratedPhotoDiagramRow" style="margin-top:12px;display:none;">
-            <div class="integrated-photo-pane" id="integratedBackPhotoPane">
-              <div class="integrated-photo-label">後面写真</div>
-              <div id="integratedBackPhotoSlot" class="integrated-photo-frame">
-                <img id="integratedBackPhotoImg" alt="後面写真" style="display:none;">
-                <div id="integratedBackPhotoEmpty" class="integrated-photo-empty">写真未撮影</div>
-              </div>
-              <button type="button" id="integratedRetakeBtn" class="btn btn-sm btn-secondary" style="margin-top:8px;">写真を撮影/撮り直し</button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <!-- [3] 統合結果セクションは削除済み（後面図SVG・統合所見・後面写真表示はすべて廃止） -->
+      <!-- 後面写真は撮影機能のみ維持（patient_photos_storage への保存）。表示UIは患者カルテ側のみ。 -->
 
       <!-- 詳細検査セクション（立位で入力済みのため非表示、JS互換用に残す） -->
       <div id="detailedExamSection" style="display:none;"></div>
