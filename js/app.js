@@ -67,23 +67,12 @@
       if (errEl) { errEl.textContent = 'Init error: ' + e.message; errEl.style.display = 'block'; }
     }
 
-    // ログイン/登録フォームの切り替え
-    document.getElementById('showSignup').addEventListener('click', (e) => {
-      e.preventDefault();
-      document.getElementById('loginForm').style.display = 'none';
-      document.getElementById('signupForm').style.display = 'block';
-    });
-    document.getElementById('showLogin').addEventListener('click', (e) => {
-      e.preventDefault();
-      document.getElementById('signupForm').style.display = 'none';
-      document.getElementById('loginForm').style.display = 'block';
-    });
+    // 新規登録フォームは廃止（管理者発行のみ）
 
     // パスワードリセット表示
     document.getElementById('showResetPassword').addEventListener('click', (e) => {
       e.preventDefault();
       document.getElementById('loginForm').style.display = 'none';
-      document.getElementById('signupForm').style.display = 'none';
       document.getElementById('resetPasswordForm').style.display = 'block';
       document.getElementById('resetError').style.display = 'none';
       document.getElementById('resetSuccess').style.display = 'none';
@@ -152,43 +141,11 @@
       }
     });
 
-    // 登録ボタン
-    document.getElementById('signupBtn').addEventListener('click', async () => {
-      const name = document.getElementById('signupName').value.trim();
-      const clinic = document.getElementById('signupClinic').value.trim();
-      const email = document.getElementById('signupEmail').value.trim();
-      const password = document.getElementById('signupPassword').value;
-      const errorDiv = document.getElementById('signupError');
-      if (!name || !email || !password) {
-        errorDiv.textContent = 'お名前・メールアドレス・パスワードは必須です';
-        errorDiv.style.display = 'block';
-        return;
-      }
-      if (password.length < 6) {
-        errorDiv.textContent = 'パスワードは6文字以上にしてください';
-        errorDiv.style.display = 'block';
-        return;
-      }
-      try {
-        document.getElementById('signupBtn').disabled = true;
-        document.getElementById('signupBtn').textContent = '登録中...';
-        await SupabaseAuth.signup(email, password, clinic, name);
-        showMainApp();
-      } catch (err) {
-        errorDiv.textContent = err.message;
-        errorDiv.style.display = 'block';
-      } finally {
-        document.getElementById('signupBtn').disabled = false;
-        document.getElementById('signupBtn').textContent = '登録する';
-      }
-    });
+    // 新規登録は廃止（管理者発行のみ）
 
-    // Enterキーでログイン/登録
+    // Enterキーでログイン
     document.getElementById('loginPassword').addEventListener('keydown', (e) => {
       if (e.key === 'Enter') document.getElementById('loginBtn').click();
-    });
-    document.getElementById('signupPassword').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') document.getElementById('signupBtn').click();
     });
 
     // ログアウトボタン

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>カラダマップ - 3分で、体の"いま"を見える化</title>
-  <link rel="stylesheet" href="css/style.css?v=20260505c">
+  <link rel="stylesheet" href="css/style.css?v=20260507a">
   <script>
     // Service Worker強制リセット（古いキャッシュを自動削除）
     if ('serviceWorker' in navigator) {
@@ -48,9 +48,7 @@
         </div>
         <div id="loginError" class="auth-error" style="display:none;"></div>
         <button type="button" id="loginBtn" class="btn btn-primary auth-btn">ログイン</button>
-        <!-- 新規登録・パスワードリセットは管理者が対応 -->
-        <a href="#" id="showSignup" style="display:none;">新規登録</a>
-        <a href="#" id="showResetPassword" style="display:none;">パスワードリセット</a>
+        <p style="font-size:12px;color:#888;margin-top:16px;text-align:center;">アカウントの新規発行は管理者が対応します。</p>
       </div>
 
       <!-- パスワードリセットフォーム -->
@@ -69,29 +67,7 @@
         <p class="auth-switch"><a href="#" id="backToLogin">← ログインに戻る</a></p>
       </div>
 
-      <!-- 新規登録フォーム -->
-      <div id="signupForm" class="auth-form" style="display:none;">
-        <h2>新規登録</h2>
-        <div class="auth-field">
-          <label for="signupName">お名前</label>
-          <input type="text" id="signupName" placeholder="山田 太郎">
-        </div>
-        <div class="auth-field">
-          <label for="signupClinic">院名</label>
-          <input type="text" id="signupClinic" placeholder="○○整体院">
-        </div>
-        <div class="auth-field">
-          <label for="signupEmail">メールアドレス</label>
-          <input type="email" id="signupEmail" placeholder="example@clinic.com" autocomplete="email">
-        </div>
-        <div class="auth-field">
-          <label for="signupPassword">パスワード（6文字以上）</label>
-          <input type="password" id="signupPassword" placeholder="パスワード" autocomplete="new-password">
-        </div>
-        <div id="signupError" class="auth-error" style="display:none;"></div>
-        <button type="button" id="signupBtn" class="btn btn-primary auth-btn">登録する</button>
-        <p class="auth-switch">既にアカウントをお持ちの方は <a href="#" id="showLogin">ログイン</a></p>
-      </div>
+      <!-- 新規登録フォームは廃止（管理者発行のみ） -->
     </div>
   </div>
 
