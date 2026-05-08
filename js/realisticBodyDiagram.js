@@ -14,27 +14,27 @@
 //   ただし重心結果（gravityResult.side）が指定されていればそちらを優先。
 
 const RealisticBodyDiagram = {
-  IMG_W: 1080,
-  IMG_H: 1456,
-  ASPECT: 1080 / 1456,
+  IMG_W: 755,
+  IMG_H: 1041,
+  ASPECT: 755 / 1041,
 
-  // ランドマーク基準位置（画像に対する%・左上原点）
-  // ユーザー指示の推定値をそのまま採用
+  // ランドマーク基準位置（画像 755×1041 に対する%・左上原点）
+  // 新画像 (body_male_back_clean / body_female_back_clean) の実際の解剖位置に合わせて再調整
   positions: {
     standing: {
-      mastoid:         { left: { x: 47.5, y:  7.5 }, right: { x: 52.5, y:  7.5 }, label: '乳様突起' },
-      scapulaInferior: { left: { x: 41.0, y: 31.0 }, right: { x: 59.0, y: 31.0 }, label: '肩甲下角' },
-      iliacCrest:      { left: { x: 41.0, y: 46.0 }, right: { x: 59.0, y: 46.0 }, label: '腸骨稜' }
+      mastoid:         { left: { x: 48.0, y: 11.5 }, right: { x: 52.0, y: 11.5 }, label: '乳様突起' },
+      scapulaInferior: { left: { x: 43.0, y: 28.0 }, right: { x: 57.0, y: 28.0 }, label: '肩甲下角' },
+      iliacCrest:      { left: { x: 41.5, y: 47.5 }, right: { x: 58.5, y: 47.5 }, label: '腸骨稜' }
     },
     upper: {
-      acromion:      { left: { x: 36.0, y: 17.0 }, right: { x: 64.0, y: 17.0 }, label: '肩峰' },
-      mastoidDetail: { left: { x: 26.0, y: 35.0 }, right: { x: 74.0, y: 35.0 }, label: '肘頭' },
-      radialStyloid: { left: { x: 24.0, y: 49.0 }, right: { x: 76.0, y: 49.0 }, label: '茎状突起' }
+      acromion:      { left: { x: 33.0, y: 19.5 }, right: { x: 67.0, y: 19.5 }, label: '肩峰' },
+      mastoidDetail: { left: { x: 23.5, y: 41.0 }, right: { x: 76.5, y: 41.0 }, label: '肘頭' },
+      radialStyloid: { left: { x: 18.5, y: 56.0 }, right: { x: 81.5, y: 56.0 }, label: '茎状突起' }
     },
     lower: {
-      greaterTrochanter: { left: { x: 36.0, y: 53.0 }, right: { x: 64.0, y: 53.0 }, label: '大転子' },
-      patellaUpper:      { left: { x: 41.0, y: 73.0 }, right: { x: 59.0, y: 73.0 }, label: '膝蓋骨上端' },
-      lateralMalleolus:  { left: { x: 45.0, y: 95.0 }, right: { x: 55.0, y: 95.0 }, label: '外果' }
+      greaterTrochanter: { left: { x: 38.0, y: 54.0 }, right: { x: 62.0, y: 54.0 }, label: '大転子' },
+      patellaUpper:      { left: { x: 42.0, y: 73.5 }, right: { x: 58.0, y: 73.5 }, label: '膝蓋骨上端' },
+      lateralMalleolus:  { left: { x: 45.0, y: 93.0 }, right: { x: 55.0, y: 93.0 }, label: '外果' }
     }
   },
 
