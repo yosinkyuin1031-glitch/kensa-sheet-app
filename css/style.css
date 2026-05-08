@@ -731,15 +731,24 @@ body[data-view="patient"] .patient-treatment-hint p {
   box-sizing: border-box;
 }
 
-/* ステージ：画像と同じ矩形・マーカー基準（%指定の原点） */
+/* ステージ：画像と同じ矩形・マーカー基準（%指定の原点）
+   aspect-ratio で stage の縦横比を 755:1041 に固定し、
+   img を absolute + object-fit:contain で stage 内に厳密に収める。
+   これにより stage 矩形 = 画像表示矩形 となり %座標が正確に機能する。
+   JS 側で aspect-ratio 非対応ブラウザ向けの保険的な高さ計算も実装済み。 */
 .rbd-stage {
   position: relative;
   width: 100%;
+  aspect-ratio: 755 / 1041;
 }
 .rbd-bg {
   display: block;
+  position: absolute;
+  inset: 0;
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: contain;
+  object-position: top center;
   user-select: none;
   -webkit-user-drag: none;
   pointer-events: none;
@@ -793,7 +802,7 @@ body[data-view="patient"] .patient-treatment-hint p {
 .rbd-arrow.red  { color: #dc2626; }
 .rbd-arrow.blue { color: #2563eb; }
 
-/* バッジ */
+/* バッジ（ドット外側に配置・体に被らない） */
 .rbd-badge {
   font-size: 10px;
   font-weight: 700;
@@ -801,7 +810,8 @@ body[data-view="patient"] .patient-treatment-hint p {
   border-radius: 6px;
   color: #fff;
   white-space: nowrap;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  letter-spacing: 0.5px;
 }
 .rbd-badge.red    { background: #dc2626; }
 .rbd-badge.purple { background: #8b5cf6; }
