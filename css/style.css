@@ -686,6 +686,158 @@ body[data-view="patient"] .patient-treatment-hint p {
   transition: fill 0.3s ease, opacity 0.3s ease;
 }
 
+/* ===== Realistic Body Diagram (リアル人体画像＋オーバーレイ) ===== */
+.realistic-body-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 16px 0 24px;
+}
+
+.realistic-body-container,
+.realistic-body-diagram {
+  width: 100%;
+  max-width: 520px;
+  background: #fff;
+  border: 2px solid var(--primary, #2563eb);
+  border-radius: 12px;
+  padding: 10px 8px 8px;
+  box-shadow: 0 4px 16px rgba(37,99,235,0.12);
+  box-sizing: border-box;
+}
+
+.rbd-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 4px 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #475569;
+}
+.rbd-side-label {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+.rbd-side-label.rbd-left  { color: #2563eb; }
+.rbd-side-label.rbd-right { color: #f97316; }
+
+/* 外側ラッパ：左右にラベル領域用の余白を確保 */
+.rbd-stage-wrap {
+  position: relative;
+  width: 100%;
+  padding: 0 20%;
+  box-sizing: border-box;
+}
+
+/* ステージ：画像と同じ矩形・マーカー基準（%指定の原点） */
+.rbd-stage {
+  position: relative;
+  width: 100%;
+}
+.rbd-bg {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+/* リーダー線用SVGは画像領域と完全一致 */
+.rbd-leader-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* リーダー線（点線） */
+.rbd-leader {
+  stroke: #94a3b8;
+  stroke-width: 0.25;
+  stroke-dasharray: 0.6 0.6;
+  fill: none;
+  vector-effect: non-scaling-stroke;
+}
+
+/* マーカー共通：画像領域(%基準) */
+.rbd-marker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ドット */
+.rbd-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 1px 2px rgba(0,0,0,0.2);
+}
+.rbd-dot.orange { background: #f97316; }
+.rbd-dot.blue   { background: #3b82f6; }
+.rbd-dot.green  { background: #22c55e; }
+
+/* 矢印 */
+.rbd-arrow {
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 0 2px #fff, 0 0 2px #fff, 0 0 2px #fff;
+}
+.rbd-arrow.red  { color: #dc2626; }
+.rbd-arrow.blue { color: #2563eb; }
+
+/* バッジ */
+.rbd-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 6px;
+  color: #fff;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.rbd-badge.red    { background: #dc2626; }
+.rbd-badge.purple { background: #8b5cf6; }
+
+/* 解剖ラベル */
+.rbd-label {
+  position: absolute;
+  transform: translate(0, -50%);
+  font-size: 11px;
+  font-weight: 600;
+  color: #334155;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 3;
+}
+.rbd-label-left  { left: 0; max-width: 19%; }
+.rbd-label-right { right: 0; max-width: 19%; }
+
+.rbd-footer {
+  text-align: center;
+  font-size: 12px;
+  color: #64748b;
+  padding-top: 6px;
+}
+
+@media (max-width: 480px) {
+  .rbd-label { font-size: 10px; padding: 1px 4px; }
+  .rbd-badge { font-size: 9px; padding: 1px 4px; }
+  .rbd-dot   { width: 12px; height: 12px; }
+  .rbd-arrow { font-size: 12px; }
+}
+
 /* セグメントのスムーズな移動アニメーション */
 .body-svg .seg {
   transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);

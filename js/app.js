@@ -974,6 +974,12 @@
         document.getElementById('patientName').focus();
         return false;
       }
+      const genderSel = document.getElementById('patientGender');
+      if (genderSel && !genderSel.value) {
+        alert('性別を選択してください。');
+        genderSel.focus();
+        return false;
+      }
     }
     if (currentStep === 1) {
       if (!examTypes.landmark && !examTypes.structural) {
@@ -2260,8 +2266,10 @@
     let html = '';
 
     // 全身統合人体図（診断結果画面上部に表示）
-    html += `<div class="body-diagram-wrapper unified-diagram-wrapper">
-      <div class="body-diagram-container" id="diagram-diagnosis-body"></div>
+    // テスト実装: リアル人体画像＋オーバーレイ方式（RealisticBodyDiagram）
+    html += `<div class="body-diagram-wrapper unified-diagram-wrapper realistic-body-wrapper">
+      <div class="realistic-body-container" id="realistic-diagnosis-body"></div>
+      <div class="body-diagram-container" id="diagram-diagnosis-body" style="display:none;"></div>
     </div>`;
 
     // メイン診断（両モード共通）
@@ -2374,6 +2382,25 @@
     container.innerHTML = html;
 
     // 診断結果画面の全身人体図を描画
+    // 新方式: リアル人体画像＋オーバーレイ（RealisticBodyDiagram）
+    const realBodyEl = document.getElementById('realistic-diagnosis-body');
+    if (realBodyEl && typeof RealisticBodyDiagram !== 'undefined') {
+      try {
+        RealisticBodyDiagram.render(realBodyEl, {
+          standing: examData.standing,
+          upper:    detailData.upperDetail,
+          lower:    detailData.lowerDetail,
+          gravitySide: (result && result.gravityResult && result.gravityResult.side) || null
+        }, patientGender);
+      } catch (e) {
+        console.error('RealisticBodyDiagram render error:', e);
+        // フォールバック: SVG版を表示
+        const svgEl = document.getElementById('diagram-diagnosis-body');
+        if (svgEl) svgEl.style.display = '';
+      }
+    }
+
+    // 既存SVG版（フォールバック・後方互換用、初期非表示）
     const diagBodyEl = document.getElementById('diagram-diagnosis-body');
     if (diagBodyEl) {
       BodyDiagram.init('diagram-diagnosis-body');

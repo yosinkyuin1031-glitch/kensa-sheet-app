@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>カラダマップ - 3分で、体の"いま"を見える化</title>
-  <link rel="stylesheet" href="css/style.css?v=20260507a">
+  <link rel="stylesheet" href="css/style.css?v=20260430b">
   <script>
     // Service Worker強制リセット（古いキャッシュを自動削除）
     if ('serviceWorker' in navigator) {
@@ -171,11 +171,12 @@
               <input type="number" id="patientAge" class="age-input" placeholder="45" min="0" max="120" inputmode="numeric">
             </div>
             <div class="form-group">
-              <label for="patientGender">性別</label>
-              <select id="patientGender">
+              <label for="patientGender">性別 <span class="required">*</span></label>
+              <select id="patientGender" required>
                 <option value="">選択してください</option>
                 <option value="male">男性</option>
                 <option value="female">女性</option>
+                <option value="other">その他</option>
               </select>
             </div>
           </div>
@@ -890,10 +891,11 @@
   <script src="js/supabase.js?v=20260430a"></script>
   <script src="js/inspection.js?v=20260430a"></script>
   <script src="js/bodyDiagram.js?v=20260505c"></script>
+  <script src="js/realisticBodyDiagram.js?v=20260430a"></script>
   <script src="js/selfcare.js?v=20260430a"></script>
   <script src="js/storage.js?v=20260430a"></script>
   <script src="js/pdf.js?v=20260430a"></script>
-  <script src="js/app.js?v=20260430a"></script>
+  <script src="js/app.js?v=20260430b"></script>
   <script>
     // フォールバック：app.jsでエラーが出た場合のログイン処理
     window.addEventListener('load', function() {
