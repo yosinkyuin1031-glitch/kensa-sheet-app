@@ -69,20 +69,26 @@
 
     // 新規登録フォームは廃止（管理者発行のみ）
 
-    // パスワードリセット表示
-    document.getElementById('showResetPassword').addEventListener('click', (e) => {
-      e.preventDefault();
-      document.getElementById('loginForm').style.display = 'none';
-      document.getElementById('resetPasswordForm').style.display = 'block';
-      document.getElementById('resetError').style.display = 'none';
-      document.getElementById('resetSuccess').style.display = 'none';
-      document.getElementById('resetEmail').value = document.getElementById('loginEmail').value || '';
-    });
-    document.getElementById('backToLogin').addEventListener('click', (e) => {
-      e.preventDefault();
-      document.getElementById('resetPasswordForm').style.display = 'none';
-      document.getElementById('loginForm').style.display = 'block';
-    });
+    // パスワードリセット表示（要素がある場合のみリスナー登録）
+    const showResetEl = document.getElementById('showResetPassword');
+    if (showResetEl) {
+      showResetEl.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('resetPasswordForm').style.display = 'block';
+        document.getElementById('resetError').style.display = 'none';
+        document.getElementById('resetSuccess').style.display = 'none';
+        document.getElementById('resetEmail').value = document.getElementById('loginEmail').value || '';
+      });
+    }
+    const backToLoginEl = document.getElementById('backToLogin');
+    if (backToLoginEl) {
+      backToLoginEl.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('resetPasswordForm').style.display = 'none';
+        document.getElementById('loginForm').style.display = 'block';
+      });
+    }
 
     // パスワードリセット送信
     document.getElementById('resetBtn').addEventListener('click', async () => {
