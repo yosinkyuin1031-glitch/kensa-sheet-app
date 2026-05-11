@@ -49,7 +49,7 @@ const BodyDiagram = {
   _reserveBox(x, y, w, h, opts) {
     opts = opts || {};
     const axis = opts.axis || 'y';
-    const pad = (opts.padding != null) ? opts.padding : 1.5;
+    const pad = (opts.padding != null) ? opts.padding : 3;
     let bx = x, by = y;
     let attempts = 0;
     const maxAttempts = 40;
@@ -399,7 +399,7 @@ const BodyDiagram = {
       // 左ラベル: ドットの左外側に配置
       const lDesiredX = pos.leftX - 22 - labelW;
       const lDesiredY = leftY - labelH / 2;
-      const lBox = this._reserveBox(lDesiredX, lDesiredY, labelW, labelH, { axis: 'xy', padding: 1.5 });
+      const lBox = this._reserveBox(lDesiredX, lDesiredY, labelW, labelH, { axis: 'xy', padding: 3 });
       // リーダー線（短く・薄く）
       landmarkLayer.appendChild(this._createSVGEl('line', {
         x1: pos.leftX - 8, y1: leftY,
@@ -569,9 +569,9 @@ const BodyDiagram = {
       const stretchXBase = compSide === 'left' ? 195 : 105;
       const stretchLabel = compSide === 'left' ? '右' : '左';
 
-      // バッジを衝突回避で配置（小型化）
+      // バッジを衝突回避で配置（小型化・padding強化）
       const badgeW = 32, badgeH = 18;
-      const compBox = this._reserveBox(compXBase - badgeW / 2, midY - badgeH / 2, badgeW, badgeH, { axis: 'xy', padding: 2 });
+      const compBox = this._reserveBox(compXBase - badgeW / 2, midY - badgeH / 2, badgeW, badgeH, { axis: 'xy', padding: 4 });
       indicatorLayer.appendChild(this._createSVGEl('rect', {
         x: compBox.x, y: compBox.y, width: badgeW, height: badgeH,
         rx: 6, fill: '#ef4444', opacity: 0.92
@@ -581,7 +581,7 @@ const BodyDiagram = {
         'font-size': 10, fill: 'white', 'font-weight': 800
       }, `${compLabel}詰`));
 
-      const stretchBox = this._reserveBox(stretchXBase - badgeW / 2, midY - badgeH / 2, badgeW, badgeH, { axis: 'xy', padding: 2 });
+      const stretchBox = this._reserveBox(stretchXBase - badgeW / 2, midY - badgeH / 2, badgeW, badgeH, { axis: 'xy', padding: 4 });
       indicatorLayer.appendChild(this._createSVGEl('rect', {
         x: stretchBox.x, y: stretchBox.y, width: badgeW, height: badgeH,
         rx: 6, fill: '#8b5cf6', opacity: 0.88
@@ -971,36 +971,37 @@ const BodyDiagram = {
 
   // ===== 解剖ラベルをドットの近くに配置（衝突回避） =====
   // ドットの左外側を第一候補、ダメなら少し離れた候補位置を順に試す
+  // 立位ラベル(乳様突起・肩甲下角・腸骨稜)と詳細ラベルは同じ濃さ・サイズで統一
   _placeAnatomicalLabel(layer, pos, leftY, isStanding) {
     const label = pos.label;
-    const fontSize = isStanding ? 8 : 9;
-    const charW = isStanding ? 7.2 : 8.5;
+    const fontSize = 9;
+    const charW = 8.5;
     const labelW = label.length * charW + 4;
     const labelH = fontSize + 4;
-    const fill = isStanding ? '#94a3b8' : '#475569';
+    const fill = '#475569'; // 全ラベル共通の濃さ
 
     // 候補位置（優先順）：左ドットの左外側 → 上 → 下、それでもダメなら左マージン
     const dotX = pos.leftX, dotY = leftY;
     const offsets = [
-      { x: dotX - 12 - labelW, y: dotY - labelH / 2 },         // 左外側（同じ高さ）
-      { x: dotX - 10 - labelW, y: dotY - labelH - 4 },          // 左上
-      { x: dotX - 10 - labelW, y: dotY + 4 },                    // 左下
-      { x: dotX + 14, y: dotY - labelH / 2 - 14 },               // 右上（左ドットの右）※ただし右ドットには近づきすぎない
+      { x: dotX - 16 - labelW, y: dotY - labelH / 2 },         // 左外側（同じ高さ）
+      { x: dotX - 14 - labelW, y: dotY - labelH - 6 },          // 左上
+      { x: dotX - 14 - labelW, y: dotY + 6 },                    // 左下
+      { x: dotX - 20 - labelW, y: dotY - labelH / 2 },          // さらに左外側
     ];
 
     let placed = null;
     for (const o of offsets) {
       // 試しに置いてみる（衝突なし限定）
-      const collision = this._placedBoxes.find(b => this._overlaps(o.x, o.y, labelW, labelH, b, 1.5));
+      const collision = this._placedBoxes.find(b => this._overlaps(o.x, o.y, labelW, labelH, b, 4));
       if (!collision) {
         placed = { x: o.x, y: o.y, w: labelW, h: labelH };
         this._placedBoxes.push(placed);
         break;
       }
     }
-    // すべてダメ → 左マージンに落とす（衝突回避でY調整）
+    // すべてダメ → 左マージンに落とす（衝突回避でY調整・padding強化）
     if (!placed) {
-      placed = this._reserveBox(-32, dotY - labelH / 2, labelW, labelH, { axis: 'y', padding: 1.5 });
+      placed = this._reserveBox(-36, dotY - labelH / 2, labelW, labelH, { axis: 'y', padding: 4 });
     }
 
     // リーダー線（短く・薄く）
@@ -1026,25 +1027,26 @@ const BodyDiagram = {
     const posMap = this.unifiedPositions;
 
     // 各区間のインジケーター位置と対応パーツ
+    // ※ 上腕・前腕は腕の外側にバッジを置く（手首ドット・茎状突起ラベルと衝突回避）
     const segmentConfig = {
       0: { // 肩峰→肘頭 = 上腕
-        leftX: 65, rightX: 235,
+        leftX: 30, rightX: 270, midYAdjust: -8,
         parts: { left: ['upperArm-l'], right: ['upperArm-r'] }
       },
-      1: { // 肘頭→茎状突起 = 前腕
-        leftX: 48, rightX: 252,
+      1: { // 肘頭→茎状突起 = 前腕（手首ドットと衝突するため腕のさらに外側へ）
+        leftX: 18, rightX: 282, midYAdjust: 0,
         parts: { left: ['forearm-l', 'hand-l'], right: ['forearm-r', 'hand-r'] }
       },
       2: { // 茎状突起→大転子 = 体幹
-        leftX: 115, rightX: 185,
+        leftX: 90, rightX: 210, midYAdjust: 0,
         parts: { left: [], right: [] }
       },
       3: { // 大転子→膝蓋骨 = 太もも
-        leftX: 80, rightX: 220,
+        leftX: 70, rightX: 230, midYAdjust: 0,
         parts: { left: ['thigh-l'], right: ['thigh-r'] }
       },
       4: { // 膝蓋骨→外果 = すね
-        leftX: 78, rightX: 222,
+        leftX: 68, rightX: 232, midYAdjust: 0,
         parts: { left: ['shin-l'], right: ['shin-r'] }
       }
     };
@@ -1067,7 +1069,7 @@ const BodyDiagram = {
       const cfg = segmentConfig[i];
       const posA = posMap[keyA];
       const posB = posMap[keyB];
-      const rawMidY = (posA.baseY + posB.baseY) / 2;
+      const rawMidY = (posA.baseY + posB.baseY) / 2 + (cfg.midYAdjust || 0);
 
       const compSide = leftCompressed ? 'left' : 'right';
       const compX = compSide === 'left' ? cfg.leftX : cfg.rightX;
@@ -1082,9 +1084,9 @@ const BodyDiagram = {
       contractedParts.forEach(p => this._highlightPart(svg, p, 'rgba(239,68,68,0.30)'));
       tensionedParts.forEach(p => this._highlightPart(svg, p, 'rgba(168,85,247,0.22)'));
 
-      // バッジを衝突回避で配置（小型化＋xy方向に逃げる）
+      // バッジを衝突回避で配置（小型化＋xy方向に逃げる・padding強化）
       const badgeW = 36, badgeH = 17;
-      const compBox = this._reserveBox(compX - badgeW / 2, rawMidY - badgeH / 2, badgeW, badgeH, { axis: 'xy', padding: 2 });
+      const compBox = this._reserveBox(compX - badgeW / 2, rawMidY - badgeH / 2, badgeW, badgeH, { axis: 'xy', padding: 4 });
       indicatorLayer.appendChild(this._createSVGEl('rect', {
         x: compBox.x, y: compBox.y, width: badgeW, height: badgeH,
         rx: 5, fill: '#ef4444', opacity: 0.92
@@ -1094,7 +1096,7 @@ const BodyDiagram = {
         'font-size': 9, fill: 'white', 'font-weight': 800
       }, `${compLabel}縮`));
 
-      const stretchBox = this._reserveBox(stretchX - badgeW / 2, rawMidY - badgeH / 2, badgeW, badgeH, { axis: 'xy', padding: 2 });
+      const stretchBox = this._reserveBox(stretchX - badgeW / 2, rawMidY - badgeH / 2, badgeW, badgeH, { axis: 'xy', padding: 4 });
       indicatorLayer.appendChild(this._createSVGEl('rect', {
         x: stretchBox.x, y: stretchBox.y, width: badgeW, height: badgeH,
         rx: 5, fill: '#8b5cf6', opacity: 0.88
@@ -1192,12 +1194,13 @@ const BodyDiagram = {
       greaterTrochanter: 278 // 大転子
     };
 
-    // 4区間の定義
+    // 4区間の定義（バッジは外側に十分余裕を持って配置）
+    // 各区間のmidYも上下にズラして縦方向の衝突を回避
     const segments = [
-      { upper: 'mastoid', lower: 'acromion', valA: mastVal, valB: acromVal, area: '乳様突起〜肩峰', leftX: 110, rightX: 190 },
-      { upper: 'acromion', lower: 'scapulaInferior', valA: acromVal, valB: scapVal, area: '肩峰〜肩甲下角', leftX: 95, rightX: 205 },
-      { upper: 'scapulaInferior', lower: 'iliacCrest', valA: scapVal, valB: iliacVal, area: '肩甲下角〜腸骨稜', leftX: 100, rightX: 200 },
-      { upper: 'iliacCrest', lower: 'greaterTrochanter', valA: iliacVal, valB: gtVal, area: '腸骨稜〜大転子', leftX: 110, rightX: 190 }
+      { upper: 'mastoid', lower: 'acromion', valA: mastVal, valB: acromVal, area: '乳様突起〜肩峰', leftX: 60, rightX: 240, midYAdjust: -4 },
+      { upper: 'acromion', lower: 'scapulaInferior', valA: acromVal, valB: scapVal, area: '肩峰〜肩甲下角', leftX: 70, rightX: 230, midYAdjust: 0 },
+      { upper: 'scapulaInferior', lower: 'iliacCrest', valA: scapVal, valB: iliacVal, area: '肩甲下角〜腸骨稜', leftX: 70, rightX: 230, midYAdjust: 0 },
+      { upper: 'iliacCrest', lower: 'greaterTrochanter', valA: iliacVal, valB: gtVal, area: '腸骨稜〜大転子', leftX: 82, rightX: 218, midYAdjust: 6 }
     ];
 
     for (const seg of segments) {
@@ -1211,15 +1214,15 @@ const BodyDiagram = {
       const rightCompressed = (seg.valA === -1 && seg.valB === 1);
       if (!leftCompressed && !rightCompressed) continue;
 
-      const rawMidY = (posY[seg.upper] + posY[seg.lower]) / 2;
+      const rawMidY = (posY[seg.upper] + posY[seg.lower]) / 2 + (seg.midYAdjust || 0);
       const compSide = leftCompressed ? '左' : '右';
       const stretchSide = leftCompressed ? '右' : '左';
       const compX = leftCompressed ? seg.leftX : seg.rightX;
       const stretchX = leftCompressed ? seg.rightX : seg.leftX;
 
-      // バッジ配置（bbox衝突回避・xy両方向に逃げる）
+      // バッジ配置（bbox衝突回避・xy両方向に逃げる・padding強化）
       const bW = 32, bH = 16;
-      const compBox = this._reserveBox(compX - bW / 2, rawMidY - bH / 2, bW, bH, { axis: 'xy', padding: 2 });
+      const compBox = this._reserveBox(compX - bW / 2, rawMidY - bH / 2, bW, bH, { axis: 'xy', padding: 4 });
       indicatorLayer.appendChild(this._createSVGEl('rect', {
         x: compBox.x, y: compBox.y, width: bW, height: bH,
         rx: 5, fill: '#ef4444', opacity: 0.92
@@ -1229,7 +1232,7 @@ const BodyDiagram = {
         'font-size': 9, fill: 'white', 'font-weight': 800
       }, `${compSide}縮`));
 
-      const stretchBox = this._reserveBox(stretchX - bW / 2, rawMidY - bH / 2, bW, bH, { axis: 'xy', padding: 2 });
+      const stretchBox = this._reserveBox(stretchX - bW / 2, rawMidY - bH / 2, bW, bH, { axis: 'xy', padding: 4 });
       indicatorLayer.appendChild(this._createSVGEl('rect', {
         x: stretchBox.x, y: stretchBox.y, width: bW, height: bH,
         rx: 5, fill: '#8b5cf6', opacity: 0.88
