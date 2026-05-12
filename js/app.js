@@ -765,6 +765,9 @@
   async function selectPatient(patientId, patientName) {
     selectedPatientId = patientId;
     document.getElementById('patientName').value = patientName;
+    // 患者選択で氏名が programmatically 入ったときは input イベントが発火しないので
+    // 次へボタンの活性状態を明示更新する
+    updateNextButtonState();
 
     const history = await Storage.getHistoryByPatient(patientId);
     const examCountDiv = document.getElementById('patientExamCount');
