@@ -2269,10 +2269,12 @@
     let html = '';
 
     // 全身統合人体図（診断結果画面上部に表示）
-    // テスト実装: リアル人体画像＋オーバーレイ方式（RealisticBodyDiagram）
+    // 施術者モード: リアル人体画像（写真）/ 患者モード: SVGイラスト
+    const realStyle = isPatient ? 'display:none;' : '';
+    const svgStyle  = isPatient ? '' : 'display:none;';
     html += `<div class="body-diagram-wrapper unified-diagram-wrapper realistic-body-wrapper">
-      <div class="realistic-body-container" id="realistic-diagnosis-body"></div>
-      <div class="body-diagram-container" id="diagram-diagnosis-body" style="display:none;"></div>
+      <div class="realistic-body-container" id="realistic-diagnosis-body" style="${realStyle}"></div>
+      <div class="body-diagram-container" id="diagram-diagnosis-body" style="${svgStyle}"></div>
     </div>`;
 
     // メイン診断（両モード共通）
