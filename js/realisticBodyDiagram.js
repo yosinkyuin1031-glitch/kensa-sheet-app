@@ -35,7 +35,8 @@ const RealisticBodyDiagram = {
       // ※ データキーは互換性のため scapulaInferior のまま。表示は「肩甲棘」。
       scapulaInferior: { left: { x: 48.0, y: 27.5 }, right: { x: 63.0, y: 27.5 }, label: '肩甲棘' },
       // 腸骨稜：骨盤上端、脊柱から外側 (y=525 → 50.4%)
-      iliacCrest:      { left: { x: 48.5, y: 50.5 }, right: { x: 62.5, y: 50.5 }, label: '腸骨稜' }
+      // 大転子と縦が近いため、腸骨稜は若干上に分散
+      iliacCrest:      { left: { x: 48.5, y: 49.0 }, right: { x: 62.5, y: 49.0 }, label: '腸骨稜' }
     },
     upper: {
       // 肩峰：肩の最外側 (y=250 → 24.0%, 左右 37.6%/73.4%)
@@ -47,7 +48,8 @@ const RealisticBodyDiagram = {
     },
     lower: {
       // 大転子：腰最外側 (y=560 → 53.8%, 左右 33.9%/76.8%)
-      greaterTrochanter: { left: { x: 34.0, y: 53.8 }, right: { x: 76.5, y: 53.8 }, label: '大転子' },
+      // 腸骨稜と縦位置が近いため、大転子はやや下＋外側寄せで分散
+      greaterTrochanter: { left: { x: 32.5, y: 55.0 }, right: { x: 78.0, y: 55.0 }, label: '大転子' },
       // 膝蓋骨上端：脚中央 (y=740 → 71.1%、左右の脚中心 46.9%/63.0%)
       patellaUpper:      { left: { x: 46.9, y: 71.0 }, right: { x: 63.0, y: 71.0 }, label: '膝蓋骨上端' },
       // 外果：足首外側 (y=920 → 88.4%、各脚最外 44.6%/64.9%)
@@ -125,19 +127,83 @@ const RealisticBodyDiagram = {
     lineSvg.setAttribute('preserveAspectRatio', 'none');
     stage.appendChild(lineSvg);
 
-    // ラベルY配置の重複回避（左外/右外それぞれ管理）
+    // ===== 衝突回避用：配置済みアイテムのbboxを保持 =====
+    // bbox = { x, y, w, h }  (画像サイズに対する%基準・中心点x,yに対する幅高)
+    const placed = { left: [], right: [], center: [] };
+    // 既配置のラベル(stageWrap側) のY範囲も別途記録（左/右）
     const labelGuard = { left: [], right: [] };
-    const reserveY = (side, y) => {
+
+    // 中央線（左右の分離境界）：解剖学的に体の中心 ≒ 55.5%
+    const CENTER_LINE = 55.5;
+
+    // bbox重なり判定
+    const overlaps = (a, b) => {
+      return Math.abs(a.x - b.x) * 2 < (a.w + b.w) &&
+             Math.abs(a.y - b.y) * 2 < (a.h + b.h);
+    };
+
+    // side: 'left'|'right'|'center' に対し、初期(x,y,w,h)から衝突を避けて
+    // 縦方向±に最大4回（5%ずつ）、ダメなら横方向±に最大2回（5%ずつ）逃がす
+    // side='left' は左側方向（xを減らす）、'right' は右側方向（xを増やす）に逃がす
+    const placeNoOverlap = (side, x, y, w, h, opts) => {
+      opts = opts || {};
+      const minX = opts.minX != null ? opts.minX : 1.5;
+      const maxX = opts.maxX != null ? opts.maxX : 98.5;
+      const list = placed[side] || placed.center;
+      const candidates = [];
+      // 縦オフセット候補（中心優先、上下交互）
+      const yOffsets = [0, 5, -5, 10, -10, 15, -15, 20];
+      // 横オフセット候補（外側方向への逃がし）
+      const xDir = side === 'left' ? -1 : (side === 'right' ? 1 : 0);
+      const xOffsets = [0, 5 * xDir, 10 * xDir];
+      for (const xo of xOffsets) {
+        for (const yo of yOffsets) {
+          const cx = Math.max(minX, Math.min(maxX, x + xo));
+          const cy = y + yo;
+          candidates.push({ x: cx, y: cy, w, h });
+        }
+      }
+      // 中央分離も尊重：side==='left' は CENTER_LINE 以下、'right' は CENTER_LINE 以上に
+      for (const c of candidates) {
+        if (side === 'left' && c.x + c.w / 2 > CENTER_LINE - 1) continue;
+        if (side === 'right' && c.x - c.w / 2 < CENTER_LINE + 1) continue;
+        let collide = false;
+        // 全sideのbboxとチェック（バッジ同士が左右で被ることはほぼ無いが念のため全件）
+        const all = [...placed.left, ...placed.right, ...placed.center];
+        for (const b of all) {
+          if (overlaps(c, b)) { collide = true; break; }
+        }
+        if (!collide) {
+          list.push(c);
+          return c;
+        }
+      }
+      // どこも空かなければ最後の候補（最大ずれ位置）を採用
+      const fallback = candidates[candidates.length - 1];
+      list.push(fallback);
+      return fallback;
+    };
+
+    // 解剖ラベルY重複回避（左外/右外、stageWrap基準）
+    const reserveLabelY = (side, y) => {
       const list = labelGuard[side];
-      const minGap = 3.2; // %
+      const minGap = 5.0; // %（3.2 → 5.0 に強化）
       let yy = y;
-      let safety = 50;
+      let safety = 60;
       while (safety-- > 0 && list.some(v => Math.abs(v - yy) < minGap)) {
         yy += minGap;
       }
       list.push(yy);
       return yy;
     };
+
+    // バッジの想定サイズ（%基準・概算）
+    // フォント10px / 4文字「左縮」相当 → 横 約 8% / 縦 約 3.5%
+    const BADGE_W = 8.0;
+    const BADGE_H = 3.8;
+    // ドット/矢印のサイズ
+    const DOT_W = 2.0, DOT_H = 2.0;
+    const ARROW_W = 2.5, ARROW_H = 3.0;
 
     // 各ランドマークを描画
     for (const { map, data } of allMaps) {
@@ -149,8 +215,6 @@ const RealisticBodyDiagram = {
         const rY = pos.right.y + this._rightYShift(val);
 
         // 短縮側=低い側 = 「下」になっている方
-        // val=-1: 左が高い → 右が低い → 右が短縮
-        // val=+1: 右が高い → 左が低い → 左が短縮
         let shortSide = null; // 'left'|'right'|null
         if (val === -1) shortSide = 'right';
         else if (val === 1) shortSide = 'left';
@@ -158,7 +222,10 @@ const RealisticBodyDiagram = {
         // 荷重側決定（重心結果優先、なければ短縮側＝荷重側仮説）
         const loadSide = gravitySide && gravitySide !== 'even' ? gravitySide : shortSide;
 
-        // ===== 左右ドット =====
+        // ===== 左右ドット（衝突管理に登録） =====
+        placed.left.push({ x: pos.left.x, y: lY, w: DOT_W, h: DOT_H });
+        placed.right.push({ x: pos.right.x, y: rY, w: DOT_W, h: DOT_H });
+
         const lDot = document.createElement('div');
         lDot.className = 'rbd-marker rbd-dot ' + (loadSide === 'left' ? 'orange' : (val !== 0 ? 'blue' : 'green'));
         lDot.style.left = pos.left.x + '%';
@@ -175,7 +242,9 @@ const RealisticBodyDiagram = {
 
         // ===== 矢印（短縮=下向き赤、伸長=上向き青） =====
         if (val !== 0) {
-          // 左側矢印（ドット上）
+          placed.left.push({ x: pos.left.x, y: lY - 2.4, w: ARROW_W, h: ARROW_H });
+          placed.right.push({ x: pos.right.x, y: rY - 2.4, w: ARROW_W, h: ARROW_H });
+
           const lArrow = document.createElement('div');
           const lShort = (shortSide === 'left');
           lArrow.className = 'rbd-marker rbd-arrow ' + (lShort ? 'down red' : 'up blue');
@@ -193,34 +262,45 @@ const RealisticBodyDiagram = {
           stage.appendChild(rArrow);
         }
 
-        // ===== 状態バッジ（外側に配置・体に被らない） =====
-        // 短縮側＝赤バッジ「左縮/右縮」、伸長側＝紫バッジ「左伸/右伸」
-        // 旧実装は中央側 (体内側) に配置していたが、画像のラベル領域に被るため
-        // ドットの「外側方向」に配置する仕様へ変更。
+        // ===== 状態バッジ（外側に配置・衝突回避強化） =====
         if (val !== 0) {
-          // 左ドットの外側 = 画像の左方向 (xを減らす)
-          const lBadge = document.createElement('div');
           const lIsShort = (shortSide === 'left');
+          const rIsShort = (shortSide === 'right');
+
+          // 左バッジ：ドット位置から外側（左方向）に約 9% 離した位置を起点に
+          // 衝突があれば縦上下→横方向と逃がす
+          const lStartX = Math.max(BADGE_W / 2 + 1, pos.left.x - 9);
+          const lStartY = lY + 3.2;
+          // 中央線（CENTER_LINE）を跨がない & 画像外に出ない
+          const lPos = placeNoOverlap('left', lStartX, lStartY, BADGE_W, BADGE_H, {
+            minX: BADGE_W / 2 + 1,
+            maxX: Math.min(CENTER_LINE - BADGE_W / 2 - 1, pos.left.x - 2)
+          });
+          const lBadge = document.createElement('div');
           lBadge.className = 'rbd-marker rbd-badge ' + (lIsShort ? 'red' : 'purple');
           lBadge.textContent = '左' + (lIsShort ? '縮' : '伸');
-          // ドットの外側（左方向）に逃がす
-          lBadge.style.left = Math.max(2, pos.left.x - 7) + '%';
-          lBadge.style.top  = (lY + 3.2) + '%';
+          lBadge.style.left = lPos.x + '%';
+          lBadge.style.top  = lPos.y + '%';
           stage.appendChild(lBadge);
 
-          // 右ドットの外側 = 画像の右方向 (xを増やす)
+          // 右バッジ：ドット位置から外側（右方向）に約 9% 離した位置を起点に
+          const rStartX = Math.min(99 - BADGE_W / 2, pos.right.x + 9);
+          const rStartY = rY + 3.2;
+          const rPos = placeNoOverlap('right', rStartX, rStartY, BADGE_W, BADGE_H, {
+            minX: Math.max(CENTER_LINE + BADGE_W / 2 + 1, pos.right.x + 2),
+            maxX: 99 - BADGE_W / 2
+          });
           const rBadge = document.createElement('div');
-          const rIsShort = (shortSide === 'right');
           rBadge.className = 'rbd-marker rbd-badge ' + (rIsShort ? 'red' : 'purple');
           rBadge.textContent = '右' + (rIsShort ? '縮' : '伸');
-          rBadge.style.left = Math.min(98, pos.right.x + 7) + '%';
-          rBadge.style.top  = (rY + 3.2) + '%';
+          rBadge.style.left = rPos.x + '%';
+          rBadge.style.top  = rPos.y + '%';
           stage.appendChild(rBadge);
         }
 
         // ===== 解剖ラベル（左外側 / 右外側、stageWrap直下に配置） =====
-        const lLabelY = reserveY('left',  lY);
-        const rLabelY = reserveY('right', rY);
+        const lLabelY = reserveLabelY('left',  lY);
+        const rLabelY = reserveLabelY('right', rY);
 
         const lLabel = document.createElement('div');
         lLabel.className = 'rbd-label rbd-label-left';
@@ -235,7 +315,6 @@ const RealisticBodyDiagram = {
         stageWrap.appendChild(rLabel);
 
         // ===== リーダー線（点線・SVG） =====
-        // 左ラベル中央(0%)→ドット位置
         const lLine = document.createElementNS(NS, 'line');
         lLine.setAttribute('x1', '0');
         lLine.setAttribute('y1', String(lLabelY));
