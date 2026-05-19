@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>カラダマップ - 3分で、体の"いま"を見える化</title>
-  <link rel="stylesheet" href="css/style.css?v=20260430d">
+  <link rel="stylesheet" href="css/style.css?v=20260430e">
   <script>
     // Service Worker強制リセット（古いキャッシュを自動削除）
     if ('serviceWorker' in navigator) {
@@ -804,6 +804,7 @@
       <div class="custom-modal-tabs">
         <button class="custom-modal-tab active" data-custom-tab="selfcare">セルフケア</button>
         <button class="custom-modal-tab" data-custom-tab="protocol">施術プロトコル</button>
+        <button class="custom-modal-tab" data-custom-tab="display">表示設定</button>
       </div>
       <div id="customSelfcarePanel" class="custom-modal-panel">
         <button type="button" id="addCustomSelfcare" class="btn btn-sm btn-primary" style="margin-bottom:12px;">新規追加</button>
@@ -814,6 +815,28 @@
         <button type="button" id="addCustomProtocol" class="btn btn-sm btn-primary" style="margin-bottom:12px;">新規追加</button>
         <div id="customProtocolList"></div>
         <div id="protocolFormArea"></div>
+      </div>
+      <div id="customDisplayPanel" class="custom-modal-panel" style="display:none;">
+        <div class="display-setting-section">
+          <h3 style="font-size:14px;margin:0 0 8px;">ランドマーク表記</h3>
+          <p style="font-size:12px;color:#666;margin:0 0 10px;line-height:1.5;">
+            ランドマーク検査ボタンの表示を切り替えます。<br>
+            患者を下から見る施術者は「低い側を選ぶ」が直感的です。<br>
+            <span style="color:#888;">※ 検査データそのものは変わりません</span>
+          </p>
+          <div class="display-setting-options">
+            <label class="display-setting-radio">
+              <input type="radio" name="landmarkDisplayMode" value="high" checked>
+              <span>高い側を選ぶ（デフォルト）</span>
+              <small>例：← 左が高い / 右が高い →</small>
+            </label>
+            <label class="display-setting-radio">
+              <input type="radio" name="landmarkDisplayMode" value="low">
+              <span>低い側を選ぶ</span>
+              <small>例：← 左が低い / 右が低い →</small>
+            </label>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -895,7 +918,7 @@
   <script src="js/selfcare.js?v=20260430a"></script>
   <script src="js/storage.js?v=20260430a"></script>
   <script src="js/pdf.js?v=20260430a"></script>
-  <script src="js/app.js?v=20260430b"></script>
+  <script src="js/app.js?v=20260430c"></script>
   <script>
     // フォールバック：app.jsでエラーが出た場合のログイン処理
     window.addEventListener('load', function() {

@@ -204,6 +204,7 @@
     setDefaultDate();
     await refreshHistory();
     initDiagrams();
+    applyLandmarkDisplayMode();
     registerServiceWorker();
     showTutorialIfNeeded();
     } catch(e) {
@@ -4699,6 +4700,36 @@
   }
 
   // ===== DOM準備完了時に認証初期化 =====
+  // ===== ランドマーク表記モード（high/low切替） =====
+  const LANDMARK_DISPLAY_KEY = 'landmark_display_mode';
+  function getLandmarkDisplayMode() {
+    try {
+      const v = localStorage.getItem(LANDMARK_DISPLAY_KEY);
+      return v === 'low' ? 'low' : 'high';
+    } catch (e) {
+      return 'high';
+    }
+  }
+  function setLandmarkDisplayMode(mode) {
+    const safe = mode === 'low' ? 'low' : 'high';
+    try { localStorage.setItem(LANDMARK_DISPLAY_KEY, safe); } catch (e) {}
+  }
+  function applyLandmarkDisplayMode() {
+    const mode = getLandmarkDisplayMode();
+    const leftText = mode === 'low' ? '← 左が低い' : '← 左が高い';
+    const rightText = mode === 'low' ? '右が低い →' : '右が高い →';
+    document.querySelectorAll('.landmark-btn[data-value="-1"]').forEach(btn => {
+      btn.textContent = leftText;
+    });
+    document.querySelectorAll('.landmark-btn[data-value="1"]').forEach(btn => {
+      btn.textContent = rightText;
+    });
+  }
+  // グローバル公開（デバッグ・他スクリプトからの参照用）
+  window.getLandmarkDisplayMode = getLandmarkDisplayMode;
+  window.setLandmarkDisplayMode = setLandmarkDisplayMode;
+  window.applyLandmarkDisplayMode = applyLandmarkDisplayMode;
+
   // ===== カスタム設定モーダル =====
   function setupCustomSettingsModal() {
     const settingsBtn = document.getElementById('settingsBtn');
@@ -4708,6 +4739,12 @@
     settingsBtn.addEventListener('click', () => {
       modal.style.display = 'flex';
       renderCustomLists();
+      // 表示設定の現在値をUIに反映
+      try {
+        const mode = getLandmarkDisplayMode();
+        const radio = modal.querySelector(`input[name="landmarkDisplayMode"][value="${mode}"]`);
+        if (radio) radio.checked = true;
+      } catch (e) {}
     });
 
     document.getElementById('closeCustomModal').addEventListener('click', () => {
@@ -4722,6 +4759,8 @@
         const target = tab.dataset.customTab;
         document.getElementById('customSelfcarePanel').style.display = target === 'selfcare' ? 'block' : 'none';
         document.getElementById('customProtocolPanel').style.display = target === 'protocol' ? 'block' : 'none';
+        const displayPanel = document.getElementById('customDisplayPanel');
+        if (displayPanel) displayPanel.style.display = target === 'display' ? 'block' : 'none';
         // タブ切り替え時にフォームをクリア
         document.getElementById('selfcareFormArea').innerHTML = '';
         document.getElementById('protocolFormArea').innerHTML = '';
@@ -4731,6 +4770,15 @@
     // 追加ボタン
     document.getElementById('addCustomSelfcare').addEventListener('click', () => showSelfcareForm());
     document.getElementById('addCustomProtocol').addEventListener('click', () => showProtocolForm());
+
+    // ランドマーク表記モード切替
+    modal.querySelectorAll('input[name="landmarkDisplayMode"]').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        if (!e.target.checked) return;
+        setLandmarkDisplayMode(e.target.value);
+        applyLandmarkDisplayMode();
+      });
+    });
   }
 
   const AREA_KEYS = ['首〜肩','肩〜腕','前腕〜手首','股関節〜太もも','太もも〜膝','すね〜足首','足裏','体幹'];

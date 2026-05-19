@@ -4959,3 +4959,47 @@ input.age-input:focus {
 .posture-legend-dot.nonwb { background: #3b82f6; }
 .posture-legend-dot.neutral { background: #94a3b8; }
 .posture-legend-strong { font-weight: 700; }
+
+/* 表示設定パネル（ランドマーク表記モード切替） */
+.display-setting-section {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.display-setting-options {
+  display: flex; flex-direction: column; gap: 10px;
+}
+.display-setting-radio {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.display-setting-radio:hover {
+  border-color: #2563eb;
+  background: #f0f6ff;
+}
+.display-setting-radio input[type="radio"] {
+  margin-right: 6px;
+}
+.display-setting-radio span {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+}
+.display-setting-radio small {
+  display: block;
+  font-size: 11px;
+  color: #6b7280;
+  margin-left: 22px;
+}
+.display-setting-radio:has(input[type="radio"]:checked) {
+  border-color: #2563eb;
+  background: #eff6ff;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
