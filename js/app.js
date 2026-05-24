@@ -1712,10 +1712,30 @@
     return path;
   }
 
-  // 統合結果セクション廃止に伴い no-op（後方互換のため関数自体は残す）
-  // 後面写真の撮影機能と Supabase Storage アップロードは維持
+  // 結果ページに撮影写真（後面・側面）を表示
   function updateIntegratedPhoto() {
-    // 統合結果UIは廃止。何もしない。
+    const section = document.getElementById('resultPhotosSection');
+    const grid = document.getElementById('resultPhotosGrid');
+    if (!section || !grid) return;
+
+    const items = [
+      { view: 'back', label: '後面' },
+      { view: 'side', label: '側面' },
+    ].filter(it => patientPhotos[it.view]);
+
+    if (items.length === 0) {
+      section.style.display = 'none';
+      grid.innerHTML = '';
+      return;
+    }
+
+    grid.innerHTML = items.map(it => `
+      <figure class="result-photo-item">
+        <img src="${patientPhotos[it.view]}" alt="${it.label}">
+        <figcaption>${it.label}</figcaption>
+      </figure>
+    `).join('');
+    section.style.display = 'block';
   }
 
   // ===== 座位検査：比較結果 =====
@@ -2429,6 +2449,9 @@
     // 患者待機カードを非表示
     const waitCard = document.getElementById('patientWaiting');
     if (waitCard) waitCard.style.display = 'none';
+
+    // 結果ページに撮影写真を表示
+    updateIntegratedPhoto();
   }
 
   // ===== 前回比較セクション =====

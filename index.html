@@ -268,7 +268,7 @@
         <div class="step-instruction">
           <div class="instruction-icon">📷</div>
           <h3>写真撮影（任意）</h3>
-          <p>正面・後面・側面の3アングルで撮影します。スキップも可能です。</p>
+          <p>後面・側面の2アングルで撮影します。スキップも可能です。</p>
         </div>
 
         <div class="form-card">
@@ -284,17 +284,6 @@
           </div>
 
           <div class="photo-slots" id="photoSlots">
-            <div class="photo-slot" data-view="front">
-              <div class="photo-placeholder">
-                <div class="photo-icon">🧍</div>
-                <div class="photo-label">正面</div>
-              </div>
-              <img class="photo-preview" alt="正面" style="display:none;">
-              <div class="photo-actions">
-                <button type="button" class="btn btn-sm btn-primary photo-camera-btn" data-view="front">カメラ起動</button>
-                <button type="button" class="btn btn-sm btn-danger photo-remove-btn" data-view="front" style="display:none;">削除</button>
-              </div>
-            </div>
             <div class="photo-slot" data-view="back">
               <div class="photo-placeholder">
                 <div class="photo-icon">🧍‍♂️</div>
@@ -692,8 +681,13 @@
         </div>
       </div>
 
-      <!-- [3] 統合結果セクションは削除済み（後面図SVG・統合所見・後面写真表示はすべて廃止） -->
-      <!-- 後面写真は撮影機能のみ維持（patient_photos_storage への保存）。表示UIは患者カルテ側のみ。 -->
+      <!-- [3] 撮影写真（結果ページに表示） -->
+      <div id="resultPhotosSection" style="display:none;">
+        <div class="form-card">
+          <h3 class="card-title">📷 撮影写真</h3>
+          <div class="result-photos-grid" id="resultPhotosGrid"></div>
+        </div>
+      </div>
 
       <!-- 詳細検査セクション（立位で入力済みのため非表示、JS互換用に残す） -->
       <div id="detailedExamSection" style="display:none;"></div>
