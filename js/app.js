@@ -2316,8 +2316,8 @@
     const realStyle = useRealistic ? '' : 'display:none;';
     const svgStyle  = useRealistic ? 'display:none;' : '';
     html += `<div class="body-figure-toggle" id="bodyFigureToggle" style="display:flex;gap:6px;justify-content:center;margin:4px 0 8px;">
-      <button type="button" data-figure="realistic" class="figure-toggle-btn${useRealistic?' active':''}" style="padding:6px 14px;border:1px solid #cbd5e1;background:${useRealistic?'#3b82f6':'white'};color:${useRealistic?'white':'#475569'};border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">治療家用（人体画像）</button>
-      <button type="button" data-figure="svg" class="figure-toggle-btn${!useRealistic?' active':''}" style="padding:6px 14px;border:1px solid #cbd5e1;background:${!useRealistic?'#3b82f6':'white'};color:${!useRealistic?'white':'#475569'};border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">患者様用（イラスト）</button>
+      <button type="button" data-figure="realistic" class="figure-toggle-btn${useRealistic?' active':''}" style="padding:6px 14px;border:1px solid #cbd5e1;background:${useRealistic?'#3b82f6':'white'};color:${useRealistic?'white':'#475569'};border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">患者様用（人体画像）</button>
+      <button type="button" data-figure="svg" class="figure-toggle-btn${!useRealistic?' active':''}" style="padding:6px 14px;border:1px solid #cbd5e1;background:${!useRealistic?'#3b82f6':'white'};color:${!useRealistic?'white':'#475569'};border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">治療家用（イラスト）</button>
     </div>
     <div class="body-diagram-wrapper unified-diagram-wrapper realistic-body-wrapper">
       <div class="realistic-body-container" id="realistic-diagnosis-body" style="${realStyle}"></div>
