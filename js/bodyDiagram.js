@@ -14,9 +14,9 @@ const BodyDiagram = {
       iliacCrest:      { leftX: 102, rightX: 198, baseY: 232, label: '腸骨稜' }
     },
     upperDetail: {
-      acromion:      { leftX: 78,  rightX: 222, baseY: 78, label: '肩峰' },
-      mastoidDetail: { leftX: 56,  rightX: 244, baseY: 146, label: '肘頭' },
-      radialStyloid: { leftX: 46,  rightX: 254, baseY: 224, label: '茎状突起' }
+      acromion:      { leftX: 82,  rightX: 218, baseY: 76, label: '肩峰' },
+      mastoidDetail: { leftX: 52,  rightX: 248, baseY: 150, label: '肘頭' },
+      radialStyloid: { leftX: 42,  rightX: 258, baseY: 226, label: '茎状突起' }
     },
     lowerDetail: {
       greaterTrochanter: { leftX: 116, rightX: 184, baseY: 278, label: '大転子' },
@@ -118,6 +118,10 @@ const BodyDiagram = {
         <clipPath id="${p}bodyClip">
           <rect x="0" y="0" width="300" height="580"/>
         </clipPath>
+        <!-- 収束点の赤いオーラ用フィルタ -->
+        <filter id="${p}redGlow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="4"/>
+        </filter>
       </defs>
 
       <g class="body-segments" filter="url(#${p}softShadow)">
@@ -732,9 +736,9 @@ const BodyDiagram = {
   // ===== 全身統合ダイアグラム =====
   // 上半身(肩峰・肘頭・茎状突起) + 下半身(大転子・膝蓋骨上端・外果) を1体で表示
   unifiedPositions: {
-    acromion:           { leftX: 78,  rightX: 222, baseY: 78,  label: '肩峰' },
-    mastoidDetail:      { leftX: 56,  rightX: 244, baseY: 146, label: '肘頭' },
-    radialStyloid:      { leftX: 46,  rightX: 254, baseY: 224, label: '茎状突起' },
+    acromion:           { leftX: 82,  rightX: 218, baseY: 76,  label: '肩峰' },
+    mastoidDetail:      { leftX: 52,  rightX: 248, baseY: 150, label: '肘頭' },
+    radialStyloid:      { leftX: 42,  rightX: 258, baseY: 226, label: '茎状突起' },
     greaterTrochanter:  { leftX: 116, rightX: 184, baseY: 278, label: '大転子' },
     patellaUpper:       { leftX: 118, rightX: 182, baseY: 370, label: '膝蓋骨上端' },
     lateralMalleolus:   { leftX: 112, rightX: 188, baseY: 500, label: '外果' }
@@ -1087,6 +1091,22 @@ const BodyDiagram = {
         x: stretchBox.x + badgeW / 2, y: stretchBox.y + badgeH - 5, 'text-anchor': 'middle',
         'font-size': 9, fill: 'white', 'font-weight': 800
       }, `${stretchLabel}伸`));
+
+      // === 収束点に赤いオーラ（モヤモヤ） ===
+      const zoneLayer = svg.querySelector('.zone-layer');
+      if (zoneLayer) {
+        const prefix = svg.dataset.prefix || '';
+        const auraCx = (compSide === 'left')
+          ? (posA.leftX  + posB.leftX)  / 2
+          : (posA.rightX + posB.rightX) / 2;
+        const auraCy = ((posA.baseY + (compSide === 'left' ? this._lShift(valA) : this._rShift(valA)))
+                      + (posB.baseY + (compSide === 'left' ? this._lShift(valB) : this._rShift(valB)))) / 2;
+        zoneLayer.appendChild(this._createSVGEl('circle', {
+          cx: auraCx, cy: auraCy, r: 18,
+          fill: '#ef4444', opacity: 0.55,
+          filter: `url(#${prefix}redGlow)`
+        }));
+      }
     }
   },
 
@@ -1220,6 +1240,22 @@ const BodyDiagram = {
         x: stretchBox.x + bW / 2, y: stretchBox.y + bH - 4, 'text-anchor': 'middle',
         'font-size': 9, fill: 'white', 'font-weight': 800
       }, `${stretchSide}伸`));
+
+      // === 収束点に赤いオーラ（モヤモヤ） ===
+      const zoneLayer = svg.querySelector('.zone-layer');
+      if (zoneLayer) {
+        const prefix = svg.dataset.prefix || '';
+        // 立位ペア用の左右X座標（おおよその体側位置）
+        const sideX = seg.upper === 'mastoid'
+          ? { leftX: 110, rightX: 190 }   // 乳様突起〜肩峰：首〜肩
+          : { leftX: 110, rightX: 190 };  // 肩甲下角〜腸骨稜：胴
+        const compX2 = leftCompressed ? sideX.leftX : sideX.rightX;
+        zoneLayer.appendChild(this._createSVGEl('circle', {
+          cx: compX2, cy: rawMidY, r: 20,
+          fill: '#ef4444', opacity: 0.55,
+          filter: `url(#${prefix}redGlow)`
+        }));
+      }
     }
 
     // ===== 茎状突起・外果のマーカー（手先・足先に○×） =====

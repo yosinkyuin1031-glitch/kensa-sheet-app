@@ -324,8 +324,19 @@ const RealisticBodyDiagram = {
         rDot.title = pos.label + '（右）';
         stage.appendChild(rDot);
 
-        // ※ 短縮側オーラはランドマーク単位ではなく「収束点（X-pattern）」単位で
-        //    まとめて配置する（上部のzonePairsループ参照）。ここでは何もしない。
+        // ===== 末端ランドマーク（茎状突起・外果）の下がっている側に赤いオーラ =====
+        // 手・足が下に引っ張られている側に赤いオーラを配置（縮側の表現）
+        if (val !== 0 && (key === 'radialStyloid' || key === 'lateralMalleolus')) {
+          const auraX = shortSide === 'left' ? pos.left.x : pos.right.x;
+          const auraYBase = shortSide === 'left' ? lY : rY;
+          // 末端なので少し下（手のひら・足部）にオーラを置く
+          const auraY = auraYBase + (key === 'lateralMalleolus' ? 2.5 : 5);
+          const aura = document.createElement('div');
+          aura.className = 'rbd-aura';
+          aura.style.left = auraX + '%';
+          aura.style.top  = auraY + '%';
+          stage.appendChild(aura);
+        }
 
         // ===== 矢印（短縮=下向き赤、伸長=上向き青） =====
         if (val !== 0) {

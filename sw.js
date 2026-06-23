@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bodycheck-v72-cleaner-labels';
+const CACHE_NAME = 'bodycheck-v73-joint-align-convergence-aura';
 const urlsToCache = [
   '/',
   '/index.html',
