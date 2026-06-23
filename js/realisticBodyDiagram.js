@@ -113,7 +113,7 @@ const RealisticBodyDiagram = {
     img.loading = 'eager';
     // 女性画像は元データで体が左に寄っているため、画像だけを右に平行移動して中央寄せ
     if (gender === 'female') {
-      img.style.transform = 'translateX(13%)';
+      img.style.transform = 'translateX(20%)';
     }
     stage.appendChild(img);
 
