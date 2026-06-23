@@ -680,7 +680,7 @@ const BodyDiagram = {
           mapping[contractedSide].forEach(p => this._highlightPart(svg, p, 'rgba(239,68,68,0.50)'));
         }
         if (mapping[tensionedSide]) {
-          mapping[tensionedSide].forEach(p => this._highlightPart(svg, p, 'rgba(14,165,233,0.50)'));
+          mapping[tensionedSide].forEach(p => this._highlightPart(svg, p, 'rgba(14,165,233,0.65)'));
         }
       }
 
@@ -927,7 +927,7 @@ const BodyDiagram = {
       const mapping = partMapping[i];
       if (mapping) {
         (mapping[compSide] || []).forEach(p => this._highlightPart(svg, p, 'rgba(239,68,68,0.50)'));
-        (mapping[stretchSide] || []).forEach(p => this._highlightPart(svg, p, 'rgba(14,165,233,0.50)'));
+        (mapping[stretchSide] || []).forEach(p => this._highlightPart(svg, p, 'rgba(14,165,233,0.65)'));
       }
     }
 
@@ -1069,7 +1069,7 @@ const BodyDiagram = {
       const contractedParts = cfg.parts[compSide] || [];
       const tensionedParts = cfg.parts[stretchSideKey] || [];
       contractedParts.forEach(p => this._highlightPart(svg, p, 'rgba(239,68,68,0.50)'));
-      tensionedParts.forEach(p => this._highlightPart(svg, p, 'rgba(14,165,233,0.50)'));
+      tensionedParts.forEach(p => this._highlightPart(svg, p, 'rgba(14,165,233,0.65)'));
 
       // バッジを衝突回避で配置（小型化＋xy方向に逃げる・padding強化）
       const badgeW = 36, badgeH = 17;
@@ -1236,32 +1236,30 @@ const BodyDiagram = {
       const zoneLayer = svg.querySelector('.zone-layer');
       if (zoneLayer) {
         const cx = 150;
-        const yA = posY[seg.upper];
-        const yB = posY[seg.lower];
-        // 区間ごとに体側のおおよその左右端を設定
-        let leftEdgeA, leftEdgeB, rightEdgeA, rightEdgeB;
+        // 区間ごとに体側のおおよその左右端＋Y範囲を設定（頭部と被らないよう調整）
+        let yA, yB, leftEdgeA, leftEdgeB, rightEdgeA, rightEdgeB;
         if (seg.upper === 'mastoid') {
-          // 乳様突起→肩峰：首〜肩。上は狭く下は広い
-          leftEdgeA = 132; leftEdgeB = 82;
-          rightEdgeA = 168; rightEdgeB = 218;
+          // 乳様突起→肩峰：首〜肩。頭部回避のためY=55から
+          yA = 55;  yB = 80;
+          leftEdgeA = 138; leftEdgeB = 80;
+          rightEdgeA = 162; rightEdgeB = 220;
         } else {
           // 肩甲下角→腸骨稜：胴の体側
-          leftEdgeA = 102; leftEdgeB = 116;
-          rightEdgeA = 198; rightEdgeB = 184;
+          yA = 158; yB = 240;
+          leftEdgeA = 95;  leftEdgeB = 110;
+          rightEdgeA = 205; rightEdgeB = 190;
         }
-        const leftFill   = leftCompressed ? 'rgba(239,68,68,0.45)' : 'rgba(14,165,233,0.45)';
-        const leftStroke = leftCompressed ? '#ef4444' : '#0ea5e9';
+        const leftSolid  = leftCompressed ? '#ef4444' : '#0ea5e9';
+        const rightSolid = rightCompressed ? '#ef4444' : '#0ea5e9';
         zoneLayer.appendChild(this._createSVGEl('polygon', {
           points: `${leftEdgeA},${yA} ${cx},${yA} ${cx},${yB} ${leftEdgeB},${yB}`,
-          fill: leftFill, stroke: leftStroke,
-          'stroke-width': 1.2, 'stroke-dasharray': '4,2'
+          fill: leftSolid, 'fill-opacity': 0.55,
+          stroke: leftSolid, 'stroke-width': 1.5, 'stroke-opacity': 0.85
         }));
-        const rightFill   = rightCompressed ? 'rgba(239,68,68,0.45)' : 'rgba(14,165,233,0.45)';
-        const rightStroke = rightCompressed ? '#ef4444' : '#0ea5e9';
         zoneLayer.appendChild(this._createSVGEl('polygon', {
           points: `${cx},${yA} ${rightEdgeA},${yA} ${rightEdgeB},${yB} ${cx},${yB}`,
-          fill: rightFill, stroke: rightStroke,
-          'stroke-width': 1.2, 'stroke-dasharray': '4,2'
+          fill: rightSolid, 'fill-opacity': 0.55,
+          stroke: rightSolid, 'stroke-width': 1.5, 'stroke-opacity': 0.85
         }));
       }
     }
