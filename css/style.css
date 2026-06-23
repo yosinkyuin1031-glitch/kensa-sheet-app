@@ -686,6 +686,170 @@ body[data-view="patient"] .patient-treatment-hint p {
   transition: fill 0.3s ease, opacity 0.3s ease;
 }
 
+/* ===== Realistic Body Diagram (リアル人体画像＋オーバーレイ) ===== */
+.realistic-body-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 16px 0 24px;
+}
+
+.realistic-body-container,
+.realistic-body-diagram {
+  width: 100%;
+  max-width: 520px;
+  background: #fff;
+  border: 2px solid var(--primary, #2563eb);
+  border-radius: 12px;
+  padding: 10px 8px 8px;
+  box-shadow: 0 4px 16px rgba(37,99,235,0.12);
+  box-sizing: border-box;
+}
+
+.rbd-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 4px 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #475569;
+}
+.rbd-side-label {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+.rbd-side-label.rbd-left  { color: #2563eb; }
+.rbd-side-label.rbd-right { color: #f97316; }
+
+/* 外側ラッパ：左右にラベル領域用の余白を確保 */
+.rbd-stage-wrap {
+  position: relative;
+  width: 100%;
+  padding: 0 20%;
+  box-sizing: border-box;
+}
+
+/* ステージ：画像と同じ矩形・マーカー基準（%指定の原点）
+   aspect-ratio で stage の縦横比を 755:1041 に固定し、
+   img を absolute + object-fit:contain で stage 内に厳密に収める。
+   これにより stage 矩形 = 画像表示矩形 となり %座標が正確に機能する。
+   JS 側で aspect-ratio 非対応ブラウザ向けの保険的な高さ計算も実装済み。 */
+.rbd-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 755 / 1041;
+}
+.rbd-bg {
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: top center;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+/* リーダー線用SVGは画像領域と完全一致 */
+.rbd-leader-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* リーダー線（点線） */
+.rbd-leader {
+  stroke: #94a3b8;
+  stroke-width: 0.25;
+  stroke-dasharray: 0.6 0.6;
+  fill: none;
+  vector-effect: non-scaling-stroke;
+}
+
+/* マーカー共通：画像領域(%基準) */
+.rbd-marker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ドット */
+.rbd-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 1px 2px rgba(0,0,0,0.2);
+}
+.rbd-dot.orange { background: #f97316; }
+.rbd-dot.blue   { background: #3b82f6; }
+.rbd-dot.green  { background: #22c55e; }
+
+/* 矢印 */
+.rbd-arrow {
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 0 2px #fff, 0 0 2px #fff, 0 0 2px #fff;
+}
+.rbd-arrow.red  { color: #dc2626; }
+.rbd-arrow.blue { color: #2563eb; }
+
+/* バッジ（ドット外側に配置・体に被らない・小型化で衝突回避） */
+.rbd-badge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 5px;
+  color: #fff;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.25);
+  letter-spacing: 0.3px;
+  line-height: 1.2;
+  z-index: 4;
+}
+.rbd-badge.red    { background: #dc2626; }
+.rbd-badge.purple { background: #8b5cf6; }
+
+/* 解剖ラベル */
+.rbd-label {
+  position: absolute;
+  transform: translate(0, -50%);
+  font-size: 11px;
+  font-weight: 600;
+  color: #334155;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 3;
+}
+.rbd-label-left  { left: 0; max-width: 19%; }
+.rbd-label-right { right: 0; max-width: 19%; }
+
+.rbd-footer {
+  text-align: center;
+  font-size: 12px;
+  color: #64748b;
+  padding-top: 6px;
+}
+
+@media (max-width: 480px) {
+  .rbd-label { font-size: 10px; padding: 1px 4px; }
+  .rbd-badge { font-size: 8px; padding: 1px 3px; letter-spacing: 0; }
+  .rbd-dot   { width: 12px; height: 12px; }
+  .rbd-arrow { font-size: 12px; }
+}
+
 /* セグメントのスムーズな移動アニメーション */
 .body-svg .seg {
   transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
@@ -3805,6 +3969,25 @@ select:focus {
   outline: none;
 }
 
+/* 年齢入力欄（モバイルiOS自動ズーム防止＋大きく表示） */
+input.age-input {
+  width: 100%;
+  font-size: 18px !important;
+  padding: 14px 16px !important;
+  min-height: 52px !important;
+  height: 52px !important;
+  line-height: 1.4;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--card-bg);
+  color: var(--text);
+}
+input.age-input:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
 /* ===== 検査結果サマリー (Step 5) ===== */
 .summary-patient-card {
   background: var(--card-bg);
@@ -4366,3 +4549,488 @@ select:focus {
 }
 .step-row input, .tech-row input { flex: 1; }
 .tech-row { flex-wrap: wrap; }
+
+/* ===== 検査タイプ選択 ===== */
+.exam-type-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.exam-type-option {
+  display: block;
+  cursor: pointer;
+}
+.exam-type-option input[type="checkbox"] {
+  display: none;
+}
+.exam-type-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+  transition: all 0.18s;
+}
+.exam-type-option input[type="checkbox"]:checked + .exam-type-card {
+  border-color: #2563eb;
+  background: #eff6ff;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+}
+.exam-type-icon {
+  font-size: 2rem;
+}
+.exam-type-text {
+  flex: 1;
+}
+.exam-type-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #111827;
+}
+.exam-type-desc {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+/* ===== 写真撮影 ===== */
+.camera-stage {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #1f2937;
+  border-radius: 12px;
+}
+.camera-controls {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 10px;
+}
+.photo-slots {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.photo-slot {
+  flex: 1;
+  min-width: 140px;
+  border: 2px dashed #d1d5db;
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+  background: #f9fafb;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 170px;
+}
+.photo-slot.has-photo {
+  border-color: #2563eb;
+  border-style: solid;
+  background: #eff6ff;
+}
+.photo-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: #6b7280;
+}
+.photo-icon {
+  font-size: 2rem;
+}
+.photo-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.photo-preview {
+  width: 100%;
+  max-height: 180px;
+  object-fit: contain;
+  border-radius: 6px;
+}
+.photo-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.photo-hint {
+  font-size: 0.78rem;
+  color: #6b7280;
+  margin-top: 10px;
+}
+.btn-danger {
+  background: #ef4444;
+  color: white;
+  border: none;
+}
+.btn-danger:hover {
+  background: #dc2626;
+}
+
+/* ===== 構造検査 ===== */
+.posture-btn {
+  flex: 1;
+  min-width: 80px;
+  padding: 10px 8px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  color: #374151;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s;
+  text-align: center;
+}
+.posture-btn:hover {
+  border-color: #94a3b8;
+}
+.posture-btn.selected {
+  border-color: #2563eb;
+  background: #dbeafe;
+  color: #1e40af;
+}
+.structural-input {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.structural-result-card {
+  margin-top: 20px;
+  background: #fff;
+  border-radius: 10px;
+  border: 2px solid #2563eb;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.structural-result-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #1e293b, #334155);
+  color: white;
+}
+.structural-result-header h3 {
+  font-size: 0.95rem;
+  margin: 0;
+}
+.structural-result-icon {
+  font-size: 1.2rem;
+}
+#structuralResultContent,
+#diagnosisStructuralContent {
+  padding: 16px;
+}
+.structural-wb-badge {
+  display: inline-block;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+.wb-left { background: #fef2f2; color: #dc2626; }
+.wb-right { background: #fef2f2; color: #dc2626; }
+.wb-even { background: #f1f5f9; color: #64748b; }
+.structural-wb-desc {
+  font-size: 0.85rem;
+  color: #6b7280;
+  line-height: 1.6;
+  margin: 8px 0 12px;
+}
+.structural-detail-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+.structural-detail-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  padding: 10px 12px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  gap: 8px;
+}
+.structural-detail-item.wb-left { background: #fef7f7; border-color: #fecaca; }
+.structural-detail-item.wb-right { background: #eff6ff; border-color: #bfdbfe; }
+.structural-detail-item.wb-even { background: #f1f5f9; border-color: #e2e8f0; }
+.structural-detail-info { display: flex; flex-direction: column; gap: 2px; }
+.structural-detail-label {
+  color: #1f2937;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+.structural-detail-meaning {
+  color: #6b7280;
+  font-size: 0.7rem;
+  line-height: 1.45;
+}
+.structural-detail-finding {
+  font-size: 0.78rem;
+  color: #374151;
+  margin-top: 2px;
+}
+.structural-detail-value {
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 14px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.structural-detail-value.wb-left { background: #fee2e2; color: #b91c1c; }
+.structural-detail-value.wb-right { background: #dbeafe; color: #1d4ed8; }
+.structural-detail-value.wb-even { background: #e2e8f0; color: #475569; }
+
+.posture-diagram-wrapper {
+  margin-top: 20px;
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.posture-diagram-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 12px;
+  text-align: center;
+}
+.posture-diagram-views {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.posture-view {
+  flex: 1;
+  min-width: 140px;
+  max-width: 220px;
+}
+.posture-view-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-align: center;
+  margin-bottom: 6px;
+}
+.posture-diagram-container {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 8px;
+}
+.posture-diagram-container svg {
+  width: 100%;
+  height: auto;
+}
+@media (max-width: 480px) {
+  .photo-slots { flex-direction: row; }
+  .posture-diagram-views { flex-direction: column; align-items: center; }
+  .posture-view { max-width: 280px; width: 100%; }
+}
+
+/* ===== 統合結果カード（写真+サマリー） ===== */
+.integrated-result-card {
+  margin-top: 16px;
+}
+.integrated-result-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 16px;
+  align-items: start;
+}
+.integrated-photo-pane {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.integrated-photo-label {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+.integrated-photo-frame {
+  width: 100%;
+  background: #f3f4f6;
+  border: 1px dashed #d1d5db;
+  border-radius: 10px;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.integrated-photo-frame img {
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+}
+.integrated-photo-empty {
+  color: #9ca3af;
+  font-size: 0.85rem;
+}
+.integrated-summary-pane {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+.integrated-diagram-pane {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.integrated-diagram-frame {
+  width: 100%;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.integrated-diagram-frame svg {
+  width: 100%;
+  height: auto;
+  max-height: 460px;
+}
+@media (max-width: 600px) {
+  .integrated-result-grid {
+    grid-template-columns: 1fr;
+  }
+}
+/* 写真がない場合は図を中央寄せ・幅を絞る */
+#integratedPhotoDiagramRow.no-photo {
+  grid-template-columns: minmax(0, 360px);
+  justify-content: center;
+}
+#integratedPhotoDiagramRow.no-photo .integrated-photo-pane {
+  display: none;
+}
+
+/* 構造解析 SVG ラベル用の凡例エリア */
+.posture-legend-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  justify-content: center;
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.72rem;
+}
+.posture-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #374151;
+}
+.posture-legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.15);
+}
+.posture-legend-dot.left { background: #f97316; }
+.posture-legend-dot.right { background: #2563eb; }
+.posture-legend-dot.wb { background: #ef4444; }
+.posture-legend-dot.nonwb { background: #3b82f6; }
+.posture-legend-dot.neutral { background: #94a3b8; }
+.posture-legend-strong { font-weight: 700; }
+
+/* 表示設定パネル（ランドマーク表記モード切替） */
+.display-setting-section {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.display-setting-options {
+  display: flex; flex-direction: column; gap: 10px;
+}
+.display-setting-radio {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.display-setting-radio:hover {
+  border-color: #2563eb;
+  background: #f0f6ff;
+}
+.display-setting-radio input[type="radio"] {
+  margin-right: 6px;
+}
+.display-setting-radio span {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+}
+.display-setting-radio small {
+  display: block;
+  font-size: 11px;
+  color: #6b7280;
+  margin-left: 22px;
+}
+.display-setting-radio:has(input[type="radio"]:checked) {
+  border-color: #2563eb;
+  background: #eff6ff;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+/* 結果ページの撮影写真表示 */
+.result-photos-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+.result-photo-item {
+  margin: 0;
+  text-align: center;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+}
+.result-photo-item img {
+  width: 100%;
+  max-height: 360px;
+  object-fit: contain;
+  border-radius: 6px;
+  background: #fff;
+}
+.result-photo-item figcaption {
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+@media (max-width: 600px) {
+  .result-photos-grid { grid-template-columns: 1fr; }
+}

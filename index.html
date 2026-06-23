@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>カラダマップ - 3分で、体の"いま"を見える化</title>
-  <link rel="stylesheet" href="css/style.css?v=20260411a">
+  <link rel="stylesheet" href="css/style.css?v=20260430e">
   <script>
     // Service Worker強制リセット（古いキャッシュを自動削除）
     if ('serviceWorker' in navigator) {
@@ -48,9 +48,7 @@
         </div>
         <div id="loginError" class="auth-error" style="display:none;"></div>
         <button type="button" id="loginBtn" class="btn btn-primary auth-btn">ログイン</button>
-        <!-- 新規登録・パスワードリセットは管理者が対応 -->
-        <a href="#" id="showSignup" style="display:none;">新規登録</a>
-        <a href="#" id="showResetPassword" style="display:none;">パスワードリセット</a>
+        <p style="font-size:12px;color:#888;margin-top:16px;text-align:center;">アカウントの新規発行は管理者が対応します。</p>
       </div>
 
       <!-- パスワードリセットフォーム -->
@@ -69,29 +67,7 @@
         <p class="auth-switch"><a href="#" id="backToLogin">← ログインに戻る</a></p>
       </div>
 
-      <!-- 新規登録フォーム -->
-      <div id="signupForm" class="auth-form" style="display:none;">
-        <h2>新規登録</h2>
-        <div class="auth-field">
-          <label for="signupName">お名前</label>
-          <input type="text" id="signupName" placeholder="山田 太郎">
-        </div>
-        <div class="auth-field">
-          <label for="signupClinic">院名</label>
-          <input type="text" id="signupClinic" placeholder="○○整体院">
-        </div>
-        <div class="auth-field">
-          <label for="signupEmail">メールアドレス</label>
-          <input type="email" id="signupEmail" placeholder="example@clinic.com" autocomplete="email">
-        </div>
-        <div class="auth-field">
-          <label for="signupPassword">パスワード（6文字以上）</label>
-          <input type="password" id="signupPassword" placeholder="パスワード" autocomplete="new-password">
-        </div>
-        <div id="signupError" class="auth-error" style="display:none;"></div>
-        <button type="button" id="signupBtn" class="btn btn-primary auth-btn">登録する</button>
-        <p class="auth-switch">既にアカウントをお持ちの方は <a href="#" id="showLogin">ログイン</a></p>
-      </div>
+      <!-- 新規登録フォームは廃止（管理者発行のみ） -->
     </div>
   </div>
 
@@ -125,8 +101,9 @@
     <!-- ===== 検査セクション ===== -->
     <section id="exam-section" class="tab-content active">
 
-      <!-- ウィザード進行バー -->
-      <div class="wizard-progress">
+      <!-- ウィザード進行バー（連結線・番号は動的描画） -->
+      <!-- 新フロー: 0=患者情報 / 1=検査タイプ / 2=写真 / 3=立位 / 4=座位 / 5=上半身 / 6=構造 / 7=結果 -->
+      <div class="wizard-progress" id="wizardProgress">
         <div class="wizard-step active" data-step="0">
           <span class="step-number">1</span>
           <span class="step-label">患者情報</span>
@@ -134,21 +111,36 @@
         <div class="wizard-connector"></div>
         <div class="wizard-step" data-step="1">
           <span class="step-number">2</span>
-          <span class="step-label">立位検査</span>
+          <span class="step-label">検査選択</span>
         </div>
         <div class="wizard-connector"></div>
         <div class="wizard-step" data-step="2">
           <span class="step-number">3</span>
+          <span class="step-label">写真撮影</span>
+        </div>
+        <div class="wizard-connector" data-step-group="landmark"></div>
+        <div class="wizard-step" data-step="3" data-step-group="landmark">
+          <span class="step-number">4</span>
+          <span class="step-label">立位検査</span>
+        </div>
+        <div class="wizard-connector" data-step-group="landmark"></div>
+        <div class="wizard-step" data-step="4" data-step-group="landmark">
+          <span class="step-number">5</span>
           <span class="step-label">座位検査</span>
         </div>
-        <div class="wizard-connector"></div>
-        <div class="wizard-step" data-step="3">
-          <span class="step-number">4</span>
+        <div class="wizard-connector" data-step-group="landmark"></div>
+        <div class="wizard-step" data-step="5" data-step-group="landmark">
+          <span class="step-number">6</span>
           <span class="step-label">上半身検査</span>
         </div>
+        <div class="wizard-connector" data-step-group="structural"></div>
+        <div class="wizard-step" data-step="6" data-step-group="structural">
+          <span class="step-number">7</span>
+          <span class="step-label">構造検査</span>
+        </div>
         <div class="wizard-connector"></div>
-        <div class="wizard-step" data-step="4">
-          <span class="step-number">5</span>
+        <div class="wizard-step" data-step="7">
+          <span class="step-number">8</span>
           <span class="step-label">結果</span>
         </div>
       </div>
@@ -176,14 +168,15 @@
           <div class="form-row">
             <div class="form-group">
               <label for="patientAge">年齢</label>
-              <input type="number" id="patientAge" placeholder="45" min="0" max="120">
+              <input type="number" id="patientAge" class="age-input" placeholder="45" min="0" max="120" inputmode="numeric">
             </div>
             <div class="form-group">
-              <label for="patientGender">性別</label>
-              <select id="patientGender">
+              <label for="patientGender">性別 <span class="required">*</span></label>
+              <select id="patientGender" required>
                 <option value="">選択してください</option>
                 <option value="male">男性</option>
                 <option value="female">女性</option>
+                <option value="other">その他</option>
               </select>
             </div>
           </div>
@@ -225,12 +218,106 @@
           </div>
         </div>
         <div class="form-actions">
-          <button type="button" class="btn btn-primary wizard-next">立位検査へ →</button>
+          <button type="button" class="btn btn-primary wizard-next">検査タイプ選択へ →</button>
         </div>
       </div>
 
-      <!-- ===== Step 1: 立位検査 ===== -->
+      <!-- ===== Step 1: 検査タイプ選択 ===== -->
       <div class="wizard-panel" data-panel="1">
+        <div class="step-instruction">
+          <div class="instruction-icon">🗂️</div>
+          <h3>検査タイプ選択</h3>
+          <p>今回行う検査を選択してください。両方ON、片方のみONも可能です。</p>
+        </div>
+
+        <div class="form-card">
+          <h3 class="card-title">実施する検査</h3>
+          <div class="exam-type-options">
+            <label class="exam-type-option">
+              <input type="checkbox" id="examTypeLandmark" checked>
+              <div class="exam-type-card">
+                <div class="exam-type-icon">📐</div>
+                <div class="exam-type-text">
+                  <div class="exam-type-title">ランドマーク検査</div>
+                  <div class="exam-type-desc">立位 / 座位 / 上半身（既存3ステップ）</div>
+                </div>
+              </div>
+            </label>
+            <label class="exam-type-option">
+              <input type="checkbox" id="examTypeStructural">
+              <div class="exam-type-card">
+                <div class="exam-type-icon">🔬</div>
+                <div class="exam-type-text">
+                  <div class="exam-type-title">構造検査</div>
+                  <div class="exam-type-desc">仰臥位5項目（脚長差・母趾背屈・腸骨稜・ASIS・膝回旋）</div>
+                </div>
+              </div>
+            </label>
+          </div>
+          <div id="examTypeError" class="auth-error" style="display:none;">最低1つ以上の検査を選択してください</div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary wizard-prev">← 戻る</button>
+          <button type="button" class="btn btn-primary wizard-next">写真撮影へ →</button>
+        </div>
+      </div>
+
+      <!-- ===== Step 2: 写真撮影 ===== -->
+      <div class="wizard-panel" data-panel="2">
+        <div class="step-instruction">
+          <div class="instruction-icon">📷</div>
+          <h3>写真撮影（任意）</h3>
+          <p>後面・側面の2アングルで撮影します。スキップも可能です。</p>
+        </div>
+
+        <div class="form-card">
+          <h3 class="card-title">カメラ撮影</h3>
+
+          <!-- ライブビュー -->
+          <div class="camera-stage" id="cameraStage" style="display:none;">
+            <video id="cameraVideo" autoplay playsinline muted style="width:100%;border-radius:8px;background:#000;"></video>
+            <div class="camera-controls">
+              <button type="button" id="captureShotBtn" class="btn btn-primary">📸 撮影</button>
+              <button type="button" id="stopCameraBtn" class="btn btn-secondary">カメラを閉じる</button>
+            </div>
+          </div>
+
+          <div class="photo-slots" id="photoSlots">
+            <div class="photo-slot" data-view="back">
+              <div class="photo-placeholder">
+                <div class="photo-icon">🧍‍♂️</div>
+                <div class="photo-label">後面（メイン）</div>
+              </div>
+              <img class="photo-preview" alt="後面" style="display:none;">
+              <div class="photo-actions">
+                <button type="button" class="btn btn-sm btn-primary photo-camera-btn" data-view="back">カメラ起動</button>
+                <button type="button" class="btn btn-sm btn-danger photo-remove-btn" data-view="back" style="display:none;">削除</button>
+              </div>
+            </div>
+            <div class="photo-slot" data-view="side">
+              <div class="photo-placeholder">
+                <div class="photo-icon">🚶</div>
+                <div class="photo-label">側面</div>
+              </div>
+              <img class="photo-preview" alt="側面" style="display:none;">
+              <div class="photo-actions">
+                <button type="button" class="btn btn-sm btn-primary photo-camera-btn" data-view="side">カメラ起動</button>
+                <button type="button" class="btn btn-sm btn-danger photo-remove-btn" data-view="side" style="display:none;">削除</button>
+              </div>
+            </div>
+          </div>
+          <p class="photo-hint">※ 写真は院ごとのストレージに安全に保存されます。後で結果ページからも撮り直せます。</p>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary wizard-prev">← 戻る</button>
+          <button type="button" class="btn btn-primary wizard-next">次へ →</button>
+        </div>
+      </div>
+
+      <!-- ===== Step 3: 立位検査 ===== -->
+      <div class="wizard-panel" data-panel="3">
         <div class="step-instruction">
           <div class="instruction-icon">🧍</div>
           <h3>立位検査</h3>
@@ -360,8 +447,8 @@
         </div>
       </div>
 
-      <!-- ===== Step 2: 座位検査 ===== -->
-      <div class="wizard-panel" data-panel="2">
+      <!-- ===== Step 4: 座位検査 ===== -->
+      <div class="wizard-panel" data-panel="4">
         <div class="step-instruction">
           <div class="instruction-icon">🪑</div>
           <h3>座位検査</h3>
@@ -410,8 +497,8 @@
         </div>
       </div>
 
-      <!-- ===== Step 3: 上半身検査 ===== -->
-      <div class="wizard-panel" data-panel="3">
+      <!-- ===== Step 5: 上半身検査 ===== -->
+      <div class="wizard-panel" data-panel="5">
         <div class="step-instruction">
           <div class="instruction-icon">💪</div>
           <h3>上半身検査</h3>
@@ -457,12 +544,111 @@
 
         <div class="form-actions">
           <button type="button" class="btn btn-secondary wizard-prev">← 戻る</button>
-          <button type="button" class="btn btn-primary" id="diagnoseBtn">診断する</button>
+          <!-- 構造ONなら「構造検査へ」、OFFなら「診断する」 -->
+          <button type="button" class="btn btn-primary wizard-next" id="upperBodyNextBtn">構造検査へ →</button>
+          <button type="button" class="btn btn-primary" id="diagnoseBtn" style="display:none;">診断する</button>
         </div>
       </div>
 
-      <!-- ===== Step 4: 検査結果サマリー ===== -->
-      <div class="wizard-panel" data-panel="4">
+      <!-- ===== Step 6: 構造医学検査（仰臥位） ===== -->
+      <div class="wizard-panel" data-panel="6">
+        <div class="step-instruction">
+          <div class="instruction-icon">🔬</div>
+          <h3>構造医学検査（仰臥位）</h3>
+          <p>ベッド上で仰向けの状態で5つの検査を行い、<strong>荷重側</strong>と<strong>前後の症状分布</strong>を判定します。</p>
+        </div>
+
+        <!-- 1. 脚長差 -->
+        <div class="detail-section-header">
+          <span class="detail-section-icon">📏</span>
+          <h3>① 脚長差</h3>
+        </div>
+        <div class="form-card">
+          <p class="landmark-desc">仰臥位で内果（内くるぶし）の位置を左右比較。短い方＝荷重側の可能性</p>
+          <div class="structural-input" data-structural="legLength">
+            <button type="button" class="posture-btn" data-value="leftShort">左が短い</button>
+            <button type="button" class="posture-btn" data-value="equal">均等</button>
+            <button type="button" class="posture-btn" data-value="rightShort">右が短い</button>
+          </div>
+        </div>
+
+        <!-- 2. 母趾背屈力 -->
+        <div class="detail-section-header" style="margin-top:20px;">
+          <span class="detail-section-icon">🦶</span>
+          <h3>② 母趾背屈力</h3>
+        </div>
+        <div class="form-card">
+          <p class="landmark-desc">親指を押さえた状態から思い切り上げてもらい、上がる速さ・強さを左右比較</p>
+          <div class="structural-input" data-structural="toeDorsiflexion">
+            <button type="button" class="posture-btn" data-value="leftStrong">左が強い</button>
+            <button type="button" class="posture-btn" data-value="equal">均等</button>
+            <button type="button" class="posture-btn" data-value="rightStrong">右が強い</button>
+          </div>
+        </div>
+
+        <!-- 3. 腸骨稜の高さ -->
+        <div class="detail-section-header" style="margin-top:20px;">
+          <span class="detail-section-icon">🦴</span>
+          <h3>③ 腸骨稜の高さ</h3>
+        </div>
+        <div class="form-card">
+          <p class="landmark-desc">仰臥位で腸骨稜の高さを左右比較。低い方＝荷重側で圧縮されている</p>
+          <div class="structural-input" data-structural="iliacCrest">
+            <button type="button" class="posture-btn" data-value="leftHigh">左が高い</button>
+            <button type="button" class="posture-btn" data-value="equal">均等</button>
+            <button type="button" class="posture-btn" data-value="rightHigh">右が高い</button>
+          </div>
+        </div>
+
+        <!-- 4. ASISの高さ -->
+        <div class="detail-section-header" style="margin-top:20px;">
+          <span class="detail-section-icon">📐</span>
+          <h3>④ ASIS（上前腸骨棘）の高さ</h3>
+        </div>
+        <div class="form-card">
+          <p class="landmark-desc">ASISの高さを左右比較。低い方＝荷重側で圧縮されている</p>
+          <div class="structural-input" data-structural="asisHeight">
+            <button type="button" class="posture-btn" data-value="leftHigh">左が高い</button>
+            <button type="button" class="posture-btn" data-value="equal">均等</button>
+            <button type="button" class="posture-btn" data-value="rightHigh">右が高い</button>
+          </div>
+        </div>
+
+        <!-- 5. 膝屈曲位回旋 -->
+        <div class="detail-section-header" style="margin-top:20px;">
+          <span class="detail-section-icon">🔄</span>
+          <h3>⑤ 膝屈曲位での回旋可動域</h3>
+        </div>
+        <div class="form-card">
+          <p class="landmark-desc">膝を曲げて左右に倒した時、突っ張る（制限がある）側を確認</p>
+          <div class="structural-input" data-structural="kneeRotation">
+            <button type="button" class="posture-btn" data-value="leftTight">左が硬い</button>
+            <button type="button" class="posture-btn" data-value="equal">均等</button>
+            <button type="button" class="posture-btn" data-value="rightTight">右が硬い</button>
+          </div>
+        </div>
+
+        <!-- 荷重判定結果（自動算出） -->
+        <div class="structural-result-card" id="structuralResultCard" style="display:none;">
+          <div class="structural-result-header">
+            <span class="structural-result-icon">⚖️</span>
+            <h3>荷重判定結果</h3>
+          </div>
+          <div id="structuralResultContent"></div>
+        </div>
+
+        <!-- 構造解析図は廃止。判定テキスト（左荷重/右荷重バッジ＋詳細グリッド）のみ表示する -->
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary wizard-prev">← 戻る</button>
+          <!-- 構造検査は最終ステップ。常に「診断する」 -->
+          <button type="button" class="btn btn-primary wizard-next" id="structuralNextBtn" style="display:none;"></button>
+          <button type="button" class="btn btn-primary" id="structuralDiagnoseBtn">診断する</button>
+        </div>
+      </div>
+
+      <!-- ===== Step 7: 検査結果サマリー ===== -->
+      <div class="wizard-panel" data-panel="7">
         <div class="step-instruction">
           <div class="instruction-icon">📋</div>
           <h3>検査結果サマリー</h3>
@@ -482,7 +668,26 @@
       <div class="section-header">
         <h2>診断結果</h2>
       </div>
+
+      <!-- [1] ランドマーク検査結果 -->
       <div id="diagnosisContent"></div>
+
+      <!-- [2] 構造検査結果 -->
+      <div id="diagnosisStructuralSection" style="display:none;">
+        <div class="form-card structural-result-card-result">
+          <h3 class="card-title">⚖️ 構造検査結果（荷重判定）</h3>
+          <div id="diagnosisStructuralContent"></div>
+          <!-- 4視点SVG（正面・後面・左右側面）は廃止。判定テキスト＋詳細グリッドのみ表示 -->
+        </div>
+      </div>
+
+      <!-- [3] 撮影写真（結果ページに表示） -->
+      <div id="resultPhotosSection" style="display:none;">
+        <div class="form-card">
+          <h3 class="card-title">📷 撮影写真</h3>
+          <div class="result-photos-grid" id="resultPhotosGrid"></div>
+        </div>
+      </div>
 
       <!-- 詳細検査セクション（立位で入力済みのため非表示、JS互換用に残す） -->
       <div id="detailedExamSection" style="display:none;"></div>
@@ -536,11 +741,9 @@
         </div>
         <div class="action-bar-row action-bar-sub">
           <button type="button" id="saveHistoryBtn" class="btn btn-xs btn-secondary">保存</button>
-          <button type="button" id="savePdfPatientBtn" class="btn btn-xs btn-secondary">患者PDF</button>
-          <button type="button" id="savePdfClinicalBtn" class="btn btn-xs btn-secondary">施術者PDF</button>
-          <button type="button" id="printSheetBtn" class="btn btn-xs btn-secondary" style="display:none;">印刷</button>
-          <button type="button" id="compareBtn" class="btn btn-xs btn-secondary" style="display:none;">比較</button>
-          <button type="button" id="showTrendBtn" class="btn btn-xs btn-secondary" style="display:none;">経過</button>
+          <!-- PDF出力はPro版限定 -->
+          <button type="button" id="printSheetBtn" class="btn btn-xs btn-secondary">印刷</button>
+          <!-- 比較・経過はPro版限定 -->
         </div>
       </div>
     </section>
@@ -595,6 +798,8 @@
       <div class="custom-modal-tabs">
         <button class="custom-modal-tab active" data-custom-tab="selfcare">セルフケア</button>
         <button class="custom-modal-tab" data-custom-tab="protocol">施術プロトコル</button>
+        <button class="custom-modal-tab" data-custom-tab="display">表示設定</button>
+        <button class="custom-modal-tab" data-custom-tab="account">アカウント</button>
       </div>
       <div id="customSelfcarePanel" class="custom-modal-panel">
         <button type="button" id="addCustomSelfcare" class="btn btn-sm btn-primary" style="margin-bottom:12px;">新規追加</button>
@@ -605,6 +810,44 @@
         <button type="button" id="addCustomProtocol" class="btn btn-sm btn-primary" style="margin-bottom:12px;">新規追加</button>
         <div id="customProtocolList"></div>
         <div id="protocolFormArea"></div>
+      </div>
+      <div id="customDisplayPanel" class="custom-modal-panel" style="display:none;">
+        <div class="display-setting-section">
+          <h3 style="font-size:14px;margin:0 0 8px;">ランドマーク表記</h3>
+          <p style="font-size:12px;color:#666;margin:0 0 10px;line-height:1.5;">
+            ランドマーク検査ボタンの表示を切り替えます。<br>
+            患者を下から見る施術者は「低い側を選ぶ」が直感的です。<br>
+            <span style="color:#888;">※ 検査データそのものは変わりません</span>
+          </p>
+          <div class="display-setting-options">
+            <label class="display-setting-radio">
+              <input type="radio" name="landmarkDisplayMode" value="high" checked>
+              <span>高い側を選ぶ（デフォルト）</span>
+              <small>例：← 左が高い / 右が高い →</small>
+            </label>
+            <label class="display-setting-radio">
+              <input type="radio" name="landmarkDisplayMode" value="low">
+              <span>低い側を選ぶ</span>
+              <small>例：← 左が低い / 右が低い →</small>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div id="customAccountPanel" class="custom-modal-panel" style="display:none;">
+        <div class="display-setting-section">
+          <h3 style="font-size:14px;margin:0 0 8px;">ログイン情報</h3>
+          <p id="accountEmailLabel" style="font-size:12px;color:#666;margin:0 0 14px;line-height:1.5;">メールアドレス: <span id="accountEmail">読み込み中...</span></p>
+          <h3 style="font-size:14px;margin:0 0 8px;">パスワード変更</h3>
+          <p style="font-size:12px;color:#666;margin:0 0 10px;line-height:1.5;">
+            新しいパスワード（10文字以上・英字＋数字を推奨）を入力してください。
+          </p>
+          <div style="display:flex;flex-direction:column;gap:8px;max-width:360px;">
+            <input type="password" id="newPassword" placeholder="新しいパスワード" autocomplete="new-password" style="padding:8px 10px;border:1px solid #ccc;border-radius:6px;font-size:14px;">
+            <input type="password" id="newPasswordConfirm" placeholder="新しいパスワード（確認）" autocomplete="new-password" style="padding:8px 10px;border:1px solid #ccc;border-radius:6px;font-size:14px;">
+            <button type="button" id="changePasswordBtn" class="btn btn-sm btn-primary" style="margin-top:4px;">パスワードを変更する</button>
+            <div id="changePasswordMsg" style="font-size:12px;margin-top:4px;display:none;"></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -665,13 +908,28 @@
   <!-- 印刷用コンテナ（通常は非表示、印刷時のみ表示） -->
   <div id="printContainer" class="print-container"></div>
 
-  <script src="js/supabase.js?v=20260411a"></script>
-  <script src="js/inspection.js?v=20260411a"></script>
-  <script src="js/bodyDiagram.js?v=20260411a"></script>
-  <script src="js/selfcare.js?v=20260411a"></script>
-  <script src="js/storage.js?v=20260411a"></script>
-  <script src="js/pdf.js?v=20260411a"></script>
-  <script src="js/app.js?v=20260411a"></script>
+  <!-- カメラモーダル（撮り直し用） -->
+  <div id="cameraModal" class="custom-modal-overlay" style="display:none;">
+    <div class="custom-modal-content" style="max-width:520px;">
+      <div class="custom-modal-header">
+        <h2 style="margin:0;font-size:16px;" id="cameraModalTitle">撮影</h2>
+        <button type="button" id="cameraModalClose" class="btn btn-sm btn-secondary">閉じる</button>
+      </div>
+      <video id="cameraModalVideo" autoplay playsinline muted style="width:100%;border-radius:8px;background:#000;margin-top:8px;"></video>
+      <div style="display:flex;gap:8px;margin-top:12px;justify-content:center;">
+        <button type="button" id="cameraModalCapture" class="btn btn-primary">📸 撮影</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/supabase.js?v=20260430a"></script>
+  <script src="js/inspection.js?v=20260430a"></script>
+  <script src="js/bodyDiagram.js?v=20260505d"></script>
+  <script src="js/realisticBodyDiagram.js?v=20260513a"></script>
+  <script src="js/selfcare.js?v=20260430a"></script>
+  <script src="js/storage.js?v=20260430a"></script>
+  <script src="js/pdf.js?v=20260430a"></script>
+  <script src="js/app.js?v=20260430c"></script>
   <script>
     // フォールバック：app.jsでエラーが出た場合のログイン処理
     window.addEventListener('load', function() {

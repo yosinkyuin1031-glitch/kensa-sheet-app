@@ -36,6 +36,27 @@
   let visitType = 'initial';
   let medicalHistory = '';
 
+  // ===== 統合: 検査タイプ選択 =====
+  let examTypes = { landmark: true, structural: false };
+
+  // ===== 統合: 構造検査データ =====
+  let structuralData = {
+    legLength: null,
+    toeDorsiflexion: null,
+    iliacCrest: null,
+    asisHeight: null,
+    kneeRotation: null
+  };
+
+  // ===== 統合: 患者写真 =====
+  let patientPhotos = { front: null, back: null, side: null };       // base64 or 公開URL
+  let patientPhotosPaths = { front: null, back: null, side: null };  // Storageパス
+
+  // 撮影中のカメラストリーム
+  let _cameraStream = null;
+  let _cameraTargetView = null;   // 撮影対象 ('front'|'back'|'side')
+  let _cameraSource = null;        // 'step' or 'modal'
+
   // ===== 認証・初期化 =====
   async function initAuth() {
     try {
@@ -46,33 +67,28 @@
       if (errEl) { errEl.textContent = 'Init error: ' + e.message; errEl.style.display = 'block'; }
     }
 
-    // ログイン/登録フォームの切り替え
-    document.getElementById('showSignup').addEventListener('click', (e) => {
-      e.preventDefault();
-      document.getElementById('loginForm').style.display = 'none';
-      document.getElementById('signupForm').style.display = 'block';
-    });
-    document.getElementById('showLogin').addEventListener('click', (e) => {
-      e.preventDefault();
-      document.getElementById('signupForm').style.display = 'none';
-      document.getElementById('loginForm').style.display = 'block';
-    });
+    // 新規登録フォームは廃止（管理者発行のみ）
 
-    // パスワードリセット表示
-    document.getElementById('showResetPassword').addEventListener('click', (e) => {
-      e.preventDefault();
-      document.getElementById('loginForm').style.display = 'none';
-      document.getElementById('signupForm').style.display = 'none';
-      document.getElementById('resetPasswordForm').style.display = 'block';
-      document.getElementById('resetError').style.display = 'none';
-      document.getElementById('resetSuccess').style.display = 'none';
-      document.getElementById('resetEmail').value = document.getElementById('loginEmail').value || '';
-    });
-    document.getElementById('backToLogin').addEventListener('click', (e) => {
-      e.preventDefault();
-      document.getElementById('resetPasswordForm').style.display = 'none';
-      document.getElementById('loginForm').style.display = 'block';
-    });
+    // パスワードリセット表示（要素がある場合のみリスナー登録）
+    const showResetEl = document.getElementById('showResetPassword');
+    if (showResetEl) {
+      showResetEl.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('resetPasswordForm').style.display = 'block';
+        document.getElementById('resetError').style.display = 'none';
+        document.getElementById('resetSuccess').style.display = 'none';
+        document.getElementById('resetEmail').value = document.getElementById('loginEmail').value || '';
+      });
+    }
+    const backToLoginEl = document.getElementById('backToLogin');
+    if (backToLoginEl) {
+      backToLoginEl.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('resetPasswordForm').style.display = 'none';
+        document.getElementById('loginForm').style.display = 'block';
+      });
+    }
 
     // パスワードリセット送信
     document.getElementById('resetBtn').addEventListener('click', async () => {
@@ -131,43 +147,11 @@
       }
     });
 
-    // 登録ボタン
-    document.getElementById('signupBtn').addEventListener('click', async () => {
-      const name = document.getElementById('signupName').value.trim();
-      const clinic = document.getElementById('signupClinic').value.trim();
-      const email = document.getElementById('signupEmail').value.trim();
-      const password = document.getElementById('signupPassword').value;
-      const errorDiv = document.getElementById('signupError');
-      if (!name || !email || !password) {
-        errorDiv.textContent = 'お名前・メールアドレス・パスワードは必須です';
-        errorDiv.style.display = 'block';
-        return;
-      }
-      if (password.length < 6) {
-        errorDiv.textContent = 'パスワードは6文字以上にしてください';
-        errorDiv.style.display = 'block';
-        return;
-      }
-      try {
-        document.getElementById('signupBtn').disabled = true;
-        document.getElementById('signupBtn').textContent = '登録中...';
-        await SupabaseAuth.signup(email, password, clinic, name);
-        showMainApp();
-      } catch (err) {
-        errorDiv.textContent = err.message;
-        errorDiv.style.display = 'block';
-      } finally {
-        document.getElementById('signupBtn').disabled = false;
-        document.getElementById('signupBtn').textContent = '登録する';
-      }
-    });
+    // 新規登録は廃止（管理者発行のみ）
 
-    // Enterキーでログイン/登録
+    // Enterキーでログイン
     document.getElementById('loginPassword').addEventListener('keydown', (e) => {
       if (e.key === 'Enter') document.getElementById('loginBtn').click();
-    });
-    document.getElementById('signupPassword').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') document.getElementById('signupBtn').click();
     });
 
     // ログアウトボタン
@@ -203,6 +187,8 @@
     setupTabNavigation();
     setupWizardNavigation();
     setupLandmarkButtons();
+    setupStructuralButtons();
+    setupPhotoCapture();
     setupWeightBalanceButtons();
     setupNRSButtons();
     setupChiefComplaints();
@@ -218,6 +204,7 @@
     setDefaultDate();
     await refreshHistory();
     initDiagrams();
+    applyLandmarkDisplayMode();
     registerServiceWorker();
     showTutorialIfNeeded();
     } catch(e) {
@@ -779,6 +766,9 @@
   async function selectPatient(patientId, patientName) {
     selectedPatientId = patientId;
     document.getElementById('patientName').value = patientName;
+    // 患者選択で氏名が programmatically 入ったときは input イベントが発火しないので
+    // 次へボタンの活性状態を明示更新する
+    updateNextButtonState();
 
     const history = await Storage.getHistoryByPatient(patientId);
     const examCountDiv = document.getElementById('patientExamCount');
@@ -806,6 +796,21 @@
     });
     if (tabName === 'history') refreshHistory();
     if (tabName === 'report') renderReport();
+    // タブ切替時はページ最上部から見えるようスクロール
+    // 診断結果タブは結果セクションの先頭、それ以外は window 最上部
+    try {
+      const target = document.getElementById(`${tabName}-section`);
+      if (target && typeof target.scrollIntoView === 'function') {
+        // 次フレームに遅延（display切替直後だと位置が確定しないことがある）
+        requestAnimationFrame(() => {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    } catch (_) {
+      window.scrollTo(0, 0);
+    }
   }
 
   // ===== ウィザードナビゲーション =====
@@ -813,17 +818,29 @@
     document.querySelectorAll('.wizard-next').forEach(btn => {
       btn.addEventListener('click', () => {
         if (btn.disabled) return;
-        if (validateCurrentStep()) goToStep(currentStep + 1);
+        if (!validateCurrentStep()) return;
+        const next = _findNextEnabledStep(currentStep, 1);
+        if (next !== null) goToStep(next);
       });
     });
 
     document.querySelectorAll('.wizard-prev').forEach(btn => {
-      btn.addEventListener('click', () => goToStep(currentStep - 1));
+      btn.addEventListener('click', () => {
+        const prev = _findNextEnabledStep(currentStep, -1);
+        if (prev !== null) goToStep(prev);
+      });
     });
 
     const diagnoseBtn = document.getElementById('diagnoseBtn');
     if (diagnoseBtn) {
       diagnoseBtn.addEventListener('click', () => {
+        if (validateCurrentStep()) runDiagnosis();
+      });
+    }
+
+    const structuralDiagnoseBtn = document.getElementById('structuralDiagnoseBtn');
+    if (structuralDiagnoseBtn) {
+      structuralDiagnoseBtn.addEventListener('click', () => {
         if (validateCurrentStep()) runDiagnosis();
       });
     }
@@ -849,10 +866,55 @@
       // 初期状態で無効化
       updateNextButtonState();
     }
+
+    // 検査タイプ選択チェックボックス
+    const examTypeLandmark = document.getElementById('examTypeLandmark');
+    const examTypeStructural = document.getElementById('examTypeStructural');
+    const examTypeError = document.getElementById('examTypeError');
+    const onExamTypeChange = () => {
+      examTypes.landmark = examTypeLandmark ? examTypeLandmark.checked : true;
+      examTypes.structural = examTypeStructural ? examTypeStructural.checked : false;
+      if (examTypes.landmark || examTypes.structural) {
+        if (examTypeError) examTypeError.style.display = 'none';
+      }
+      updateStepIndicatorVisibility();
+      updateNextButtonState();
+    };
+    if (examTypeLandmark) examTypeLandmark.addEventListener('change', onExamTypeChange);
+    if (examTypeStructural) examTypeStructural.addEventListener('change', onExamTypeChange);
+    onExamTypeChange();
+  }
+
+  // ステップ番号（0-7）と検査タイプを考慮した「次/前」のスキップ計算
+  // 新フロー: 0=患者情報 / 1=検査タイプ選択 / 2=写真 / 3=立位 / 4=座位 / 5=上半身 / 6=構造 / 7=結果
+  function _isStepEnabled(step) {
+    if (step === 0 || step === 1 || step === 2 || step === 7) return true;
+    // 3:立位 4:座位 5:上半身 はランドマーク選択時のみ
+    if (step === 3 || step === 4 || step === 5) return !!examTypes.landmark;
+    // 6: 構造検査
+    if (step === 6) return !!examTypes.structural;
+    return false;
+  }
+
+  function _findNextEnabledStep(from, dir) {
+    // dir = +1 または -1
+    let s = from + dir;
+    while (s >= 0 && s <= 7) {
+      if (_isStepEnabled(s)) return s;
+      s += dir;
+    }
+    return null;
   }
 
   function goToStep(step) {
-    if (step < 0 || step > 4) return;
+    if (step < 0 || step > 7) return;
+    // スキップ対象なら方向を保ったままスキップ
+    if (!_isStepEnabled(step)) {
+      const dir = step >= currentStep ? 1 : -1;
+      const next = _findNextEnabledStep(step - dir, dir);
+      if (next === null) return;
+      step = next;
+    }
     currentStep = step;
 
     document.querySelectorAll('.wizard-panel').forEach(panel => {
@@ -865,9 +927,47 @@
       el.classList.toggle('completed', s < step);
     });
 
-    if (step === 2) updateSeatedComparison();
+    // 新フロー対応: panel番号の変更 (3=立位 / 4=座位 / 5=上半身 / 6=構造)
+    if (step === 6) updateStructuralAnalysis();
+    if (step === 4) updateSeatedComparison();
+
+    // 構造検査(panel 6)は最終検査ステップなので、常に「診断する」一本
+    if (step === 6) {
+      const structNext = document.getElementById('structuralNextBtn');
+      const structDiag = document.getElementById('structuralDiagnoseBtn');
+      if (structNext) structNext.style.display = 'none';
+      if (structDiag) structDiag.style.display = '';
+    }
+
+    // 上半身検査(panel 5)の次ボタン制御: 構造ONなら「構造検査へ」、OFFなら「診断する」
+    if (step === 5) {
+      const upperNext = document.getElementById('upperBodyNextBtn');
+      const upperDiag = document.getElementById('diagnoseBtn');
+      if (upperNext && upperDiag) {
+        if (examTypes.structural) {
+          upperNext.style.display = '';
+          upperDiag.style.display = 'none';
+        } else {
+          upperNext.style.display = 'none';
+          upperDiag.style.display = '';
+        }
+      }
+    }
+
+    // ステップインジケーターの動的表示（landmark/structuralグループの可視性）
+    updateStepIndicatorVisibility();
+
     updateNextButtonState();
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function updateStepIndicatorVisibility() {
+    document.querySelectorAll('[data-step-group="landmark"]').forEach(el => {
+      el.style.display = examTypes.landmark ? '' : 'none';
+    });
+    document.querySelectorAll('[data-step-group="structural"]').forEach(el => {
+      el.style.display = examTypes.structural ? '' : 'none';
+    });
   }
 
   function validateCurrentStep() {
@@ -876,6 +976,19 @@
       if (!name) {
         alert('患者名を入力してください。');
         document.getElementById('patientName').focus();
+        return false;
+      }
+      const genderSel = document.getElementById('patientGender');
+      if (genderSel && !genderSel.value) {
+        alert('性別を選択してください。');
+        genderSel.focus();
+        return false;
+      }
+    }
+    if (currentStep === 1) {
+      if (!examTypes.landmark && !examTypes.structural) {
+        const err = document.getElementById('examTypeError');
+        if (err) err.style.display = 'block';
         return false;
       }
     }
@@ -887,13 +1000,23 @@
     const panel = document.querySelector(`.wizard-panel[data-panel="${currentStep}"]`);
     if (!panel) return;
 
-    const nextBtn = panel.querySelector('.wizard-next') || panel.querySelector('#diagnoseBtn');
+    const nextBtn = panel.querySelector('.wizard-next') || panel.querySelector('#diagnoseBtn') || panel.querySelector('#structuralDiagnoseBtn');
     if (!nextBtn) return;
 
     let allFilled = true;
 
-    if (currentStep === 1) {
-      // Step 1: 詳細6 + 基本3 = 9ランドマーク
+    if (currentStep === 0) {
+      const name = document.getElementById('patientName').value.trim();
+      allFilled = name.length > 0;
+    } else if (currentStep === 1) {
+      allFilled = examTypes.landmark || examTypes.structural;
+    } else if (currentStep === 2) {
+      allFilled = true; // 写真撮影は任意
+    } else if (currentStep === 6) {
+      // Step 6: 構造検査 (新フロー) — 最低1つ入力で許可
+      allFilled = Object.values(structuralData).some(v => v !== null);
+    } else if (currentStep === 3) {
+      // Step 3: 立位（詳細6 + 基本3）
       for (const lm of InspectionLogic.upperDetailLandmarks) {
         if (detailData.upperDetail[lm.key] === null) { allFilled = false; break; }
       }
@@ -907,17 +1030,15 @@
           if (examData.standing[landmark] === null) { allFilled = false; break; }
         }
       }
-    } else if (currentStep === 2 || currentStep === 3) {
-      const position = currentStep === 2 ? 'seated' : 'upperBody';
+    } else if (currentStep === 4 || currentStep === 5) {
+      // Step 4=座位, Step 5=上半身
+      const position = currentStep === 4 ? 'seated' : 'upperBody';
       const data = examData[position];
       for (const landmark of Object.keys(InspectionLogic.landmarks)) {
         if (data[landmark] === null) { allFilled = false; break; }
       }
-    } else if (currentStep === 0) {
-      const name = document.getElementById('patientName').value.trim();
-      allFilled = name.length > 0;
     } else {
-      return; // Step 4 (結果) はバリデーション不要
+      return;
     }
 
     nextBtn.disabled = !allFilled;
@@ -992,6 +1113,629 @@
         });
       });
     });
+  }
+
+  // ===== 構造検査ボタン =====
+  function setupStructuralButtons() {
+    document.querySelectorAll('.structural-input').forEach(group => {
+      const key = group.dataset.structural;
+      group.querySelectorAll('.posture-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          group.querySelectorAll('.posture-btn').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          structuralData[key] = btn.dataset.value;
+          updateStructuralAnalysis();
+          updateNextButtonState();
+        });
+      });
+    });
+  }
+
+  // ===== 構造検査: 荷重判定 =====
+  function calcWeightBearing() {
+    let leftScore = 0, rightScore = 0;
+    const d = structuralData;
+    if (d.legLength === 'leftShort') leftScore += 2;
+    else if (d.legLength === 'rightShort') rightScore += 2;
+    if (d.toeDorsiflexion === 'leftStrong') leftScore += 1;
+    else if (d.toeDorsiflexion === 'rightStrong') rightScore += 1;
+    if (d.iliacCrest === 'leftHigh') rightScore += 1;
+    else if (d.iliacCrest === 'rightHigh') leftScore += 1;
+    if (d.asisHeight === 'leftHigh') rightScore += 1;
+    else if (d.asisHeight === 'rightHigh') leftScore += 1;
+    if (d.kneeRotation === 'leftTight') leftScore += 1;
+    else if (d.kneeRotation === 'rightTight') rightScore += 1;
+
+    if (leftScore === 0 && rightScore === 0) return { side: null, leftScore, rightScore };
+    if (leftScore > rightScore) return { side: 'left', leftScore, rightScore };
+    if (rightScore > leftScore) return { side: 'right', leftScore, rightScore };
+    return { side: 'even', leftScore, rightScore };
+  }
+
+  function updateStructuralAnalysis() {
+    const wb = calcWeightBearing();
+    const hasAnyInput = Object.values(structuralData).some(v => v !== null);
+    const card = document.getElementById('structuralResultCard');
+    const content = document.getElementById('structuralResultContent');
+    const diagramArea = document.getElementById('structuralDiagramArea');
+
+    if (!hasAnyInput) {
+      if (card) card.style.display = 'none';
+      if (diagramArea) diagramArea.style.display = 'none';
+      return;
+    }
+    if (card) card.style.display = 'block';
+    if (diagramArea) diagramArea.style.display = 'block';
+
+    if (content) {
+      content.innerHTML = renderStructuralSummaryHtml(wb);
+    }
+    // 構造解析図（4視点SVG）は廃止。判定テキストのみ表示。
+    // drawStructuralDiagrams(wb, false);
+  }
+
+  function renderStructuralSummaryHtml(wb) {
+    let html = '';
+    if (wb.side === 'left') {
+      html += `<div class="structural-wb-badge wb-left">⚖️ 左に体重がのっています（左:${wb.leftScore} / 右:${wb.rightScore}）</div>`;
+      html += `<p class="structural-wb-desc">左側に体重がのっている状態です。<br><strong>左の前面</strong>（首・胸・お腹・太もも前など）と <strong>右の後面</strong>（後頭・背中・お尻・もも裏など）に症状が出やすい傾向があります。</p>`;
+    } else if (wb.side === 'right') {
+      html += `<div class="structural-wb-badge wb-right">⚖️ 右に体重がのっています（左:${wb.leftScore} / 右:${wb.rightScore}）</div>`;
+      html += `<p class="structural-wb-desc">右側に体重がのっている状態です。<br><strong>右の前面</strong>（首・胸・お腹・太もも前など）と <strong>左の後面</strong>（後頭・背中・お尻・もも裏など）に症状が出やすい傾向があります。</p>`;
+    } else if (wb.side === 'even') {
+      html += `<div class="structural-wb-badge wb-even">⚖️ 左右の荷重はほぼ均等です（左:${wb.leftScore} / 右:${wb.rightScore}）</div>`;
+      html += `<p class="structural-wb-desc">左右の荷重差は小さい状態です。明確な前後・左右差は確認できません。</p>`;
+    } else {
+      html += `<div class="structural-wb-badge wb-even">未入力</div>`;
+    }
+    html += '<div class="structural-detail-grid">';
+    // 各項目: 検査の意味（meaning）と所見（finding）を補足
+    const items = [
+      {
+        key: 'legLength',
+        label: '① 脚長差',
+        meaning: '内くるぶし（内果）の位置を左右比較。短い側が荷重側になりやすい',
+        left: 'leftShort', right: 'rightShort',
+        leftFinding: '左が短い → 左が荷重側',
+        rightFinding: '右が短い → 右が荷重側',
+        equalFinding: '左右ほぼ同じ'
+      },
+      {
+        key: 'toeDorsiflexion',
+        label: '② 母趾背屈力',
+        meaning: '親指を上に上げる力。強い側が荷重側になりやすい',
+        left: 'leftStrong', right: 'rightStrong',
+        leftFinding: '左が強い → 左が荷重側',
+        rightFinding: '右が強い → 右が荷重側',
+        equalFinding: '左右ほぼ同じ'
+      },
+      {
+        key: 'iliacCrest',
+        label: '③ 腸骨稜の高さ',
+        meaning: '腸骨稜＝骨盤上端の縁。仰臥位で低い側が荷重側で圧縮されている',
+        left: 'rightHigh', right: 'leftHigh',
+        // 注意: 「右が高い」= 左が低い = 左荷重
+        leftFinding: '右が高い（左が低い） → 左が荷重側',
+        rightFinding: '左が高い（右が低い） → 右が荷重側',
+        equalFinding: '左右ほぼ同じ'
+      },
+      {
+        key: 'asisHeight',
+        label: '④ ASIS（上前腸骨棘）',
+        meaning: 'ASIS＝骨盤の前にある骨の出っ張り。低い側が荷重側で圧縮されている',
+        left: 'rightHigh', right: 'leftHigh',
+        leftFinding: '右が高い（左が低い） → 左が荷重側',
+        rightFinding: '左が高い（右が低い） → 右が荷重側',
+        equalFinding: '左右ほぼ同じ'
+      },
+      {
+        key: 'kneeRotation',
+        label: '⑤ 膝屈曲位の回旋',
+        meaning: '膝を曲げて左右に倒し、突っ張る側を確認。硬い側が荷重側',
+        left: 'leftTight', right: 'rightTight',
+        leftFinding: '左が硬い → 左が荷重側',
+        rightFinding: '右が硬い → 右が荷重側',
+        equalFinding: '左右ほぼ同じ'
+      }
+    ];
+    for (const item of items) {
+      const val = structuralData[item.key];
+      let indicator = '未入力';
+      let itemCls = '';
+      let valueCls = '';
+      let finding = '—';
+      if (val === item.left) {
+        indicator = '◀ 左';
+        itemCls = 'wb-left';
+        valueCls = 'wb-left';
+        finding = item.leftFinding;
+      } else if (val === item.right) {
+        indicator = '右 ▶';
+        itemCls = 'wb-right';
+        valueCls = 'wb-right';
+        finding = item.rightFinding;
+      } else if (val === 'equal') {
+        indicator = '＝ 均等';
+        itemCls = 'wb-even';
+        valueCls = 'wb-even';
+        finding = item.equalFinding;
+      }
+      html += `<div class="structural-detail-item ${itemCls}">
+        <div class="structural-detail-info">
+          <span class="structural-detail-label">${item.label}</span>
+          <span class="structural-detail-meaning">${item.meaning}</span>
+          <span class="structural-detail-finding">所見: ${finding}</span>
+        </div>
+        <span class="structural-detail-value ${valueCls}">${indicator}</span>
+      </div>`;
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function drawStructuralDiagrams(wb, forDiagnosis) {
+    const frontId = forDiagnosis ? 'postureDiagFrontSvg' : 'structuralFrontSvg';
+    const backId = forDiagnosis ? 'postureDiagBackSvg' : 'structuralBackSvg';
+    const leftId = forDiagnosis ? 'postureDiagLeftSvg' : 'structuralLeftSideSvg';
+    const rightId = forDiagnosis ? 'postureDiagRightSvg' : 'structuralRightSideSvg';
+    const f = document.getElementById(frontId);
+    const b = document.getElementById(backId);
+    const l = document.getElementById(leftId);
+    const r = document.getElementById(rightId);
+    // viewBox を 320×440 に拡大して左右余白にラベルを配置
+    [f, b, l, r].forEach(el => { if (el) el.setAttribute('viewBox', '0 0 320 440'); });
+    if (f) f.innerHTML = generateStructuralFrontSvg(wb);
+    if (b) b.innerHTML = generateStructuralBackSvg(wb);
+    if (l) l.innerHTML = generateSagittalSvg('left', wb);
+    if (r) r.innerHTML = generateSagittalSvg('right', wb);
+    // 結果ページの後面図SVGは廃止（統合結果セクション削除に伴う）
+  }
+
+  function _structDefs(id) {
+    return `<defs>
+      <linearGradient id="${id}Skin" x1="0" y1="0" x2="0.3" y2="1">
+        <stop offset="0%" stop-color="#f5dcc0"/><stop offset="60%" stop-color="#e8c4a0"/><stop offset="100%" stop-color="#d4a87a"/>
+      </linearGradient>
+      <radialGradient id="${id}Face" cx="0.4" cy="0.35" r="0.6">
+        <stop offset="0%" stop-color="#f8e4cc"/><stop offset="100%" stop-color="#e8c4a0"/>
+      </radialGradient>
+      <filter id="${id}Shadow" x="-5%" y="-5%" width="110%" height="110%">
+        <feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-color="#00000015"/>
+      </filter>
+    </defs>`;
+  }
+
+  // ===== 共通ヘルパー: 状態ラベル（左右余白の縦並びサイドラベル）  =====
+  // side: 'left' | 'right' / items: [{label, sub, color, y}]
+  function _structSideLabels(side, items) {
+    if (!items || !items.length) return '';
+    // 左サイドはx=2~78、右サイドはx=242~318
+    const xText = side === 'left' ? 8 : 312;
+    const anchor = side === 'left' ? 'start' : 'end';
+    const lineX1 = side === 'left' ? 78 : 242;
+    let html = '';
+    for (const it of items) {
+      // リーダー線（ラベル → 図示位置 anchorX,anchorY）
+      if (it.anchorX != null && it.anchorY != null) {
+        html += `<line x1="${lineX1}" y1="${it.y + 2}" x2="${it.anchorX}" y2="${it.anchorY}" stroke="${it.color || '#94a3b8'}" stroke-width="0.6" stroke-dasharray="2,2" opacity="0.55"/>`;
+      }
+      // 凡例ドット
+      const dotX = side === 'left' ? 70 : 250;
+      html += `<circle cx="${dotX}" cy="${it.y + 2}" r="2.5" fill="${it.color || '#94a3b8'}"/>`;
+      html += `<text x="${xText}" y="${it.y}" font-size="9" fill="#1f2937" font-weight="600" text-anchor="${anchor}">${it.label}</text>`;
+      if (it.sub) {
+        html += `<text x="${xText}" y="${it.y + 11}" font-size="7" fill="#6b7280" text-anchor="${anchor}">${it.sub}</text>`;
+      }
+    }
+    return html;
+  }
+
+  // 共通: 荷重側の役割サマリーバッジ（下部）
+  function _structRoleBadge(wb) {
+    const wbColor = '#ef4444';
+    const nonWbColor = '#3b82f6';
+    if (wb.side === 'left') {
+      return `<rect x="20" y="416" width="280" height="20" rx="6" fill="${wbColor}" opacity="0.1"/>
+              <text x="160" y="430" font-size="9.5" fill="${wbColor}" font-weight="700" text-anchor="middle">左荷重 → 左前面 / 右後面に症状が出やすい</text>`;
+    }
+    if (wb.side === 'right') {
+      return `<rect x="20" y="416" width="280" height="20" rx="6" fill="${wbColor}" opacity="0.1"/>
+              <text x="160" y="430" font-size="9.5" fill="${wbColor}" font-weight="700" text-anchor="middle">右荷重 → 右前面 / 左後面に症状が出やすい</text>`;
+    }
+    if (wb.side === 'even') {
+      return `<rect x="20" y="416" width="280" height="20" rx="6" fill="#94a3b8" opacity="0.15"/>
+              <text x="160" y="430" font-size="9.5" fill="#475569" font-weight="700" text-anchor="middle">左右荷重ほぼ均等</text>`;
+    }
+    return '';
+  }
+
+  function generateStructuralFrontSvg(wb) {
+    const wbSide = wb.side;
+    const wbColor = '#ef4444';
+    const nonWbColor = '#3b82f6';
+    const neutralColor = '#94a3b8';
+    const leftColor = wbSide === 'left' ? wbColor : wbSide === 'right' ? nonWbColor : neutralColor;
+    const rightColor = wbSide === 'right' ? wbColor : wbSide === 'left' ? nonWbColor : neutralColor;
+    const ll = structuralData.legLength;
+    const leftLegShort = ll === 'leftShort';
+    const rightLegShort = ll === 'rightShort';
+    const lFootY = leftLegShort ? 358 : 368;
+    const rFootY = rightLegShort ? 358 : 368;
+    const icLeft = structuralData.iliacCrest;
+    const pelvisRotDeg = icLeft === 'leftHigh' ? -4 : icLeft === 'rightHigh' ? 4 : 0;
+
+    // 左右サイドラベル（状態）— 余白側に配置してリーダー線で結ぶ
+    const leftItems = [];
+    const rightItems = [];
+    if (wbSide === 'left') {
+      leftItems.push({ label: '荷重側', sub: '前面に症状', color: wbColor, y: 220, anchorX: 92, anchorY: 220 });
+      // 前面の主働筋（荷重側＝左）
+      leftItems.push({ label: '胸鎖乳突筋', sub: '前面短縮', color: wbColor, y: 80, anchorX: 92, anchorY: 76 });
+      leftItems.push({ label: '大胸筋', sub: '前面短縮', color: wbColor, y: 130, anchorX: 92, anchorY: 130 });
+      leftItems.push({ label: '腸腰筋', sub: '前面短縮', color: wbColor, y: 170, anchorX: 92, anchorY: 220 });
+      leftItems.push({ label: '大腿四頭筋', sub: '前面短縮', color: wbColor, y: 290, anchorX: 92, anchorY: 290 });
+    }
+    if (wbSide === 'right') {
+      rightItems.push({ label: '荷重側', sub: '前面に症状', color: wbColor, y: 220, anchorX: 228, anchorY: 220 });
+      rightItems.push({ label: '胸鎖乳突筋', sub: '前面短縮', color: wbColor, y: 80, anchorX: 228, anchorY: 76 });
+      rightItems.push({ label: '大胸筋', sub: '前面短縮', color: wbColor, y: 130, anchorX: 228, anchorY: 130 });
+      rightItems.push({ label: '腸腰筋', sub: '前面短縮', color: wbColor, y: 170, anchorX: 228, anchorY: 220 });
+      rightItems.push({ label: '大腿四頭筋', sub: '前面短縮', color: wbColor, y: 290, anchorX: 228, anchorY: 290 });
+    }
+
+    return `
+    ${_structDefs('sf')}
+    <!-- 荷重側ハイライト（薄い色塗り） -->
+    ${wbSide === 'left' ? '<rect x="80" y="22" width="80" height="380" rx="8" fill="#ef4444" opacity="0.05"/>' : ''}
+    ${wbSide === 'right' ? '<rect x="160" y="22" width="80" height="380" rx="8" fill="#ef4444" opacity="0.05"/>' : ''}
+    <!-- 中心軸 -->
+    <line x1="160" y1="22" x2="160" y2="402" stroke="#e2e8f0" stroke-width="0.6" stroke-dasharray="4,3"/>
+    <!-- 身体（中央 80~240 に描画。元coords + 60 シフト） -->
+    <g filter="url(#sfShadow)" transform="translate(60,0)">
+      <ellipse cx="100" cy="42" rx="22" ry="26" fill="url(#sfFace)" stroke="#c9a882" stroke-width="0.7"/>
+      <ellipse cx="77" cy="42" rx="4" ry="7" fill="url(#sfSkin)" stroke="#c9a882" stroke-width="0.5"/>
+      <ellipse cx="123" cy="42" rx="4" ry="7" fill="url(#sfSkin)" stroke="#c9a882" stroke-width="0.5"/>
+      <path d="M91,66 Q92,72 90,78 L110,78 Q108,72 109,66" fill="url(#sfSkin)" stroke="#c9a882" stroke-width="0.5"/>
+      <path d="M66,82 Q62,90 60,105 Q58,130 62,160 Q65,180 72,196 L76,204 Q88,210 100,212 Q112,210 124,204 L128,196 Q135,180 138,160 Q142,130 140,105 Q138,90 134,82 Z" fill="url(#sfSkin)" stroke="#c9a882" stroke-width="0.7"/>
+      <path d="M76,204 Q74,220 72,250 Q70,280 72,310 Q73,330 74,350 Q75,360 72,${lFootY} L92,${lFootY} Q90,360 90,350 Q91,330 92,310 Q93,280 92,250 Q91,220 88,204" fill="url(#sfSkin)" stroke="#c9a882" stroke-width="0.6"/>
+      <path d="M112,204 Q110,220 108,250 Q107,280 108,310 Q109,330 110,350 Q111,360 108,${rFootY} L128,${rFootY} Q126,360 126,350 Q127,330 128,310 Q129,280 128,250 Q127,220 124,204" fill="url(#sfSkin)" stroke="#c9a882" stroke-width="0.6"/>
+    </g>
+    <!-- 骨盤ライン（傾斜） -->
+    <g transform="rotate(${pelvisRotDeg},160,204)">
+      <line x1="128" y1="204" x2="192" y2="204" stroke="#f59e0b" stroke-width="1.8" opacity="0.7"/>
+      <circle cx="128" cy="204" r="3" fill="#f59e0b" opacity="0.85"/>
+      <circle cx="192" cy="204" r="3" fill="#f59e0b" opacity="0.85"/>
+    </g>
+    <!-- 上部「左/右」ラベル -->
+    <text x="115" y="16" font-size="11" fill="${leftColor}" font-weight="700" text-anchor="middle">左</text>
+    <text x="205" y="16" font-size="11" fill="${rightColor}" font-weight="700" text-anchor="middle">右</text>
+    <!-- 状態ラベル（左右マージン側） -->
+    ${_structSideLabels('left', leftItems)}
+    ${_structSideLabels('right', rightItems)}
+    <!-- 下部役割バッジ -->
+    ${_structRoleBadge(wb)}
+    `;
+  }
+
+  function generateStructuralBackSvg(wb) {
+    const wbSide = wb.side;
+    const wbColor = '#ef4444';
+    const nonWbColor = '#3b82f6';
+    const neutralColor = '#94a3b8';
+    // 後面ビューでは見える左右が反転（観察者から見て）：左=画面右、右=画面左
+    const leftColor = wbSide === 'left' ? wbColor : wbSide === 'right' ? nonWbColor : neutralColor;
+    const rightColor = wbSide === 'right' ? wbColor : wbSide === 'left' ? nonWbColor : neutralColor;
+    const icLeft = structuralData.iliacCrest;
+    const pelvisRotDeg = icLeft === 'leftHigh' ? -4 : icLeft === 'rightHigh' ? 4 : 0;
+
+    // 非荷重側（後面に症状）— 後面では身体の対側
+    const nwSide = wbSide === 'left' ? 'right' : wbSide === 'right' ? 'left' : null;
+    const leftItems = [];
+    const rightItems = [];
+    // 非荷重側ラベル（後面・延長）
+    if (nwSide === 'left') {
+      // 後面ビューで「左」は画面右側（観察者視点）
+      rightItems.push({ label: '非荷重側', sub: '後面に症状', color: nonWbColor, y: 220, anchorX: 228, anchorY: 220 });
+      rightItems.push({ label: '後頭下筋', sub: '後面短縮', color: nonWbColor, y: 80, anchorX: 228, anchorY: 70 });
+      rightItems.push({ label: '脊柱起立筋', sub: '後面短縮', color: nonWbColor, y: 130, anchorX: 228, anchorY: 130 });
+      rightItems.push({ label: '臀筋群', sub: '後面短縮', color: nonWbColor, y: 230, anchorX: 228, anchorY: 240 });
+      rightItems.push({ label: 'ハムストリングス', sub: '後面短縮', color: nonWbColor, y: 290, anchorX: 228, anchorY: 290 });
+    } else if (nwSide === 'right') {
+      leftItems.push({ label: '非荷重側', sub: '後面に症状', color: nonWbColor, y: 220, anchorX: 92, anchorY: 220 });
+      leftItems.push({ label: '後頭下筋', sub: '後面短縮', color: nonWbColor, y: 80, anchorX: 92, anchorY: 70 });
+      leftItems.push({ label: '脊柱起立筋', sub: '後面短縮', color: nonWbColor, y: 130, anchorX: 92, anchorY: 130 });
+      leftItems.push({ label: '臀筋群', sub: '後面短縮', color: nonWbColor, y: 230, anchorX: 92, anchorY: 240 });
+      leftItems.push({ label: 'ハムストリングス', sub: '後面短縮', color: nonWbColor, y: 290, anchorX: 92, anchorY: 290 });
+    }
+
+    return `
+    ${_structDefs('sb')}
+    <!-- 非荷重側ハイライト -->
+    ${nwSide === 'left' ? '<rect x="160" y="22" width="80" height="380" rx="8" fill="#3b82f6" opacity="0.05"/>' : ''}
+    ${nwSide === 'right' ? '<rect x="80" y="22" width="80" height="380" rx="8" fill="#3b82f6" opacity="0.05"/>' : ''}
+    <line x1="160" y1="22" x2="160" y2="402" stroke="#e2e8f0" stroke-width="0.6" stroke-dasharray="4,3"/>
+    <g filter="url(#sbShadow)" transform="translate(60,0)">
+      <ellipse cx="100" cy="42" rx="22" ry="26" fill="url(#sbFace)" stroke="#c9a882" stroke-width="0.7"/>
+      <path d="M91,66 Q92,72 90,78 L110,78 Q108,72 109,66" fill="url(#sbSkin)" stroke="#c9a882" stroke-width="0.5"/>
+      <path d="M66,82 Q62,90 60,105 Q58,130 62,160 Q65,180 72,196 L76,204 Q88,210 100,212 Q112,210 124,204 L128,196 Q135,180 138,160 Q142,130 140,105 Q138,90 134,82 Z" fill="url(#sbSkin)" stroke="#c9a882" stroke-width="0.7"/>
+      <path d="M100,70 Q98,100 100,140 Q102,170 100,204" fill="none" stroke="#d4a87a" stroke-width="1" stroke-dasharray="2" opacity="0.5"/>
+      <path d="M76,204 Q74,220 72,250 Q70,280 72,310 Q73,330 74,350 Q75,360 72,368 L92,368 Q90,360 90,350 Q91,330 92,310 Q93,280 92,250 Q91,220 88,204" fill="url(#sbSkin)" stroke="#c9a882" stroke-width="0.6"/>
+      <path d="M112,204 Q110,220 108,250 Q107,280 108,310 Q109,330 110,350 Q111,360 108,368 L128,368 Q126,360 126,350 Q127,330 128,310 Q129,280 128,250 Q127,220 124,204" fill="url(#sbSkin)" stroke="#c9a882" stroke-width="0.6"/>
+    </g>
+    <g transform="rotate(${pelvisRotDeg},160,204)">
+      <line x1="128" y1="204" x2="192" y2="204" stroke="#f59e0b" stroke-width="1.8" opacity="0.7"/>
+      <circle cx="128" cy="204" r="3" fill="#f59e0b" opacity="0.85"/>
+      <circle cx="192" cy="204" r="3" fill="#f59e0b" opacity="0.85"/>
+    </g>
+    <!-- 後面では観察者視点で左右が反転 -->
+    <text x="115" y="16" font-size="11" fill="${rightColor}" font-weight="700" text-anchor="middle">右</text>
+    <text x="205" y="16" font-size="11" fill="${leftColor}" font-weight="700" text-anchor="middle">左</text>
+    ${_structSideLabels('left', leftItems)}
+    ${_structSideLabels('right', rightItems)}
+    ${_structRoleBadge(wb)}
+    `;
+  }
+
+  function generateSagittalSvg(side, wb) {
+    const wbSide = wb.side;
+    const isWB = (side === wbSide);
+    const isNonWB = (wbSide && wbSide !== 'even' && side !== wbSide);
+    const sideLabel = side === 'left' ? '左' : '右';
+    const fColor = '#ef4444';
+    const bColor = '#3b82f6';
+    // 身体は中央 (translate +60) に配置
+    const sideBody = `
+    <g filter="url(#ss${side}Shadow)" transform="translate(60,0)">
+      <ellipse cx="92" cy="42" rx="20" ry="24" fill="url(#ss${side}Face)" stroke="#c9a882" stroke-width="0.7"/>
+      <ellipse cx="110" cy="40" rx="3.5" ry="6" fill="url(#ss${side}Skin)" stroke="#c9a882" stroke-width="0.5"/>
+      <path d="M86,64 Q88,70 84,78 L104,80 Q106,72 104,64" fill="url(#ss${side}Skin)" stroke="#c9a882" stroke-width="0.5"/>
+      <path d="M84,78 Q76,82 70,92 Q64,108 66,130 Q68,155 72,175 Q76,192 80,204 Q86,212 94,216 Q102,212 108,204 Q112,192 114,175 Q118,155 120,130 Q122,108 118,92 Q114,82 104,78 Z" fill="url(#ss${side}Skin)" stroke="#c9a882" stroke-width="0.7"/>
+      <ellipse cx="112" cy="210" rx="14" ry="16" fill="url(#ss${side}Skin)" stroke="#c9a882" stroke-width="0.5"/>
+      <path d="M86,216 Q84,235 82,260 Q80,280 82,300 Q83,315 84,335 Q85,350 82,368 L98,368 Q96,350 96,335 Q97,315 98,300 Q100,280 98,260 Q97,235 96,216" fill="url(#ss${side}Skin)" stroke="#c9a882" stroke-width="0.6"/>
+      <path d="M82,366 Q78,368 74,370 L98,370 Q96,368 98,366" fill="url(#ss${side}Skin)" stroke="#c9a882" stroke-width="0.5"/>
+    </g>
+    <path d="M164,66 Q168,80 170,95 Q172,115 168,140 Q166,160 170,180 Q172,195 168,210" fill="none" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="3" opacity="0.55"/>`;
+
+    // 状態ラベル：身体の前/後ろ側に振り分け（前面 = 左マージン or 右マージン）
+    // sagittal の前面は描画上の左側 (x<160)、後面は右側 (x>160) と仮定
+    let leftItems = []; // 前面側
+    let rightItems = []; // 後面側
+    if (isWB) {
+      // 荷重側 → 前面短縮
+      leftItems.push({ label: '荷重側', sub: '前面短縮', color: fColor, y: 200, anchorX: 130, anchorY: 200 });
+      leftItems.push({ label: '胸鎖乳突筋', sub: '前面', color: fColor, y: 60, anchorX: 130, anchorY: 70 });
+      leftItems.push({ label: '大胸筋', sub: '前面', color: fColor, y: 120, anchorX: 130, anchorY: 110 });
+      leftItems.push({ label: '腸腰筋', sub: '前面', color: fColor, y: 220, anchorX: 130, anchorY: 200 });
+      leftItems.push({ label: '大腿四頭筋', sub: '前面', color: fColor, y: 290, anchorX: 130, anchorY: 280 });
+    } else if (isNonWB) {
+      // 非荷重側 → 後面短縮
+      rightItems.push({ label: '非荷重側', sub: '後面短縮', color: bColor, y: 200, anchorX: 190, anchorY: 200 });
+      rightItems.push({ label: '後頭下筋', sub: '後面', color: bColor, y: 60, anchorX: 190, anchorY: 70 });
+      rightItems.push({ label: '脊柱起立筋', sub: '後面', color: bColor, y: 120, anchorX: 190, anchorY: 130 });
+      rightItems.push({ label: '臀筋群', sub: '後面', color: bColor, y: 220, anchorX: 190, anchorY: 230 });
+      rightItems.push({ label: 'ハムストリングス', sub: '後面', color: bColor, y: 290, anchorX: 190, anchorY: 290 });
+    }
+
+    const roleText = isWB ? '荷重側 → 前面に症状' : isNonWB ? '非荷重側 → 後面に症状' : '左右荷重均等';
+    const roleColor = isWB ? fColor : isNonWB ? bColor : '#475569';
+    const badgeBg = isWB ? 'rgba(239,68,68,0.1)' : isNonWB ? 'rgba(59,130,246,0.1)' : 'rgba(148,163,184,0.15)';
+
+    return `
+    ${_structDefs('ss' + side)}
+    <!-- 前面/後面表示 -->
+    <text x="100" y="14" font-size="9" fill="#64748b" font-weight="600" text-anchor="middle">← 前面</text>
+    <text x="220" y="14" font-size="9" fill="#64748b" font-weight="600" text-anchor="middle">後面 →</text>
+    <line x1="160" y1="22" x2="160" y2="402" stroke="#e2e8f0" stroke-width="0.6" stroke-dasharray="4,3"/>
+    ${sideBody}
+    ${_structSideLabels('left', leftItems)}
+    ${_structSideLabels('right', rightItems)}
+    <rect x="20" y="416" width="280" height="20" rx="6" fill="${badgeBg}"/>
+    <text x="160" y="430" font-size="9.5" fill="${roleColor}" font-weight="700" text-anchor="middle">${sideLabel}側 ${roleText}</text>
+    `;
+  }
+
+  // ===== 写真撮影（カメラ） =====
+  function setupPhotoCapture() {
+    document.querySelectorAll('.photo-camera-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const view = btn.dataset.view;
+        startCameraForStep(view);
+      });
+    });
+    document.querySelectorAll('.photo-remove-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const view = btn.dataset.view;
+        clearPhoto(view);
+      });
+    });
+
+    const captureShotBtn = document.getElementById('captureShotBtn');
+    if (captureShotBtn) {
+      captureShotBtn.addEventListener('click', () => {
+        captureCurrentFrame();
+      });
+    }
+    const stopCameraBtn = document.getElementById('stopCameraBtn');
+    if (stopCameraBtn) {
+      stopCameraBtn.addEventListener('click', () => stopCamera());
+    }
+
+    // 結果画面の撮り直しボタンは廃止（統合結果セクション削除）
+    const cameraModalCapture = document.getElementById('cameraModalCapture');
+    if (cameraModalCapture) {
+      cameraModalCapture.addEventListener('click', () => captureCurrentFrame());
+    }
+    const cameraModalClose = document.getElementById('cameraModalClose');
+    if (cameraModalClose) {
+      cameraModalClose.addEventListener('click', () => closeCameraModal());
+    }
+  }
+
+  async function startCameraForStep(view) {
+    _cameraTargetView = view;
+    _cameraSource = 'step';
+    const stage = document.getElementById('cameraStage');
+    const video = document.getElementById('cameraVideo');
+    if (!stage || !video) return;
+    stage.style.display = 'block';
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' }, audio: false
+      });
+      _cameraStream = stream;
+      video.srcObject = stream;
+    } catch (e) {
+      alert('カメラを起動できませんでした: ' + e.message);
+      stage.style.display = 'none';
+    }
+  }
+
+  async function openCameraModal(view) {
+    _cameraTargetView = view;
+    _cameraSource = 'modal';
+    const modal = document.getElementById('cameraModal');
+    const video = document.getElementById('cameraModalVideo');
+    const title = document.getElementById('cameraModalTitle');
+    if (!modal || !video) return;
+    modal.style.display = 'flex';
+    if (title) title.textContent = (view === 'back' ? '後面' : view === 'front' ? '正面' : '側面') + 'を撮影';
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' }, audio: false
+      });
+      _cameraStream = stream;
+      video.srcObject = stream;
+    } catch (e) {
+      alert('カメラを起動できませんでした: ' + e.message);
+      modal.style.display = 'none';
+    }
+  }
+
+  function closeCameraModal() {
+    stopCamera();
+    const modal = document.getElementById('cameraModal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  function stopCamera() {
+    if (_cameraStream) {
+      _cameraStream.getTracks().forEach(t => t.stop());
+      _cameraStream = null;
+    }
+    const stage = document.getElementById('cameraStage');
+    if (stage) stage.style.display = 'none';
+  }
+
+  async function captureCurrentFrame() {
+    if (!_cameraStream || !_cameraTargetView) return;
+    const video = _cameraSource === 'modal'
+      ? document.getElementById('cameraModalVideo')
+      : document.getElementById('cameraVideo');
+    if (!video) return;
+    const canvas = document.createElement('canvas');
+    const w = video.videoWidth || 720;
+    const h = video.videoHeight || 960;
+    const maxSize = 1024;
+    let cw = w, ch = h;
+    if (cw > maxSize || ch > maxSize) {
+      if (cw > ch) { ch = Math.round(ch * maxSize / cw); cw = maxSize; }
+      else { cw = Math.round(cw * maxSize / ch); ch = maxSize; }
+    }
+    canvas.width = cw;
+    canvas.height = ch;
+    canvas.getContext('2d').drawImage(video, 0, 0, cw, ch);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+    setPhotoData(_cameraTargetView, dataUrl);
+
+    // 即時アップロード
+    try {
+      await uploadPhotoToStorage(_cameraTargetView, dataUrl);
+    } catch (e) {
+      console.warn('写真のアップロードに失敗:', e.message);
+    }
+
+    if (_cameraSource === 'modal') {
+      closeCameraModal();
+      // 結果画面の写真を更新
+      updateIntegratedPhoto();
+    } else {
+      stopCamera();
+    }
+  }
+
+  function setPhotoData(view, dataUrl) {
+    patientPhotos[view] = dataUrl;
+    const slot = document.querySelector(`.photo-slot[data-view="${view}"]`);
+    if (slot) {
+      const preview = slot.querySelector('.photo-preview');
+      const placeholder = slot.querySelector('.photo-placeholder');
+      const removeBtn = slot.querySelector('.photo-remove-btn');
+      if (preview) { preview.src = dataUrl; preview.style.display = 'block'; }
+      if (placeholder) placeholder.style.display = 'none';
+      if (removeBtn) removeBtn.style.display = 'inline-flex';
+      slot.classList.add('has-photo');
+    }
+  }
+
+  function clearPhoto(view) {
+    patientPhotos[view] = null;
+    patientPhotosPaths[view] = null;
+    const slot = document.querySelector(`.photo-slot[data-view="${view}"]`);
+    if (slot) {
+      const preview = slot.querySelector('.photo-preview');
+      const placeholder = slot.querySelector('.photo-placeholder');
+      const removeBtn = slot.querySelector('.photo-remove-btn');
+      if (preview) { preview.src = ''; preview.style.display = 'none'; }
+      if (placeholder) placeholder.style.display = 'flex';
+      if (removeBtn) removeBtn.style.display = 'none';
+      slot.classList.remove('has-photo');
+    }
+  }
+
+  async function uploadPhotoToStorage(view, dataUrl) {
+    if (!SupabaseAuth || !SupabaseAuth.client) return;
+    const clinicId = SupabaseAuth.getClinicId();
+    if (!clinicId) return;
+    const patientId = selectedPatientId || 'unsaved';
+    const ts = Date.now();
+    const path = `${clinicId}/${patientId}/${ts}_${view}.jpg`;
+    // dataURL → Blob
+    const blob = await (await fetch(dataUrl)).blob();
+    const { data, error } = await SupabaseAuth.client.storage
+      .from('patient-photos')
+      .upload(path, blob, { contentType: 'image/jpeg', upsert: true });
+    if (error) {
+      console.warn('Storage upload error:', error.message);
+      return;
+    }
+    patientPhotosPaths[view] = path;
+    return path;
+  }
+
+  // 結果ページに撮影写真（後面・側面）を表示
+  function updateIntegratedPhoto() {
+    const section = document.getElementById('resultPhotosSection');
+    const grid = document.getElementById('resultPhotosGrid');
+    if (!section || !grid) return;
+
+    const items = [
+      { view: 'back', label: '後面' },
+      { view: 'side', label: '側面' },
+    ].filter(it => patientPhotos[it.view]);
+
+    if (items.length === 0) {
+      section.style.display = 'none';
+      grid.innerHTML = '';
+      return;
+    }
+
+    grid.innerHTML = items.map(it => `
+      <figure class="result-photo-item">
+        <img src="${patientPhotos[it.view]}" alt="${it.label}">
+        <figcaption>${it.label}</figcaption>
+      </figure>
+    `).join('');
+    section.style.display = 'block';
   }
 
   // ===== 座位検査：比較結果 =====
@@ -1142,20 +1886,75 @@
     const histInput = document.getElementById('medicalHistory');
     if (histInput) medicalHistory = histInput.value;
 
-    diagnosisResult = InspectionLogic.diagnose(examData);
-    diagnosisResult.gravityResult = gravityResult;
-    diagnosisResult.gravityData = { ...gravityData };
-    await renderDiagnosis(diagnosisResult);
-    showDetailedExam();
+    // ランドマーク検査がOFFの場合はダミーexamDataで diagnose をスキップ
+    if (examTypes.landmark) {
+      diagnosisResult = InspectionLogic.diagnose(examData);
+      diagnosisResult.gravityResult = gravityResult;
+      diagnosisResult.gravityData = { ...gravityData };
+    } else {
+      // 構造検査のみ実施時の最低限の結果オブジェクト
+      diagnosisResult = {
+        primaryCause: 'unknown',
+        gravityResult: gravityResult,
+        gravityData: { ...gravityData },
+        structuralOnly: true
+      };
+    }
+    // 構造検査データもdiagnosisResultに含める
+    if (examTypes.structural) {
+      diagnosisResult.structuralData = { ...structuralData };
+      diagnosisResult.weightBearing = calcWeightBearing();
+    }
+    if (examTypes.landmark) {
+      await renderDiagnosis(diagnosisResult);
+      showDetailedExam();
+    } else {
+      // ランドマークOFF時はランドマーク結果を非表示
+      const dc = document.getElementById('diagnosisContent');
+      if (dc) dc.innerHTML = '';
+      const ds = document.getElementById('detailedExamSection');
+      if (ds) ds.style.display = 'none';
+    }
+
+    // 構造検査結果セクション
+    renderDiagnosisStructural();
+
+    // 統合結果（写真+サマリー）
+    renderIntegratedResult();
+
     await updateCompareButton();
     await updateTrendButton();
-    // Show protocol button
+    // Show protocol button (ランドマーク有効時のみ意味あり)
     const protocolBtn = document.getElementById('showProtocolBtn');
-    if (protocolBtn) protocolBtn.style.display = '';
+    if (protocolBtn) protocolBtn.style.display = examTypes.landmark ? '' : 'none';
+    // 診断アクションバー表示
+    const diagActions = document.getElementById('diagnosisActions');
+    if (diagActions) diagActions.style.display = 'flex';
     // Auto-generate report
     await renderReport();
     // サマリーステップを飛ばして直接診断結果タブへ
     switchTab('diagnosis');
+  }
+
+  // ===== 構造検査セクションのレンダリング =====
+  function renderDiagnosisStructural() {
+    const section = document.getElementById('diagnosisStructuralSection');
+    const content = document.getElementById('diagnosisStructuralContent');
+    if (!section || !content) return;
+    if (!examTypes.structural) {
+      section.style.display = 'none';
+      return;
+    }
+    const wb = calcWeightBearing();
+    content.innerHTML = renderStructuralSummaryHtml(wb);
+    section.style.display = 'block';
+    // 構造解析図（4視点SVG）は廃止。判定テキストのみ表示。
+    // drawStructuralDiagrams(wb, true);
+  }
+
+  // 統合結果セクションは廃止。後方互換のため空関数を残す。
+  function renderIntegratedResult() {
+    // 統合結果UIは削除済み。何もしない。
   }
 
   // ===== 比較ボタンの表示制御 =====
@@ -1491,8 +2290,12 @@
     let html = '';
 
     // 全身統合人体図（診断結果画面上部に表示）
-    html += `<div class="body-diagram-wrapper unified-diagram-wrapper">
-      <div class="body-diagram-container" id="diagram-diagnosis-body"></div>
+    // 施術者モード: リアル人体画像（写真）/ 患者モード: SVGイラスト
+    const realStyle = isPatient ? 'display:none;' : '';
+    const svgStyle  = isPatient ? '' : 'display:none;';
+    html += `<div class="body-diagram-wrapper unified-diagram-wrapper realistic-body-wrapper">
+      <div class="realistic-body-container" id="realistic-diagnosis-body" style="${realStyle}"></div>
+      <div class="body-diagram-container" id="diagram-diagnosis-body" style="${svgStyle}"></div>
     </div>`;
 
     // メイン診断（両モード共通）
@@ -1605,6 +2408,25 @@
     container.innerHTML = html;
 
     // 診断結果画面の全身人体図を描画
+    // 新方式: リアル人体画像＋オーバーレイ（RealisticBodyDiagram）
+    const realBodyEl = document.getElementById('realistic-diagnosis-body');
+    if (realBodyEl && typeof RealisticBodyDiagram !== 'undefined') {
+      try {
+        RealisticBodyDiagram.render(realBodyEl, {
+          standing: examData.standing,
+          upper:    detailData.upperDetail,
+          lower:    detailData.lowerDetail,
+          gravitySide: (result && result.gravityResult && result.gravityResult.side) || null
+        }, patientGender);
+      } catch (e) {
+        console.error('RealisticBodyDiagram render error:', e);
+        // フォールバック: SVG版を表示
+        const svgEl = document.getElementById('diagram-diagnosis-body');
+        if (svgEl) svgEl.style.display = '';
+      }
+    }
+
+    // 既存SVG版（フォールバック・後方互換用、初期非表示）
     const diagBodyEl = document.getElementById('diagram-diagnosis-body');
     if (diagBodyEl) {
       BodyDiagram.init('diagram-diagnosis-body');
@@ -1627,6 +2449,9 @@
     // 患者待機カードを非表示
     const waitCard = document.getElementById('patientWaiting');
     if (waitCard) waitCard.style.display = 'none';
+
+    // 結果ページに撮影写真を表示
+    updateIntegratedPhoto();
   }
 
   // ===== 前回比較セクション =====
@@ -2380,7 +3205,14 @@
           alert(`保存エラー: 認証情報が不足しています\nclinic_id: ${clinicId || 'なし'}\nuser_id: ${userId || 'なし'}\n\nログアウトして再ログインしてください。`);
           return;
         }
-        const success = await Storage.save(examData, diagnosisResult, patientName, memo, detailData, contractionResult, weightBalance, selectedPatientId, painLevel, chiefComplaints, extraFields);
+        // 構造検査データ・写真パス・検査タイプを examData にマージ（exam_data JSONBに格納）
+        const examDataExt = Object.assign({}, examData, {
+          structural: examTypes.structural ? structuralData : null,
+          weightBearing: examTypes.structural ? calcWeightBearing() : null,
+          patientPhotosPaths: { ...patientPhotosPaths },
+          examTypes: { ...examTypes }
+        });
+        const success = await Storage.save(examDataExt, diagnosisResult, patientName, memo, detailData, contractionResult, weightBalance, selectedPatientId, painLevel, chiefComplaints, extraFields);
         if (success) {
           alert('検査結果を保存しました');
           await updateCompareButton();
@@ -2394,8 +3226,9 @@
       }
     });
 
-    // 患者用PDF（画面表示と同じセルフケアロジック）
-    document.getElementById('savePdfPatientBtn').addEventListener('click', () => {
+    // 患者用PDF（Pro版限定 - ボタンがない場合はスキップ）
+    const savePdfPatientBtn = document.getElementById('savePdfPatientBtn');
+    if (savePdfPatientBtn) savePdfPatientBtn.addEventListener('click', () => {
       if (!diagnosisResult) return;
       const patientName = document.getElementById('patientName').value;
       const inspectionDate = document.getElementById('inspectionDate').value;
@@ -2441,8 +3274,9 @@
       PdfExport.exportPatientPdf(patientName, inspectionDate, diagnosisResult, contractionResult, selfcareItems);
     });
 
-    // 施術者用PDF
-    document.getElementById('savePdfClinicalBtn').addEventListener('click', () => {
+    // 施術者用PDF（Pro版限定 - ボタンがない場合はスキップ）
+    const savePdfClinicalBtn = document.getElementById('savePdfClinicalBtn');
+    if (savePdfClinicalBtn) savePdfClinicalBtn.addEventListener('click', () => {
       if (!diagnosisResult) return;
       const patientName = document.getElementById('patientName').value;
       const inspectionDate = document.getElementById('inspectionDate').value;
@@ -2603,11 +3437,16 @@
   function setupPrintButtons() {
     const printBtn = document.getElementById('printSheetBtn');
     if (printBtn) {
-      printBtn.addEventListener('click', () => printSheet());
+      printBtn.style.display = '';
+      printBtn.addEventListener('click', async () => {
+        try { await printSheet(); } catch(e) { console.error('印刷エラー:', e); alert('印刷エラー: ' + e.message); }
+      });
     }
     const patientPrintBtn = document.getElementById('patientPrintBtn');
     if (patientPrintBtn) {
-      patientPrintBtn.addEventListener('click', () => printSheet());
+      patientPrintBtn.addEventListener('click', async () => {
+        try { await printSheet(); } catch(e) { console.error('印刷エラー:', e); alert('印刷エラー: ' + e.message); }
+      });
     }
   }
 
@@ -2635,28 +3474,16 @@
   async function printSheet() {
     if (!diagnosisResult) return;
 
-    // iOS Safari の window.print() は @page ルールを無視して余分な空白ページを
-    // 生成するため、PDF 出力パイプライン経由で印刷する。
-    // → PDF 生成 → オーバーレイの「共有 / 保存 / 印刷」から AirPrint で必ず2枚。
     const patientName = document.getElementById('patientName').value || '患者名未入力';
     const inspectionDate = document.getElementById('inspectionDate').value || new Date().toISOString().split('T')[0];
 
-    try {
-      if (typeof PdfExport !== 'undefined' && typeof PdfExport.exportPatientPdf === 'function') {
-        await PdfExport.exportPatientPdf(patientName, inspectionDate, diagnosisResult, contractionResult, []);
-        return;
-      }
-    } catch (e) {
-      console.error('印刷用PDF生成エラー:', e);
-    }
-
-    // フォールバック: 旧 window.print() フロー
+    // 印刷用HTMLを生成してwindow.print()で直接プリンターへ送る
     const container = document.getElementById('printContainer');
     if (!container) return;
     container.innerHTML = generatePrintPage1(patientName, inspectionDate)
                         + generatePrintPage2(patientName);
     const printDiagramEl = document.getElementById('print-diagram');
-    if (printDiagramEl) {
+    if (printDiagramEl && typeof BodyDiagram !== 'undefined') {
       BodyDiagram.init('print-diagram');
       if (detailData.upperDetail.acromion !== null || detailData.lowerDetail.greaterTrochanter !== null) {
         BodyDiagram.updateUnified('print-diagram', detailData.upperDetail, detailData.lowerDetail, examData.standing);
@@ -2664,9 +3491,8 @@
         BodyDiagram.update('print-diagram', 'firstStage', examData.standing);
       }
     }
-    waitForImages(container).then(() => {
-      setTimeout(() => window.print(), 100);
-    });
+    await waitForImages(container);
+    setTimeout(() => window.print(), 100);
   }
 
   // NRS痛みスケールSVG（印刷用）
@@ -3265,7 +4091,13 @@
           gravityResult: gravityResult
         };
         const chiefComplaints2 = chiefComplaintText ? [chiefComplaintText] : [];
-        const success = await Storage.save(examData, diagnosisResult, patientName, memo, detailData, contractionResult, weightBalance, selectedPatientId, painLevel, chiefComplaints2, extraFields);
+        const examDataExt2 = Object.assign({}, examData, {
+          structural: examTypes.structural ? structuralData : null,
+          weightBearing: examTypes.structural ? calcWeightBearing() : null,
+          patientPhotosPaths: { ...patientPhotosPaths },
+          examTypes: { ...examTypes }
+        });
+        const success = await Storage.save(examDataExt2, diagnosisResult, patientName, memo, detailData, contractionResult, weightBalance, selectedPatientId, painLevel, chiefComplaints2, extraFields);
         if (success) {
           alert('検査結果を保存しました');
           await updateCompareButton();
@@ -3528,6 +4360,35 @@
     visitType = 'initial';
     medicalHistory = '';
 
+    // 構造検査リセット
+    structuralData = {
+      legLength: null, toeDorsiflexion: null, iliacCrest: null,
+      asisHeight: null, kneeRotation: null
+    };
+    document.querySelectorAll('.posture-btn').forEach(btn => btn.classList.remove('selected'));
+    const structCard = document.getElementById('structuralResultCard');
+    if (structCard) structCard.style.display = 'none';
+    const structDiag = document.getElementById('structuralDiagramArea');
+    if (structDiag) structDiag.style.display = 'none';
+    const diagStruct = document.getElementById('diagnosisStructuralSection');
+    if (diagStruct) diagStruct.style.display = 'none';
+    const diagInteg = document.getElementById('diagnosisIntegratedSection');
+    if (diagInteg) diagInteg.style.display = 'none';
+
+    // 写真リセット
+    patientPhotos = { front: null, back: null, side: null };
+    patientPhotosPaths = { front: null, back: null, side: null };
+    ['front', 'back', 'side'].forEach(v => clearPhoto(v));
+    stopCamera();
+
+    // 検査タイプ選択は既定値に戻す
+    examTypes = { landmark: true, structural: false };
+    const elL = document.getElementById('examTypeLandmark');
+    const elS = document.getElementById('examTypeStructural');
+    if (elL) elL.checked = true;
+    if (elS) elS.checked = false;
+    updateStepIndicatorVisibility();
+
     document.querySelectorAll('.landmark-btn').forEach(btn => btn.classList.remove('selected'));
     const painSliderEl = document.getElementById('painSlider');
     const painValueEl = document.getElementById('painValue');
@@ -3641,6 +4502,61 @@
     loadedEntryDate = entry.date;
 
     examData = { ...entry.examData };
+
+    // 構造検査・写真パス・examTypes の復元
+    if (entry.examData && entry.examData.structural) {
+      structuralData = { ...{
+        legLength: null, toeDorsiflexion: null, iliacCrest: null,
+        asisHeight: null, kneeRotation: null
+      }, ...entry.examData.structural };
+      // ボタンの選択状態を反映
+      Object.entries(structuralData).forEach(([key, val]) => {
+        if (val) {
+          const group = document.querySelector(`.structural-input[data-structural="${key}"]`);
+          if (group) {
+            group.querySelectorAll('.posture-btn').forEach(btn => {
+              btn.classList.toggle('selected', btn.dataset.value === val);
+            });
+          }
+        }
+      });
+    } else {
+      structuralData = {
+        legLength: null, toeDorsiflexion: null, iliacCrest: null,
+        asisHeight: null, kneeRotation: null
+      };
+    }
+    if (entry.examData && entry.examData.examTypes) {
+      examTypes = { ...examTypes, ...entry.examData.examTypes };
+      const elL = document.getElementById('examTypeLandmark');
+      const elS = document.getElementById('examTypeStructural');
+      if (elL) elL.checked = !!examTypes.landmark;
+      if (elS) elS.checked = !!examTypes.structural;
+      updateStepIndicatorVisibility();
+    }
+    // 写真パスから署名付きURLを取得して表示
+    if (entry.examData && entry.examData.patientPhotosPaths) {
+      patientPhotosPaths = { front: null, back: null, side: null, ...entry.examData.patientPhotosPaths };
+      if (SupabaseAuth && SupabaseAuth.client) {
+        for (const view of ['front', 'back', 'side']) {
+          const path = patientPhotosPaths[view];
+          if (path) {
+            try {
+              const { data } = await SupabaseAuth.client.storage
+                .from('patient-photos')
+                .createSignedUrl(path, 60 * 60);
+              if (data && data.signedUrl) {
+                patientPhotos[view] = data.signedUrl;
+                setPhotoData(view, data.signedUrl);
+              }
+            } catch (e) {
+              console.warn('signed url error', e.message);
+            }
+          }
+        }
+      }
+    }
+
     if (entry.detailData) {
       detailData = { ...entry.detailData };
     }
@@ -3760,8 +4676,22 @@
     diagnosisResult = InspectionLogic.diagnose(examData);
     diagnosisResult.gravityResult = gravityResult;
     diagnosisResult.gravityData = { ...gravityData };
-    await renderDiagnosis(diagnosisResult);
-    showDetailedExam();
+    if (examTypes.structural) {
+      diagnosisResult.structuralData = { ...structuralData };
+      diagnosisResult.weightBearing = calcWeightBearing();
+    }
+    if (examTypes.landmark) {
+      await renderDiagnosis(diagnosisResult);
+      showDetailedExam();
+    } else {
+      const dc = document.getElementById('diagnosisContent');
+      if (dc) dc.innerHTML = '';
+      const ds = document.getElementById('detailedExamSection');
+      if (ds) ds.style.display = 'none';
+    }
+    // 構造検査セクションと統合結果も再描画
+    renderDiagnosisStructural();
+    renderIntegratedResult();
 
     // 収縮分析結果があれば復元
     if (entry.contractionResult && entry.contractionResult.upper && entry.contractionResult.lower) {
@@ -3793,6 +4723,36 @@
   }
 
   // ===== DOM準備完了時に認証初期化 =====
+  // ===== ランドマーク表記モード（high/low切替） =====
+  const LANDMARK_DISPLAY_KEY = 'landmark_display_mode';
+  function getLandmarkDisplayMode() {
+    try {
+      const v = localStorage.getItem(LANDMARK_DISPLAY_KEY);
+      return v === 'low' ? 'low' : 'high';
+    } catch (e) {
+      return 'high';
+    }
+  }
+  function setLandmarkDisplayMode(mode) {
+    const safe = mode === 'low' ? 'low' : 'high';
+    try { localStorage.setItem(LANDMARK_DISPLAY_KEY, safe); } catch (e) {}
+  }
+  function applyLandmarkDisplayMode() {
+    const mode = getLandmarkDisplayMode();
+    const leftText = mode === 'low' ? '← 左が低い' : '← 左が高い';
+    const rightText = mode === 'low' ? '右が低い →' : '右が高い →';
+    document.querySelectorAll('.landmark-btn[data-value="-1"]').forEach(btn => {
+      btn.textContent = leftText;
+    });
+    document.querySelectorAll('.landmark-btn[data-value="1"]').forEach(btn => {
+      btn.textContent = rightText;
+    });
+  }
+  // グローバル公開（デバッグ・他スクリプトからの参照用）
+  window.getLandmarkDisplayMode = getLandmarkDisplayMode;
+  window.setLandmarkDisplayMode = setLandmarkDisplayMode;
+  window.applyLandmarkDisplayMode = applyLandmarkDisplayMode;
+
   // ===== カスタム設定モーダル =====
   function setupCustomSettingsModal() {
     const settingsBtn = document.getElementById('settingsBtn');
@@ -3802,6 +4762,19 @@
     settingsBtn.addEventListener('click', () => {
       modal.style.display = 'flex';
       renderCustomLists();
+      // 表示設定の現在値をUIに反映
+      try {
+        const mode = getLandmarkDisplayMode();
+        const radio = modal.querySelector(`input[name="landmarkDisplayMode"][value="${mode}"]`);
+        if (radio) radio.checked = true;
+      } catch (e) {}
+      // アカウントタブ: ログイン中メールを反映
+      try {
+        const emailEl = document.getElementById('accountEmail');
+        if (emailEl && typeof SupabaseAuth !== 'undefined' && SupabaseAuth.currentUser) {
+          emailEl.textContent = SupabaseAuth.currentUser.email || '不明';
+        }
+      } catch (e) {}
     });
 
     document.getElementById('closeCustomModal').addEventListener('click', () => {
@@ -3816,6 +4789,10 @@
         const target = tab.dataset.customTab;
         document.getElementById('customSelfcarePanel').style.display = target === 'selfcare' ? 'block' : 'none';
         document.getElementById('customProtocolPanel').style.display = target === 'protocol' ? 'block' : 'none';
+        const displayPanel = document.getElementById('customDisplayPanel');
+        if (displayPanel) displayPanel.style.display = target === 'display' ? 'block' : 'none';
+        const accountPanel = document.getElementById('customAccountPanel');
+        if (accountPanel) accountPanel.style.display = target === 'account' ? 'block' : 'none';
         // タブ切り替え時にフォームをクリア
         document.getElementById('selfcareFormArea').innerHTML = '';
         document.getElementById('protocolFormArea').innerHTML = '';
@@ -3825,6 +4802,57 @@
     // 追加ボタン
     document.getElementById('addCustomSelfcare').addEventListener('click', () => showSelfcareForm());
     document.getElementById('addCustomProtocol').addEventListener('click', () => showProtocolForm());
+
+    // パスワード変更
+    const changePasswordBtn = document.getElementById('changePasswordBtn');
+    if (changePasswordBtn) {
+      changePasswordBtn.addEventListener('click', async () => {
+        const pw = document.getElementById('newPassword').value;
+        const pw2 = document.getElementById('newPasswordConfirm').value;
+        const msgEl = document.getElementById('changePasswordMsg');
+        const showMsg = (text, ok) => {
+          msgEl.textContent = text;
+          msgEl.style.display = 'block';
+          msgEl.style.color = ok ? '#16a34a' : '#dc2626';
+        };
+        if (!pw || pw.length < 6) { showMsg('6文字以上のパスワードを入力してください', false); return; }
+        if (pw !== pw2) { showMsg('確認用パスワードが一致しません', false); return; }
+        if (typeof SupabaseAuth === 'undefined' || !SupabaseAuth.client) {
+          showMsg('認証情報の取得に失敗しました。再読み込みしてください', false); return;
+        }
+        changePasswordBtn.disabled = true;
+        changePasswordBtn.textContent = '変更中...';
+        try {
+          const { error } = await SupabaseAuth.client.auth.updateUser({ password: pw });
+          if (error) {
+            const m = (error.message || '').toLowerCase();
+            if (m.includes('weak') || m.includes('easy') || m.includes('breach')) {
+              showMsg('パスワードが簡単すぎます。英字＋数字＋記号で10文字以上にしてください', false);
+            } else {
+              showMsg('変更に失敗しました: ' + error.message, false);
+            }
+          } else {
+            showMsg('パスワードを変更しました', true);
+            document.getElementById('newPassword').value = '';
+            document.getElementById('newPasswordConfirm').value = '';
+          }
+        } catch (e) {
+          showMsg('変更に失敗しました: ' + e.message, false);
+        } finally {
+          changePasswordBtn.disabled = false;
+          changePasswordBtn.textContent = 'パスワードを変更する';
+        }
+      });
+    }
+
+    // ランドマーク表記モード切替
+    modal.querySelectorAll('input[name="landmarkDisplayMode"]').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        if (!e.target.checked) return;
+        setLandmarkDisplayMode(e.target.value);
+        applyLandmarkDisplayMode();
+      });
+    });
   }
 
   const AREA_KEYS = ['首〜肩','肩〜腕','前腕〜手首','股関節〜太もも','太もも〜膝','すね〜足首','足裏','体幹'];
