@@ -111,6 +111,10 @@ const RealisticBodyDiagram = {
     img.src = imgSrc;
     img.decoding = 'async';
     img.loading = 'eager';
+    // 女性画像は元データで体が左に寄っているため、画像だけを右に平行移動して中央寄せ
+    if (gender === 'female') {
+      img.style.transform = 'translateX(13%)';
+    }
     stage.appendChild(img);
 
     // SVG（リーダー線用、画像と同じ座標系で 0..100）
