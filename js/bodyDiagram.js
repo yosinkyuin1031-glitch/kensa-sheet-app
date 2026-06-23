@@ -584,7 +584,7 @@ const BodyDiagram = {
       const stretchBox = this._reserveBox(stretchXBase - badgeW / 2, midY - badgeH / 2, badgeW, badgeH, { axis: 'xy', padding: 4 });
       indicatorLayer.appendChild(this._createSVGEl('rect', {
         x: stretchBox.x, y: stretchBox.y, width: badgeW, height: badgeH,
-        rx: 6, fill: '#8b5cf6', opacity: 0.88
+        rx: 6, fill: '#0ea5e9', opacity: 0.88
       }));
       indicatorLayer.appendChild(this._createSVGEl('text', {
         x: stretchBox.x + badgeW / 2, y: stretchBox.y + badgeH - 5, 'text-anchor': 'middle',
@@ -653,8 +653,8 @@ const BodyDiagram = {
 
       // ゾーン（左側）
       const svgLeftIsContraction = pattern2;
-      const svgLeftColor = svgLeftIsContraction ? 'rgba(239,68,68,0.22)' : 'rgba(168,85,247,0.18)';
-      const svgLeftStroke = svgLeftIsContraction ? '#ef4444' : '#8b5cf6';
+      const svgLeftColor = svgLeftIsContraction ? 'rgba(239,68,68,0.22)' : 'rgba(14,165,233,0.18)';
+      const svgLeftStroke = svgLeftIsContraction ? '#ef4444' : '#0ea5e9';
       zoneLayer.appendChild(this._createSVGEl('polygon', {
         points: `${cx},${svgLeftYA} ${posA.leftX},${svgLeftYA} ${posB.leftX},${svgLeftYB} ${cx},${svgLeftYB}`,
         fill: svgLeftColor, stroke: svgLeftStroke,
@@ -663,8 +663,8 @@ const BodyDiagram = {
 
       // ゾーン（右側）
       const svgRightIsContraction = pattern1;
-      const svgRightColor = svgRightIsContraction ? 'rgba(239,68,68,0.22)' : 'rgba(168,85,247,0.18)';
-      const svgRightStroke = svgRightIsContraction ? '#ef4444' : '#8b5cf6';
+      const svgRightColor = svgRightIsContraction ? 'rgba(239,68,68,0.22)' : 'rgba(14,165,233,0.18)';
+      const svgRightStroke = svgRightIsContraction ? '#ef4444' : '#0ea5e9';
       zoneLayer.appendChild(this._createSVGEl('polygon', {
         points: `${cx},${svgRightYA} ${posA.rightX},${svgRightYA} ${posB.rightX},${svgRightYB} ${cx},${svgRightYB}`,
         fill: svgRightColor, stroke: svgRightStroke,
@@ -680,7 +680,7 @@ const BodyDiagram = {
           mapping[contractedSide].forEach(p => this._highlightPart(svg, p, 'rgba(239,68,68,0.28)'));
         }
         if (mapping[tensionedSide]) {
-          mapping[tensionedSide].forEach(p => this._highlightPart(svg, p, 'rgba(168,85,247,0.2)'));
+          mapping[tensionedSide].forEach(p => this._highlightPart(svg, p, 'rgba(14,165,233,0.2)'));
         }
       }
 
@@ -696,16 +696,16 @@ const BodyDiagram = {
         zoneLayer.appendChild(this._createSVGEl('text', {
           x: mx1, y: midY + 16, 'text-anchor': 'middle',
           'font-size': 8, fill: '#ef4444', 'font-weight': 700
-        }, '右縮'));
+        }, '縮'));
         const mx2 = (cx + Math.min(posA.leftX, posB.leftX)) / 2;
         zoneLayer.appendChild(this._createSVGEl('text', {
           x: mx2, y: midY + 3, 'text-anchor': 'middle',
-          'font-size': 12, fill: '#8b5cf6', 'font-weight': 700
+          'font-size': 12, fill: '#0ea5e9', 'font-weight': 700
         }, '↕'));
         zoneLayer.appendChild(this._createSVGEl('text', {
           x: mx2, y: midY + 16, 'text-anchor': 'middle',
-          'font-size': 8, fill: '#8b5cf6', 'font-weight': 700
-        }, '左引'));
+          'font-size': 8, fill: '#0ea5e9', 'font-weight': 700
+        }, '伸'));
       } else {
         const mx1 = (cx + Math.min(posA.leftX, posB.leftX)) / 2;
         zoneLayer.appendChild(this._createSVGEl('text', {
@@ -715,16 +715,16 @@ const BodyDiagram = {
         zoneLayer.appendChild(this._createSVGEl('text', {
           x: mx1, y: midY + 16, 'text-anchor': 'middle',
           'font-size': 8, fill: '#ef4444', 'font-weight': 700
-        }, '左縮'));
+        }, '縮'));
         const mx2 = (cx + Math.max(posA.rightX, posB.rightX)) / 2;
         zoneLayer.appendChild(this._createSVGEl('text', {
           x: mx2, y: midY + 3, 'text-anchor': 'middle',
-          'font-size': 12, fill: '#8b5cf6', 'font-weight': 700
+          'font-size': 12, fill: '#0ea5e9', 'font-weight': 700
         }, '↕'));
         zoneLayer.appendChild(this._createSVGEl('text', {
           x: mx2, y: midY + 16, 'text-anchor': 'middle',
-          'font-size': 8, fill: '#8b5cf6', 'font-weight': 700
-        }, '右引'));
+          'font-size': 8, fill: '#0ea5e9', 'font-weight': 700
+        }, '伸'));
       }
     }
   },
@@ -927,7 +927,7 @@ const BodyDiagram = {
       const mapping = partMapping[i];
       if (mapping) {
         (mapping[compSide] || []).forEach(p => this._highlightPart(svg, p, 'rgba(239,68,68,0.35)'));
-        (mapping[stretchSide] || []).forEach(p => this._highlightPart(svg, p, 'rgba(168,85,247,0.28)'));
+        (mapping[stretchSide] || []).forEach(p => this._highlightPart(svg, p, 'rgba(14,165,233,0.28)'));
       }
     }
 
@@ -1082,7 +1082,7 @@ const BodyDiagram = {
       const contractedParts = cfg.parts[compSide] || [];
       const tensionedParts = cfg.parts[stretchSideKey] || [];
       contractedParts.forEach(p => this._highlightPart(svg, p, 'rgba(239,68,68,0.30)'));
-      tensionedParts.forEach(p => this._highlightPart(svg, p, 'rgba(168,85,247,0.22)'));
+      tensionedParts.forEach(p => this._highlightPart(svg, p, 'rgba(14,165,233,0.22)'));
 
       // バッジを衝突回避で配置（小型化＋xy方向に逃げる・padding強化）
       const badgeW = 36, badgeH = 17;
@@ -1099,7 +1099,7 @@ const BodyDiagram = {
       const stretchBox = this._reserveBox(stretchX - badgeW / 2, rawMidY - badgeH / 2, badgeW, badgeH, { axis: 'xy', padding: 4 });
       indicatorLayer.appendChild(this._createSVGEl('rect', {
         x: stretchBox.x, y: stretchBox.y, width: badgeW, height: badgeH,
-        rx: 5, fill: '#8b5cf6', opacity: 0.88
+        rx: 5, fill: '#0ea5e9', opacity: 0.88
       }));
       indicatorLayer.appendChild(this._createSVGEl('text', {
         x: stretchBox.x + badgeW / 2, y: stretchBox.y + badgeH - 5, 'text-anchor': 'middle',
@@ -1235,7 +1235,7 @@ const BodyDiagram = {
       const stretchBox = this._reserveBox(stretchX - bW / 2, rawMidY - bH / 2, bW, bH, { axis: 'xy', padding: 4 });
       indicatorLayer.appendChild(this._createSVGEl('rect', {
         x: stretchBox.x, y: stretchBox.y, width: bW, height: bH,
-        rx: 5, fill: '#8b5cf6', opacity: 0.88
+        rx: 5, fill: '#0ea5e9', opacity: 0.88
       }));
       indicatorLayer.appendChild(this._createSVGEl('text', {
         x: stretchBox.x + bW / 2, y: stretchBox.y + bH - 4, 'text-anchor': 'middle',
