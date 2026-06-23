@@ -799,6 +799,7 @@
         <button class="custom-modal-tab active" data-custom-tab="selfcare">セルフケア</button>
         <button class="custom-modal-tab" data-custom-tab="protocol">施術プロトコル</button>
         <button class="custom-modal-tab" data-custom-tab="display">表示設定</button>
+        <button class="custom-modal-tab" data-custom-tab="account">アカウント</button>
       </div>
       <div id="customSelfcarePanel" class="custom-modal-panel">
         <button type="button" id="addCustomSelfcare" class="btn btn-sm btn-primary" style="margin-bottom:12px;">新規追加</button>
@@ -829,6 +830,22 @@
               <span>低い側を選ぶ</span>
               <small>例：← 左が低い / 右が低い →</small>
             </label>
+          </div>
+        </div>
+      </div>
+      <div id="customAccountPanel" class="custom-modal-panel" style="display:none;">
+        <div class="display-setting-section">
+          <h3 style="font-size:14px;margin:0 0 8px;">ログイン情報</h3>
+          <p id="accountEmailLabel" style="font-size:12px;color:#666;margin:0 0 14px;line-height:1.5;">メールアドレス: <span id="accountEmail">読み込み中...</span></p>
+          <h3 style="font-size:14px;margin:0 0 8px;">パスワード変更</h3>
+          <p style="font-size:12px;color:#666;margin:0 0 10px;line-height:1.5;">
+            新しいパスワード（10文字以上・英字＋数字を推奨）を入力してください。
+          </p>
+          <div style="display:flex;flex-direction:column;gap:8px;max-width:360px;">
+            <input type="password" id="newPassword" placeholder="新しいパスワード" autocomplete="new-password" style="padding:8px 10px;border:1px solid #ccc;border-radius:6px;font-size:14px;">
+            <input type="password" id="newPasswordConfirm" placeholder="新しいパスワード（確認）" autocomplete="new-password" style="padding:8px 10px;border:1px solid #ccc;border-radius:6px;font-size:14px;">
+            <button type="button" id="changePasswordBtn" class="btn btn-sm btn-primary" style="margin-top:4px;">パスワードを変更する</button>
+            <div id="changePasswordMsg" style="font-size:12px;margin-top:4px;display:none;"></div>
           </div>
         </div>
       </div>

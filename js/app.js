@@ -4768,6 +4768,13 @@
         const radio = modal.querySelector(`input[name="landmarkDisplayMode"][value="${mode}"]`);
         if (radio) radio.checked = true;
       } catch (e) {}
+      // アカウントタブ: ログイン中メールを反映
+      try {
+        const emailEl = document.getElementById('accountEmail');
+        if (emailEl && typeof SupabaseAuth !== 'undefined' && SupabaseAuth.currentUser) {
+          emailEl.textContent = SupabaseAuth.currentUser.email || '不明';
+        }
+      } catch (e) {}
     });
 
     document.getElementById('closeCustomModal').addEventListener('click', () => {
@@ -4784,6 +4791,8 @@
         document.getElementById('customProtocolPanel').style.display = target === 'protocol' ? 'block' : 'none';
         const displayPanel = document.getElementById('customDisplayPanel');
         if (displayPanel) displayPanel.style.display = target === 'display' ? 'block' : 'none';
+        const accountPanel = document.getElementById('customAccountPanel');
+        if (accountPanel) accountPanel.style.display = target === 'account' ? 'block' : 'none';
         // タブ切り替え時にフォームをクリア
         document.getElementById('selfcareFormArea').innerHTML = '';
         document.getElementById('protocolFormArea').innerHTML = '';
@@ -4793,6 +4802,48 @@
     // 追加ボタン
     document.getElementById('addCustomSelfcare').addEventListener('click', () => showSelfcareForm());
     document.getElementById('addCustomProtocol').addEventListener('click', () => showProtocolForm());
+
+    // パスワード変更
+    const changePasswordBtn = document.getElementById('changePasswordBtn');
+    if (changePasswordBtn) {
+      changePasswordBtn.addEventListener('click', async () => {
+        const pw = document.getElementById('newPassword').value;
+        const pw2 = document.getElementById('newPasswordConfirm').value;
+        const msgEl = document.getElementById('changePasswordMsg');
+        const showMsg = (text, ok) => {
+          msgEl.textContent = text;
+          msgEl.style.display = 'block';
+          msgEl.style.color = ok ? '#16a34a' : '#dc2626';
+        };
+        if (!pw || pw.length < 6) { showMsg('6文字以上のパスワードを入力してください', false); return; }
+        if (pw !== pw2) { showMsg('確認用パスワードが一致しません', false); return; }
+        if (typeof SupabaseAuth === 'undefined' || !SupabaseAuth.client) {
+          showMsg('認証情報の取得に失敗しました。再読み込みしてください', false); return;
+        }
+        changePasswordBtn.disabled = true;
+        changePasswordBtn.textContent = '変更中...';
+        try {
+          const { error } = await SupabaseAuth.client.auth.updateUser({ password: pw });
+          if (error) {
+            const m = (error.message || '').toLowerCase();
+            if (m.includes('weak') || m.includes('easy') || m.includes('breach')) {
+              showMsg('パスワードが簡単すぎます。英字＋数字＋記号で10文字以上にしてください', false);
+            } else {
+              showMsg('変更に失敗しました: ' + error.message, false);
+            }
+          } else {
+            showMsg('パスワードを変更しました', true);
+            document.getElementById('newPassword').value = '';
+            document.getElementById('newPasswordConfirm').value = '';
+          }
+        } catch (e) {
+          showMsg('変更に失敗しました: ' + e.message, false);
+        } finally {
+          changePasswordBtn.disabled = false;
+          changePasswordBtn.textContent = 'パスワードを変更する';
+        }
+      });
+    }
 
     // ランドマーク表記モード切替
     modal.querySelectorAll('input[name="landmarkDisplayMode"]').forEach(radio => {
