@@ -478,6 +478,13 @@ body[data-view="patient"] .patient-treatment-hint p {
   gap: 6px;
   flex-shrink: 0;
   min-width: 70px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.wizard-step:hover .step-number {
+  filter: brightness(0.92);
+  transform: translateY(-1px);
 }
 
 .step-number {

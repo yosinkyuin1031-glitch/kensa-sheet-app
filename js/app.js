@@ -831,6 +831,26 @@
       });
     });
 
+    // ステップ番号クリックで直接ジャンプ
+    document.querySelectorAll('.wizard-step').forEach(el => {
+      el.addEventListener('click', () => {
+        const target = parseInt(el.dataset.step);
+        if (isNaN(target) || target === currentStep) return;
+        // 結果ステップは診断結果が出ていないと意味がないので分岐
+        if (target === 7) {
+          if (diagnosisResult) {
+            goToStep(7);
+          } else if (typeof runDiagnosis === 'function' && validateCurrentStep()) {
+            runDiagnosis();
+          } else {
+            alert('先に検査内容を入力し、「検査結果を出す」を押してください。');
+          }
+          return;
+        }
+        goToStep(target);
+      });
+    });
+
     const diagnoseBtn = document.getElementById('diagnoseBtn');
     if (diagnoseBtn) {
       diagnoseBtn.addEventListener('click', () => {
