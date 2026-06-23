@@ -1231,6 +1231,39 @@ const BodyDiagram = {
         x: stretchBox.x + bW / 2, y: stretchBox.y + bH - 4, 'text-anchor': 'middle',
         'font-size': 9, fill: 'white', 'font-weight': 800
       }, `${stretchSide}伸`));
+
+      // === 体側ゾーンポリゴン（縮=赤・伸=青で体の側面を塗る） ===
+      const zoneLayer = svg.querySelector('.zone-layer');
+      if (zoneLayer) {
+        const cx = 150;
+        const yA = posY[seg.upper];
+        const yB = posY[seg.lower];
+        // 区間ごとに体側のおおよその左右端を設定
+        let leftEdgeA, leftEdgeB, rightEdgeA, rightEdgeB;
+        if (seg.upper === 'mastoid') {
+          // 乳様突起→肩峰：首〜肩。上は狭く下は広い
+          leftEdgeA = 132; leftEdgeB = 82;
+          rightEdgeA = 168; rightEdgeB = 218;
+        } else {
+          // 肩甲下角→腸骨稜：胴の体側
+          leftEdgeA = 102; leftEdgeB = 116;
+          rightEdgeA = 198; rightEdgeB = 184;
+        }
+        const leftFill   = leftCompressed ? 'rgba(239,68,68,0.45)' : 'rgba(14,165,233,0.45)';
+        const leftStroke = leftCompressed ? '#ef4444' : '#0ea5e9';
+        zoneLayer.appendChild(this._createSVGEl('polygon', {
+          points: `${leftEdgeA},${yA} ${cx},${yA} ${cx},${yB} ${leftEdgeB},${yB}`,
+          fill: leftFill, stroke: leftStroke,
+          'stroke-width': 1.2, 'stroke-dasharray': '4,2'
+        }));
+        const rightFill   = rightCompressed ? 'rgba(239,68,68,0.45)' : 'rgba(14,165,233,0.45)';
+        const rightStroke = rightCompressed ? '#ef4444' : '#0ea5e9';
+        zoneLayer.appendChild(this._createSVGEl('polygon', {
+          points: `${cx},${yA} ${rightEdgeA},${yA} ${rightEdgeB},${yB} ${cx},${yB}`,
+          fill: rightFill, stroke: rightStroke,
+          'stroke-width': 1.2, 'stroke-dasharray': '4,2'
+        }));
+      }
     }
 
     // ===== 茎状突起・外果のマーカー（手先・足先に○×） =====

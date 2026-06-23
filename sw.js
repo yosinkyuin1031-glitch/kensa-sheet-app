@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bodycheck-v65-color-rule-clarity';
+const CACHE_NAME = 'bodycheck-v66-torso-side-zones';
 const urlsToCache = [
   '/',
   '/index.html',
