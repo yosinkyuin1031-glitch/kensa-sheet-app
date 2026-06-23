@@ -253,11 +253,11 @@ const BodyDiagram = {
         </g>
       </g>
 
-      <!-- 左右ラベル（拡張viewBoxの外側マージンに配置） -->
+      <!-- 左右ラベル（背面図のため画面左=人体の右、画面右=人体の左） -->
       <text x="-32" y="18" font-size="13" fill="#64748b" font-weight="700"
-        stroke="white" stroke-width="3" paint-order="stroke">左</text>
-      <text x="332" y="18" font-size="13" fill="#64748b" font-weight="700" text-anchor="end"
         stroke="white" stroke-width="3" paint-order="stroke">右</text>
+      <text x="332" y="18" font-size="13" fill="#64748b" font-weight="700" text-anchor="end"
+        stroke="white" stroke-width="3" paint-order="stroke">左</text>
       <text x="150" y="570" text-anchor="middle" font-size="10" fill="#94a3b8" font-weight="500">背面図（患者目線）</text>
 
       <!-- 動的レイヤー -->

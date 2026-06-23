@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bodycheck-v59-mirror-revert';
+const CACHE_NAME = 'bodycheck-v60-svg-left-right-swap';
 const urlsToCache = [
   '/',
   '/index.html',
