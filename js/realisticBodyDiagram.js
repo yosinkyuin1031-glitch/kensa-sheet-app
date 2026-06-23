@@ -33,26 +33,26 @@ const RealisticBodyDiagram = {
     standing: {
       // 乳様突起：耳の付け根（背面図で頭の側面下端）
       mastoid:         { left: { x: 51.8, y: 11.5 }, right: { x: 59.0, y: 11.5 }, label: '乳様突起' },
-      // 肩甲下角：肩甲骨の下端・T7-T8レベル。胸郭の中ほどから下、脊柱から外側
-      scapulaInferior: { left: { x: 45.0, y: 37.0 }, right: { x: 61.0, y: 37.0 }, label: '肩甲下角' },
-      // 腸骨稜：骨盤上端、お尻側から少し外へ
-      iliacCrest:      { left: { x: 41.0, y: 49.5 }, right: { x: 69.0, y: 49.5 }, label: '腸骨稜' }
+      // 肩甲下角：肩甲骨の下端・T7-T8レベル
+      scapulaInferior: { left: { x: 46.0, y: 36.5 }, right: { x: 64.0, y: 36.5 }, label: '肩甲下角' },
+      // 腸骨稜：骨盤上端
+      iliacCrest:      { left: { x: 43.5, y: 47.5 }, right: { x: 67.0, y: 47.5 }, label: '腸骨稜' }
     },
     upper: {
-      // 肩峰：肩甲骨の上外側端＝肩線の少し外側
-      acromion:      { left: { x: 40.5, y: 25.5 }, right: { x: 65.5, y: 25.5 }, label: '肩峰' },
-      // 肘頭：腕が体側にある自然姿勢で、肘の位置はおおむね腰やや上
-      mastoidDetail: { left: { x: 33.5, y: 41.0 }, right: { x: 67.5, y: 41.0 }, label: '肘頭' },
-      // 橈骨茎状突起：手首、大転子よりさらに下のレベルで手首側
-      radialStyloid: { left: { x: 34.0, y: 60.5 }, right: { x: 66.5, y: 60.5 }, label: '茎状突起' }
+      // 肩峰：肩の最頂部（肩線の外側端）
+      acromion:      { left: { x: 38.5, y: 20.5 }, right: { x: 71.5, y: 20.5 }, label: '肩峰' },
+      // 肘頭：腕が体側にある自然姿勢で、肘は腰やや上の高さ
+      mastoidDetail: { left: { x: 35.0, y: 42.0 }, right: { x: 65.0, y: 42.0 }, label: '肘頭' },
+      // 橈骨茎状突起：手首（腕が自然に垂れた状態）
+      radialStyloid: { left: { x: 37.5, y: 60.0 }, right: { x: 62.5, y: 60.0 }, label: '茎状突起' }
     },
     lower: {
-      // 大転子：骨盤外側、腸骨稜から少し下＋わずか外側
-      greaterTrochanter: { left: { x: 40.5, y: 55.5 }, right: { x: 69.5, y: 55.5 }, label: '大転子' },
-      // 膝蓋骨上端：脚の中央
-      patellaUpper:      { left: { x: 46.6, y: 75.3 }, right: { x: 63.3, y: 75.3 }, label: '膝蓋骨上端' },
-      // 外果：足首の外側、足の最下端付近
-      lateralMalleolus:  { left: { x: 44.9, y: 93.0 }, right: { x: 64.6, y: 93.0 }, label: '外果' }
+      // 大転子：骨盤外側、腸骨稜の少し下
+      greaterTrochanter: { left: { x: 41.0, y: 53.0 }, right: { x: 69.0, y: 53.0 }, label: '大転子' },
+      // 膝蓋骨上端：膝の頂上
+      patellaUpper:      { left: { x: 47.5, y: 72.5 }, right: { x: 62.5, y: 72.5 }, label: '膝蓋骨上端' },
+      // 外果：外側くるぶし
+      lateralMalleolus:  { left: { x: 45.5, y: 93.0 }, right: { x: 64.5, y: 93.0 }, label: '外果' }
     }
   },
 

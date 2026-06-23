@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bodycheck-v73-joint-align-convergence-aura';
+const CACHE_NAME = 'bodycheck-v74-rbd-position-fix';
 const urlsToCache = [
   '/',
   '/index.html',
