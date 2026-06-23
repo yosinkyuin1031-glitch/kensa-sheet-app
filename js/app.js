@@ -1774,7 +1774,7 @@
       html += `<div class="comparison-verdict foot-influence">
         <strong>🦶 足の影響あり</strong>
         <p>座位で左右差に変化が見られます。足の接地による影響が考えられます。</p>
-        <p>「診断する」を押して結果を確認できます。さらに詳しく調べたい場合は上半身検査に進むこともできます。</p>
+        <p>「検査結果を出す」を押して結果を確認できます。さらに詳しく調べたい場合は上半身検査に進むこともできます。</p>
       </div>`;
 
       const nextBtn = document.getElementById('seatedNextBtn');
