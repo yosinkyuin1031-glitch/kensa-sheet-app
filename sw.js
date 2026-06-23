@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bodycheck-v63-pair-recombination';
+const CACHE_NAME = 'bodycheck-v64-6pairs-leg-inner';
 const urlsToCache = [
   '/',
   '/index.html',

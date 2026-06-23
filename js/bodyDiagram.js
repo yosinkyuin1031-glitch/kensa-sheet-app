@@ -1023,50 +1023,37 @@ const BodyDiagram = {
     const indicatorLayer = svg.querySelector('.indicator-layer');
     if (!indicatorLayer) return;
 
-    const keys = ['acromion', 'mastoidDetail', 'radialStyloid', 'greaterTrochanter', 'patellaUpper', 'lateralMalleolus'];
     const posMap = this.unifiedPositions;
 
-    // 各区間のインジケーター位置と対応パーツ
-    // ※ 上腕・前腕は腕の外側にバッジを置く（手首ドット・茎状突起ラベルと衝突回避）
-    const segmentConfig = {
-      0: { // 肩峰→肘頭 = 上腕
-        leftX: 30, rightX: 270, midYAdjust: -8,
-        parts: { left: ['upperArm-l'], right: ['upperArm-r'] }
-      },
-      1: { // 肘頭→茎状突起 = 前腕（手首ドットと衝突するため腕のさらに外側へ）
-        leftX: 18, rightX: 282, midYAdjust: 0,
-        parts: { left: ['forearm-l', 'hand-l'], right: ['forearm-r', 'hand-r'] }
-      },
-      2: { // 茎状突起→大転子 = 体幹
-        leftX: 90, rightX: 210, midYAdjust: 0,
-        parts: { left: [], right: [] }
-      },
-      3: { // 大転子→膝蓋骨 = 太もも
-        leftX: 70, rightX: 230, midYAdjust: 0,
-        parts: { left: ['thigh-l'], right: ['thigh-r'] }
-      },
-      4: { // 膝蓋骨→外果 = すね
-        leftX: 68, rightX: 232, midYAdjust: 0,
-        parts: { left: ['shin-l'], right: ['shin-r'] }
-      }
-    };
+    // 採用ペア（ユーザー指定の6組のうち、詳細検査由来の4組）
+    // 肩峰×肘頭 / 肘頭×茎状突起 / 大転子×膝 / 膝×外果
+    // 茎状突起×大転子は採用しない（解剖学的に意味の薄いペア）
+    const pairs = [
+      { a: 'acromion',          b: 'mastoidDetail',     cfg: { leftX: 30, rightX: 270, midYAdjust: -8, parts: { left: ['upperArm-l'],            right: ['upperArm-r'] } } },
+      { a: 'mastoidDetail',     b: 'radialStyloid',     cfg: { leftX: 18, rightX: 282, midYAdjust:  0, parts: { left: ['forearm-l','hand-l'],    right: ['forearm-r','hand-r'] } } },
+      { a: 'greaterTrochanter', b: 'patellaUpper',      cfg: { leftX: 70, rightX: 230, midYAdjust:  0, parts: { left: ['thigh-l'],               right: ['thigh-r'] } } },
+      { a: 'patellaUpper',      b: 'lateralMalleolus',  cfg: { leftX: 68, rightX: 232, midYAdjust:  0, parts: { left: ['shin-l'],                right: ['shin-r'] } } }
+    ];
 
-    for (let i = 0; i < keys.length - 1; i++) {
-      const keyA = keys[i];
-      const keyB = keys[i + 1];
+    for (const { a: keyA, b: keyB, cfg } of pairs) {
       const valA = data[keyA];
       const valB = data[keyB];
 
       if (valA === null || valA === undefined || valB === null || valB === undefined) continue;
       if (valA === 0 && valB === 0) continue;
-      if (valA === valB) continue;
       if (valA === 0 || valB === 0) continue;
 
-      const leftCompressed = (valA === 1 && valB === -1);
-      const rightCompressed = (valA === -1 && valB === 1);
+      // samePair → 低い側=縮 / xPattern → 寄る側=縮
+      let leftCompressed, rightCompressed;
+      if (valA === valB) {
+        leftCompressed  = (valA === 1);
+        rightCompressed = (valA === -1);
+      } else {
+        leftCompressed  = (valA === 1  && valB === -1);
+        rightCompressed = (valA === -1 && valB === 1);
+      }
       if (!leftCompressed && !rightCompressed) continue;
 
-      const cfg = segmentConfig[i];
       const posA = posMap[keyA];
       const posB = posMap[keyB];
       const rawMidY = (posA.baseY + posB.baseY) / 2 + (cfg.midYAdjust || 0);
@@ -1194,24 +1181,27 @@ const BodyDiagram = {
       greaterTrochanter: 278 // 大転子
     };
 
-    // 4区間の定義（バッジは外側に十分余裕を持って配置）
-    // 各区間のmidYも上下にズラして縦方向の衝突を回避
+    // 採用ペア（ユーザー指定の6組のうち、立位検査由来の2組）
+    // 1. 乳様突起×肩峰  / 2. 肩甲下角×腸骨稜
     const segments = [
-      { upper: 'mastoid', lower: 'acromion', valA: mastVal, valB: acromVal, area: '乳様突起〜肩峰', leftX: 60, rightX: 240, midYAdjust: -4 },
-      { upper: 'acromion', lower: 'scapulaInferior', valA: acromVal, valB: scapVal, area: '肩峰〜肩甲下角', leftX: 70, rightX: 230, midYAdjust: 0 },
-      { upper: 'scapulaInferior', lower: 'iliacCrest', valA: scapVal, valB: iliacVal, area: '肩甲下角〜腸骨稜', leftX: 70, rightX: 230, midYAdjust: 0 },
-      { upper: 'iliacCrest', lower: 'greaterTrochanter', valA: iliacVal, valB: gtVal, area: '腸骨稜〜大転子', leftX: 82, rightX: 218, midYAdjust: 6 }
+      { upper: 'mastoid',         lower: 'acromion',   valA: mastVal, valB: acromVal, area: '乳様突起〜肩峰',   leftX: 60, rightX: 240, midYAdjust: -4 },
+      { upper: 'scapulaInferior', lower: 'iliacCrest', valA: scapVal, valB: iliacVal, area: '肩甲下角〜腸骨稜', leftX: 70, rightX: 230, midYAdjust: 0 }
     ];
 
     for (const seg of segments) {
       if (seg.valA == null || seg.valB == null) continue;
       if (seg.valA === 0 && seg.valB === 0) continue;
-      if (seg.valA === seg.valB) continue;
       if (seg.valA === 0 || seg.valB === 0) continue;
 
-      // 互い違い → 詰まり判定
-      const leftCompressed = (seg.valA === 1 && seg.valB === -1);
-      const rightCompressed = (seg.valA === -1 && seg.valB === 1);
+      // samePair (両方同じ向き) → 低い側=縮 / xPattern (互い違い) → 寄る側=縮
+      let leftCompressed, rightCompressed;
+      if (seg.valA === seg.valB) {
+        leftCompressed  = (seg.valA === 1);
+        rightCompressed = (seg.valA === -1);
+      } else {
+        leftCompressed  = (seg.valA === 1  && seg.valB === -1);
+        rightCompressed = (seg.valA === -1 && seg.valB === 1);
+      }
       if (!leftCompressed && !rightCompressed) continue;
 
       const rawMidY = (posY[seg.upper] + posY[seg.lower]) / 2 + (seg.midYAdjust || 0);

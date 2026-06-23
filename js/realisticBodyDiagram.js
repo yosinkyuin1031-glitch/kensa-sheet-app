@@ -242,6 +242,15 @@ const RealisticBodyDiagram = {
       const t = Math.max(0, Math.min(1, (yPct - s.right.y) / (i.right.y - s.right.y)));
       return s.right.x + (i.right.x - s.right.x) * t;
     };
+    // 脚の内側ライン（大転子レベル～外果レベルで補間。脚が下に向かって開く想定）
+    const legLeftInnerAtY = (yPct) => {
+      const t = Math.max(0, Math.min(1, (yPct - 55.5) / (93 - 55.5)));
+      return 54 + (49 - 54) * t;
+    };
+    const legRightInnerAtY = (yPct) => {
+      const t = Math.max(0, Math.min(1, (yPct - 55.5) / (93 - 55.5)));
+      return 57 + (62 - 57) * t;
+    };
     for (const { groupA, a, groupB, b, shape } of zonePairs) {
       const dataA = groupData[groupA];
       const dataB = groupData[groupB];
@@ -282,8 +291,14 @@ const RealisticBodyDiagram = {
         innerLeftB  = trunkLeftAtY(posB.left.y) - 0.3;
         innerRightA = trunkRightAtY(posA.right.y) + 0.3;
         innerRightB = trunkRightAtY(posB.right.y) + 0.3;
+      } else if (shape === 'leg') {
+        // 脚ゾーンは「脚の内側ライン」までに留め、左右脚をはっきり分離する
+        innerLeftA  = legLeftInnerAtY(posA.left.y);
+        innerLeftB  = legLeftInnerAtY(posB.left.y);
+        innerRightA = legRightInnerAtY(posA.right.y);
+        innerRightB = legRightInnerAtY(posB.right.y);
       } else {
-        // trunk / leg は中心線まで
+        // trunk は中心線まで
         innerLeftA  = CENTER_LINE;
         innerLeftB  = CENTER_LINE;
         innerRightA = CENTER_LINE;
