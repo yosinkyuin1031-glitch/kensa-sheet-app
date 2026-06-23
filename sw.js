@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bodycheck-v46-smaller-dots-arrows';
+const CACHE_NAME = 'bodycheck-v47-short-only';
 const urlsToCache = [
   '/',
   '/index.html',
