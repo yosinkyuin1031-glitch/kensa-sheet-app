@@ -2310,10 +2310,16 @@
     let html = '';
 
     // 全身統合人体図（診断結果画面上部に表示）
-    // 施術者モード: リアル人体画像（写真）/ 患者モード: SVGイラスト
-    const realStyle = isPatient ? 'display:none;' : '';
-    const svgStyle  = isPatient ? '' : 'display:none;';
-    html += `<div class="body-diagram-wrapper unified-diagram-wrapper realistic-body-wrapper">
+    // 表示モードを「治療家用（リアル人体画像）」と「患者様用（イラスト）」で切替可能
+    const savedFig = (function(){try{return localStorage.getItem('body_figure_mode')||'realistic';}catch(e){return 'realistic';}})();
+    const useRealistic = savedFig !== 'svg';
+    const realStyle = useRealistic ? '' : 'display:none;';
+    const svgStyle  = useRealistic ? 'display:none;' : '';
+    html += `<div class="body-figure-toggle" id="bodyFigureToggle" style="display:flex;gap:6px;justify-content:center;margin:4px 0 8px;">
+      <button type="button" data-figure="realistic" class="figure-toggle-btn${useRealistic?' active':''}" style="padding:6px 14px;border:1px solid #cbd5e1;background:${useRealistic?'#3b82f6':'white'};color:${useRealistic?'white':'#475569'};border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">治療家用（人体画像）</button>
+      <button type="button" data-figure="svg" class="figure-toggle-btn${!useRealistic?' active':''}" style="padding:6px 14px;border:1px solid #cbd5e1;background:${!useRealistic?'#3b82f6':'white'};color:${!useRealistic?'white':'#475569'};border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">患者様用（イラスト）</button>
+    </div>
+    <div class="body-diagram-wrapper unified-diagram-wrapper realistic-body-wrapper">
       <div class="realistic-body-container" id="realistic-diagnosis-body" style="${realStyle}"></div>
       <div class="body-diagram-container" id="diagram-diagnosis-body" style="${svgStyle}"></div>
     </div>`;
@@ -2446,7 +2452,7 @@
       }
     }
 
-    // 既存SVG版（フォールバック・後方互換用、初期非表示）
+    // SVG版（患者様用イラスト・切替で表示可能）
     const diagBodyEl = document.getElementById('diagram-diagnosis-body');
     if (diagBodyEl) {
       BodyDiagram.init('diagram-diagnosis-body');
@@ -2456,6 +2462,27 @@
       } else {
         BodyDiagram.update('diagram-diagnosis-body', 'firstStage', examData.standing);
       }
+    }
+
+    // 図切替トグルのイベント登録
+    const figToggle = document.getElementById('bodyFigureToggle');
+    if (figToggle) {
+      figToggle.querySelectorAll('.figure-toggle-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const mode = btn.dataset.figure;
+          try { localStorage.setItem('body_figure_mode', mode); } catch (e) {}
+          figToggle.querySelectorAll('.figure-toggle-btn').forEach(b => {
+            const isActive = b === btn;
+            b.classList.toggle('active', isActive);
+            b.style.background = isActive ? '#3b82f6' : 'white';
+            b.style.color = isActive ? 'white' : '#475569';
+          });
+          const realEl = document.getElementById('realistic-diagnosis-body');
+          const svgEl  = document.getElementById('diagram-diagnosis-body');
+          if (realEl) realEl.style.display = mode === 'realistic' ? '' : 'none';
+          if (svgEl)  svgEl.style.display  = mode === 'svg' ? '' : 'none';
+        });
+      });
     }
 
     // 前回比較の体図を描画
