@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bodycheck-v45-labels-status-and-print-fix';
+const CACHE_NAME = 'bodycheck-v46-smaller-dots-arrows';
 const urlsToCache = [
   '/',
   '/index.html',

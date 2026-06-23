@@ -789,10 +789,10 @@ body[data-view="patient"] .patient-treatment-hint p {
 
 /* ドット */
 .rbd-dot {
-  width: 14px;
-  height: 14px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
-  border: 2px solid #fff;
+  border: 1.5px solid #fff;
   box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 1px 2px rgba(0,0,0,0.2);
 }
 .rbd-dot.orange { background: #f97316; }
@@ -801,7 +801,7 @@ body[data-view="patient"] .patient-treatment-hint p {
 
 /* 矢印 */
 .rbd-arrow {
-  font-size: 14px;
+  font-size: 11px;
   font-weight: 900;
   line-height: 1;
   text-shadow: 0 0 2px #fff, 0 0 2px #fff, 0 0 2px #fff;
@@ -873,8 +873,8 @@ body[data-view="patient"] .patient-treatment-hint p {
 @media (max-width: 480px) {
   .rbd-label { font-size: 10px; padding: 1px 4px; }
   .rbd-badge { font-size: 8px; padding: 1px 3px; letter-spacing: 0; }
-  .rbd-dot   { width: 12px; height: 12px; }
-  .rbd-arrow { font-size: 12px; }
+  .rbd-dot   { width: 8px; height: 8px; }
+  .rbd-arrow { font-size: 10px; }
 }
 
 /* セグメントのスムーズな移動アニメーション */
