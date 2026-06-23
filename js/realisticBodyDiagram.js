@@ -35,20 +35,20 @@ const RealisticBodyDiagram = {
       mastoid:         { left: { x: 51.8, y: 11.5 }, right: { x: 59.0, y: 11.5 }, label: '乳様突起' },
       // 肩甲下角：肩のすぐ下（肩峰の少し下）
       scapulaInferior: { left: { x: 47.0, y: 28.0 }, right: { x: 63.0, y: 28.0 }, label: '肩甲下角' },
-      // 腸骨稜：骨盤上端（お尻側へ寄せて）
-      iliacCrest:      { left: { x: 47.0, y: 47.0 }, right: { x: 63.0, y: 47.0 }, label: '腸骨稜' }
+      // 腸骨稜：骨盤上端（左右対称に調整）
+      iliacCrest:      { left: { x: 47.0, y: 47.0 }, right: { x: 66.5, y: 47.0 }, label: '腸骨稜' }
     },
     upper: {
       // 肩峰：肩の最頂部（肩線の外側端）
       acromion:      { left: { x: 38.5, y: 20.5 }, right: { x: 71.5, y: 20.5 }, label: '肩峰' },
       // 肘頭：肩峰の真下（上半身は肩峰のラインに揃える）
       mastoidDetail: { left: { x: 38.5, y: 36.0 }, right: { x: 71.5, y: 36.0 }, label: '肘頭' },
-      // 橈骨茎状突起：肩峰の真下（手首位置）
-      radialStyloid: { left: { x: 38.5, y: 50.0 }, right: { x: 71.5, y: 50.0 }, label: '茎状突起' }
+      // 橈骨茎状突起：手首（イラスト上の手首位置にあわせ、肩峰よりやや外側）
+      radialStyloid: { left: { x: 36.5, y: 50.0 }, right: { x: 73.5, y: 50.0 }, label: '茎状突起' }
     },
     lower: {
-      // 大転子：骨盤外側、お尻側へ寄せる
-      greaterTrochanter: { left: { x: 45.0, y: 53.0 }, right: { x: 65.0, y: 53.0 }, label: '大転子' },
+      // 大転子：骨盤外側（左右対称に調整）
+      greaterTrochanter: { left: { x: 45.0, y: 53.0 }, right: { x: 68.0, y: 53.0 }, label: '大転子' },
       // 膝蓋骨上端：膝の頂上
       patellaUpper:      { left: { x: 47.5, y: 72.5 }, right: { x: 62.5, y: 72.5 }, label: '膝蓋骨上端' },
       // 外果：外側くるぶし
@@ -56,8 +56,9 @@ const RealisticBodyDiagram = {
     }
   },
 
-  // 画像URL（女性も男性画像で固定。女性画像はランドマーク位置が大きくズレるため）
+  // 画像URL
   imageFor(gender) {
+    if (gender === 'female') return 'img/body/body_female_back_clean.png';
     return 'img/body/body_male_back_clean.png';
   },
 

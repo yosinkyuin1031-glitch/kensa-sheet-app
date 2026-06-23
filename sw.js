@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bodycheck-v81-shoulder-line-unify-gender';
+const CACHE_NAME = 'bodycheck-v82-symmetric-right-female-back';
 const urlsToCache = [
   '/',
   '/index.html',
