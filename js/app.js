@@ -4775,13 +4775,25 @@
   }
   function applyLandmarkDisplayMode() {
     const mode = getLandmarkDisplayMode();
-    const leftText = mode === 'low' ? '← 左が低い' : '← 左が高い';
-    const rightText = mode === 'low' ? '右が低い →' : '右が高い →';
-    document.querySelectorAll('.landmark-btn[data-value="-1"]').forEach(btn => {
-      btn.textContent = leftText;
-    });
-    document.querySelectorAll('.landmark-btn[data-value="1"]').forEach(btn => {
-      btn.textContent = rightText;
+    const lowMode = mode === 'low';
+    document.querySelectorAll('.landmark-btn').forEach(btn => {
+      // 初回呼び出し時に元の物理位置（左/右ボタン）をdata-original-positionへ保存
+      if (btn.dataset.originalPosition === undefined) {
+        const v = parseInt(btn.dataset.value);
+        if (v === -1) btn.dataset.originalPosition = 'left';
+        else if (v === 1) btn.dataset.originalPosition = 'right';
+        else return; // 「均等」ボタン等はスキップ
+      }
+      const pos = btn.dataset.originalPosition;
+      if (pos === 'left') {
+        // 物理位置: 左側のボタン
+        btn.textContent = lowMode ? '← 左が低い' : '← 左が高い';
+        // 「左が低い」=「右が高い」なので保存値は +1、「左が高い」なら -1
+        btn.dataset.value = lowMode ? '1' : '-1';
+      } else if (pos === 'right') {
+        btn.textContent = lowMode ? '右が低い →' : '右が高い →';
+        btn.dataset.value = lowMode ? '-1' : '1';
+      }
     });
   }
   // グローバル公開（デバッグ・他スクリプトからの参照用）
