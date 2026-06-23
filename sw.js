@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bodycheck-v85-prod-sync-with-preview';
+const CACHE_NAME = 'bodycheck-v86-aura-darker';
 const urlsToCache = [
   '/',
   '/index.html',
