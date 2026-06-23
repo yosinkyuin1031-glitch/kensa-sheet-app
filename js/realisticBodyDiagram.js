@@ -41,10 +41,10 @@ const RealisticBodyDiagram = {
     upper: {
       // 肩峰：肩の最頂部（肩線の外側端）
       acromion:      { left: { x: 38.5, y: 20.5 }, right: { x: 71.5, y: 20.5 }, label: '肩峰' },
-      // 肘頭：自然に垂れた腕の肘（実際の肘の高さ）
-      mastoidDetail: { left: { x: 33.0, y: 36.0 }, right: { x: 72.0, y: 36.0 }, label: '肘頭' },
-      // 橈骨茎状突起：手首（腰のあたり）
-      radialStyloid: { left: { x: 33.0, y: 50.0 }, right: { x: 72.0, y: 50.0 }, label: '茎状突起' }
+      // 肘頭：肩峰の真下（上半身は肩峰のラインに揃える）
+      mastoidDetail: { left: { x: 38.5, y: 36.0 }, right: { x: 71.5, y: 36.0 }, label: '肘頭' },
+      // 橈骨茎状突起：肩峰の真下（手首位置）
+      radialStyloid: { left: { x: 38.5, y: 50.0 }, right: { x: 71.5, y: 50.0 }, label: '茎状突起' }
     },
     lower: {
       // 大転子：骨盤外側、お尻側へ寄せる
@@ -56,9 +56,8 @@ const RealisticBodyDiagram = {
     }
   },
 
-  // 画像URL
+  // 画像URL（女性も男性画像で固定。女性画像はランドマーク位置が大きくズレるため）
   imageFor(gender) {
-    if (gender === 'female') return 'img/body/body_female_back_clean.png';
     return 'img/body/body_male_back_clean.png';
   },
 
