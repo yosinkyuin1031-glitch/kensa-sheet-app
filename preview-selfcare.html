@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>重心セルフケア プレビュー</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif; background:#f5f5f5; padding:20px; color:#333; }
+h1 { text-align:center; margin-bottom:10px; font-size:1.5rem; }
+.subtitle { text-align:center; color:#666; margin-bottom:30px; font-size:0.9rem; }
+.gender-toggle { text-align:center; margin-bottom:30px; }
+.gender-toggle button { padding:10px 30px; margin:0 8px; border:2px solid #ccc; border-radius:25px; background:#fff; font-size:1rem; cursor:pointer; transition:all 0.3s; }
+.gender-toggle button.active { border-color:#6366f1; background:#6366f1; color:#fff; }
+.section-title { font-size:1.3rem; font-weight:bold; margin:30px 0 15px; padding-left:12px; }
+.section-title.anterior { color:#f59e0b; border-left:4px solid #f59e0b; }
+.section-title.posterior { color:#3b82f6; border-left:4px solid #3b82f6; }
+.section-desc { color:#666; margin:0 0 20px 16px; font-size:0.9rem; }
+.card { background:#fff; border-radius:16px; padding:20px; margin-bottom:20px; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
+.card h3 { font-size:1.1rem; margin-bottom:4px; }
+.card .target { color:#888; font-size:0.85rem; margin-bottom:8px; }
+.card .desc { margin-bottom:12px; line-height:1.6; }
+.card .img-wrapper { text-align:center; margin-bottom:15px; }
+.card .img-wrapper img { max-width:350px; width:100%; border-radius:14px; border:1px solid #eee; }
+.card .img-wrapper .no-img { padding:40px; background:#f0f0f0; border-radius:14px; color:#aaa; }
+.card ol { padding-left:20px; margin-bottom:12px; }
+.card ol li { margin-bottom:4px; line-height:1.5; }
+.card .meta { display:flex; gap:20px; margin-bottom:8px; font-size:0.9rem; color:#555; }
+.card .tip { background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:10px; margin-bottom:8px; font-size:0.88rem; }
+.card .caution { background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:10px; font-size:0.88rem; color:#dc2626; }
+.divider { border:none; border-top:2px dashed #ddd; margin:40px 0; }
+</style>
+</head>
+<body>
+<h1>重心セルフケア 全項目プレビュー</h1>
+<p class="subtitle">荷重側（前面チェーン）5項目 ＋ 非荷重側（後面チェーン）4項目</p>
+
+<div class="gender-toggle">
+  <button onclick="switchGender('female')" id="btn-female" class="active">女性版</button>
+  <button onclick="switchGender('male')" id="btn-male">男性版</button>
+</div>
+
+<div id="content"></div>
+
+<script>
+const imageMap = {
+  hipFlexorStretch: 'hip_flexor.png',
+  quadStretch: 'quad_stretch.png',
+  chestStretch: 'chest_stretch.png',
+  cobraStretch: 'cobra_stretch.png',
+  anteriorNeckStretch: 'anterior_neck_stretch.png',
+  hamstringStretch: 'hamstring_stretch.png',
+  gluteStretch: 'glute_stretch.png',
+  backStretch: 'back_stretch.png',
+  scapulaStretch: 'scapula_stretch.png'
+};
+
+const tips = {
+  hipFlexorStretch: '後ろ足の膝を床につけた時、骨盤を正面に向けるのがポイント。お腹に力を入れると腸腰筋がしっかり伸びます。',
+  quadStretch: 'うつ伏せがつらい方はベッドの端で行ってもOK。膝が痛い場合は無理せず。',
+  chestStretch: '壁についた腕の肘は90度。体を回す時に肩が上がらないように注意しましょう。',
+  cobraStretch: '腕の力で押し上げるのではなく、背中の筋肉で起き上がるイメージで。お風呂上がりが効果的です。',
+  anteriorNeckStretch: '鎖骨の下に手を添えることで、皮膚と筋膜も一緒に伸ばせます。',
+  hamstringStretch: '膝を完全に伸ばしきらなくてOK。背中をまっすぐに保つことが最優先です。',
+  gluteStretch: '足を組んだ時に骨盤が後ろに倒れないよう、背筋を伸ばして行うのがポイントです。',
+  backStretch: '息を吐きながらゆっくり丸めるのがポイント。背骨一つずつ動かすイメージで。',
+  scapulaStretch: '引っ張る時に肩が上がらないように。呼吸を止めず、リラックスして行いましょう。'
+};
+
+const anterior = [
+  {
+    area: '股関節前面（腸腰筋）',
+    name: '腸腰筋ストレッチ（荷重側）',
+    target: '腸腰筋・大腿直筋',
+    description: '荷重側は骨盤が前傾し、股関節前面の筋肉が縮こまっています。膝立ちランジで股関節前面を伸ばします。',
+    steps: ['片膝を床につき、反対の足を前に出して膝を90度に曲げます','背筋を伸ばし、お腹に軽く力を入れます','体を前にスライドさせ、後ろ足の股関節前面に伸びを感じます','20秒キープし、ゆっくり戻して3回行います'],
+    sets: '20秒 × 3回', frequency: '1日2回',
+    caution: '腰を反らさないよう、お腹に力を入れたまま行ってください。',
+    illustration: 'hipFlexorStretch'
+  },
+  {
+    area: '太もも前面（大腿四頭筋）',
+    name: '大腿四頭筋ストレッチ（荷重側）',
+    target: '大腿四頭筋・大腿直筋',
+    description: '荷重側は太もも前面が縮こまり、膝への負担が増えています。',
+    steps: ['うつ伏せに寝ます','荷重側の膝をゆっくり曲げ、足首を持ちます','太もも前面に伸びを感じたら15秒キープ','ゆっくり戻して3回繰り返します'],
+    sets: '15秒 × 3回', frequency: '1日2回',
+    caution: '腰が反る場合はお腹の下にタオルを入れてください。',
+    illustration: 'quadStretch'
+  },
+  {
+    area: '胸・前肩（大胸筋）',
+    name: '大胸筋ストレッチ（荷重側）',
+    target: '大胸筋・小胸筋・前部三角筋',
+    description: '荷重側は肩が前に巻き込み、胸の筋肉が縮こまっています。壁を使って胸を開きます。',
+    steps: ['壁の横に立ち、荷重側の腕を90度に曲げて壁につけます','体を反対側にゆっくり回します','胸の前面に伸びを感じたら20秒キープ','ゆっくり戻して3回繰り返します'],
+    sets: '20秒 × 3回', frequency: '1日2〜3回',
+    caution: '肩に痛みがある場合は腕の角度を下げて行ってください。',
+    illustration: 'chestStretch'
+  },
+  {
+    area: '腹部前面',
+    name: '腹部ストレッチ（荷重側）',
+    target: '腹直筋・腸腰筋上部',
+    description: '荷重側は体が前かがみになりやすく、腹部前面が縮こまっています。コブラストレッチで伸ばします。',
+    steps: ['うつ伏せに寝て、両手を肩の横に置きます','両手で床を押しながら、上体をゆっくり起こします','お腹の前面が伸びる感覚を意識し、15秒キープ','ゆっくり戻して3回繰り返します'],
+    sets: '15秒 × 3回', frequency: '1日2〜3回',
+    caution: '腰に痛みが出る場合は上体を起こす角度を浅くしてください。',
+    illustration: 'cobraStretch'
+  },
+  {
+    area: '首前面',
+    name: '首前面ストレッチ（荷重側）',
+    target: '胸鎖乳突筋・斜角筋',
+    description: '荷重側は頭が前に出やすく、首前面が縮こまっています。顎を引いて首前面を伸ばします。',
+    steps: ['椅子に座り、背筋を伸ばします','顎を軽く上げ、首の前面を伸ばします','片手を鎖骨の下に軽く添え、皮膚を下に引きます','15秒キープし、3回繰り返します'],
+    sets: '15秒 × 3回', frequency: '1日3回',
+    caution: '首を後ろに反らしすぎないでください。めまいが出たらすぐ中止。',
+    illustration: 'anteriorNeckStretch'
+  }
+];
+
+const posterior = [
+  {
+    area: 'ハムストリングス（もも裏）',
+    name: 'ハムストリングスストレッチ（非荷重側）',
+    target: 'ハムストリングス（大腿二頭筋・半腱様筋・半膜様筋）',
+    description: '非荷重側は骨盤が後傾し、もも裏の筋肉に影響が出ています。座ったまま伸ばします。',
+    steps: ['椅子に浅く座り、非荷重側の足をまっすぐ前に伸ばします','つま先を上に向け、背筋を伸ばしたまま上体を前に倒します','もも裏に伸びを感じたら20秒キープ','ゆっくり戻して3回繰り返します'],
+    sets: '20秒 × 3回', frequency: '1日2回',
+    caution: '腰を丸めず、骨盤から前に倒すイメージで行ってください。',
+    illustration: 'hamstringStretch'
+  },
+  {
+    area: '背部（脊柱起立筋）',
+    name: '背部ストレッチ（非荷重側）',
+    target: '脊柱起立筋・多裂筋・広背筋',
+    description: '非荷重側は背中の筋肉が過緊張しやすい状態です。丸まるストレッチで背面全体を緩めます。',
+    steps: ['椅子に座り、足を肩幅に開きます','両手を膝の上に置き、背中を丸めるようにゆっくり上体を前に倒します','非荷重側の背中が特に伸びるよう、少し斜めに倒します','背中全体に伸びを感じたら20秒キープ','ゆっくり戻して3回繰り返します'],
+    sets: '20秒 × 3回', frequency: '1日2回',
+    caution: '急に起き上がるとめまいが出ることがあるので、ゆっくり戻してください。',
+    illustration: 'backStretch'
+  },
+  {
+    area: '肩甲骨・背中上部',
+    name: '肩甲骨ストレッチ（非荷重側）',
+    target: '菱形筋・僧帽筋中部・下部',
+    description: '非荷重側は肩甲骨周りが過緊張し、肩の位置がずれやすくなっています。腕を前に伸ばして肩甲骨を開きます。',
+    steps: ['椅子に座り、非荷重側の腕を前にまっすぐ伸ばします','反対の手で肘を持ち、体の前を横切るように引き寄せます','肩甲骨の内側に伸びを感じたら15秒キープ','ゆっくり戻して3回繰り返します'],
+    sets: '15秒 × 3回', frequency: '1日2〜3回',
+    caution: '肩を上げずに、リラックスした状態で行ってください。',
+    illustration: 'scapulaStretch'
+  }
+];
+
+let currentGender = 'female';
+
+function switchGender(g) {
+  currentGender = g;
+  document.getElementById('btn-female').classList.toggle('active', g === 'female');
+  document.getElementById('btn-male').classList.toggle('active', g === 'male');
+  render();
+}
+
+function renderCard(ex) {
+  const file = imageMap[ex.illustration];
+  const folder = currentGender === 'male' ? 'male' : 'female';
+  const imgSrc = file ? `img/selfcare-ai/${folder}/${file}` : '';
+  const tip = tips[ex.illustration] || '';
+
+  return `
+    <div class="card">
+      <h3>${ex.name}</h3>
+      <div class="target">対象：${ex.target}</div>
+      <p class="desc">${ex.description}</p>
+      ${imgSrc ? `<div class="img-wrapper"><img src="${imgSrc}" alt="${ex.name}" onerror="this.parentElement.innerHTML='<div class=no-img>画像なし: ${file}</div>'"></div>` : ''}
+      <div style="font-weight:bold;margin-bottom:6px;">やり方</div>
+      <ol>${ex.steps.map(s => `<li>${s}</li>`).join('')}</ol>
+      <div class="meta">
+        <span>回数：${ex.sets}</span>
+        <span>頻度：${ex.frequency}</span>
+      </div>
+      ${tip ? `<div class="tip">💡 <strong>ポイント：</strong>${tip}</div>` : ''}
+      <div class="caution">⚠️ ${ex.caution}</div>
+    </div>
+  `;
+}
+
+function render() {
+  let html = '';
+  html += '<div class="section-title anterior">荷重側のセルフケア ― 前面の縮こまりを伸ばす（5項目）</div>';
+  html += '<div class="section-desc">重心が偏っている側。骨盤前傾→腸腰筋・大腿四頭筋・大胸筋・腹直筋・胸鎖乳突筋が収縮</div>';
+  anterior.forEach(ex => { html += renderCard(ex); });
+
+  html += '<hr class="divider">';
+
+  html += '<div class="section-title posterior">非荷重側のセルフケア ― 後面のケア（3項目）</div>';
+  html += '<div class="section-desc">重心が偏っていない側。骨盤後傾→ハムストリングス・脊柱起立筋・菱形筋に影響（臀部は前額面セルフケアで対応）</div>';
+  posterior.forEach(ex => { html += renderCard(ex); });
+
+  document.getElementById('content').innerHTML = html;
+}
+
+render();
+</script>
+</body>
+</html>

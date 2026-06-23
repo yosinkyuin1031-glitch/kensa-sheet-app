@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bodycheck-v60-svg-left-right-swap';
+const CACHE_NAME = 'bodycheck-v61-unify-left-right';
 const urlsToCache = [
   '/',
   '/index.html',
