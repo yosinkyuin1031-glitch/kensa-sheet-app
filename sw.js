@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bodycheck-v68-revert-torso-polygon';
+const CACHE_NAME = 'bodycheck-v69-convergence-aura';
 const urlsToCache = [
   '/',
   '/index.html',

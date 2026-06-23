@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>体マップ UIプレビュー</title>
+  <link rel="stylesheet" href="css/style.css?v=preview1">
+  <script>
+    // SWキャッシュ無効化（プレビュー専用）
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(r => r.forEach(x => x.unregister()));
+      caches.keys().then(n => n.forEach(x => caches.delete(x)));
+    }
+  </script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #f8fafc; margin: 0; padding: 16px; color: #1e293b; }
+    .preview-header { background: #fff; padding: 16px; border-radius: 12px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    .preview-header h1 { margin: 0 0 12px; font-size: 18px; }
+    .preview-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .preview-controls label { font-size: 13px; color: #475569; }
+    .preview-controls select, .preview-controls button {
+      padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #fff; cursor: pointer;
+    }
+    .preview-controls button { background: #2563eb; color: #fff; border-color: #2563eb; }
+    .preview-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 1600px; margin: 0 auto;
+    }
+    @media (max-width: 1100px) { .preview-grid { grid-template-columns: 1fr; } }
+    .preview-card { background: #fff; border-radius: 12px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    .preview-card h2 { margin: 0 0 12px; font-size: 14px; color: #475569; font-weight: 600; }
+    #realistic-mount { width: 100%; max-width: 460px; margin: 0 auto; }
+    #svg-mount { width: 100%; max-width: 460px; margin: 0 auto; }
+    /* SVGを大きく表示 */
+    #svg-mount svg { width: 100%; height: auto; }
+    .data-panel { background: #fff; border-radius: 12px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); margin-top: 16px; max-width: 1600px; margin-left: auto; margin-right: auto; }
+    .data-panel h2 { margin: 0 0 8px; font-size: 14px; color: #475569; font-weight: 600; }
+    .data-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
+    .data-row { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+    .data-row label { flex: 1; color: #64748b; }
+    .data-row select { padding: 2px 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="preview-header">
+    <h1>体マップ UIプレビュー（編集用）</h1>
+    <div class="preview-controls">
+      <label>パターン:</label>
+      <select id="pattern-select">
+        <option value="sample1">S字カーブ（上半身と下半身が逆）</option>
+        <option value="sample2">右偏位（全体右側が低い）</option>
+        <option value="sample3">左偏位（全体左側が低い）</option>
+        <option value="sample4">健常（全部0）</option>
+        <option value="sample5">複雑パターン</option>
+        <option value="custom">カスタム（下のセレクトで編集）</option>
+      </select>
+      <label>性別:</label>
+      <select id="gender-select">
+        <option value="male">男性</option>
+        <option value="female">女性</option>
+      </select>
+      <button id="reload-btn">再描画</button>
+    </div>
+  </div>
+
+  <div class="preview-grid">
+    <div class="preview-card">
+      <h2>患者様用（人体画像）</h2>
+      <div id="realistic-mount"></div>
+    </div>
+    <div class="preview-card">
+      <h2>治療家用（イラスト）</h2>
+      <div id="svg-mount"></div>
+    </div>
+  </div>
+
+  <div class="data-panel">
+    <h2>データ編集（カスタムパターン用）</h2>
+    <div class="data-grid" id="data-editor"></div>
+  </div>
+
+  <script src="js/bodyDiagram.js?v=preview1"></script>
+  <script src="js/realisticBodyDiagram.js?v=preview1"></script>
+  <script>
+    // サンプルデータ
+    const SAMPLES = {
+      sample1: { // S字カーブ
+        standing: { mastoid: -1, scapulaInferior: 1, iliacCrest: -1 },
+        upper:    { acromion: 1, mastoidDetail: -1, radialStyloid: 1 },
+        lower:    { greaterTrochanter: -1, patellaUpper: 1, lateralMalleolus: -1 }
+      },
+      sample2: { // 右偏位
+        standing: { mastoid: -1, scapulaInferior: -1, iliacCrest: -1 },
+        upper:    { acromion: -1, mastoidDetail: -1, radialStyloid: -1 },
+        lower:    { greaterTrochanter: -1, patellaUpper: -1, lateralMalleolus: -1 }
+      },
+      sample3: { // 左偏位
+        standing: { mastoid: 1, scapulaInferior: 1, iliacCrest: 1 },
+        upper:    { acromion: 1, mastoidDetail: 1, radialStyloid: 1 },
+        lower:    { greaterTrochanter: 1, patellaUpper: 1, lateralMalleolus: 1 }
+      },
+      sample4: { // 健常
+        standing: { mastoid: 0, scapulaInferior: 0, iliacCrest: 0 },
+        upper:    { acromion: 0, mastoidDetail: 0, radialStyloid: 0 },
+        lower:    { greaterTrochanter: 0, patellaUpper: 0, lateralMalleolus: 0 }
+      },
+      sample5: { // 複雑（参考画像の状態に近い）
+        standing: { mastoid: 1, scapulaInferior: 1, iliacCrest: -1 },
+        upper:    { acromion: -1, mastoidDetail: 1, radialStyloid: -1 },
+        lower:    { greaterTrochanter: -1, patellaUpper: -1, lateralMalleolus: 1 }
+      }
+    };
+
+    const LANDMARK_LABELS = {
+      mastoid: '乳様突起', scapulaInferior: '肩甲下角', iliacCrest: '腸骨稜',
+      acromion: '肩峰', mastoidDetail: '肘頭', radialStyloid: '茎状突起',
+      greaterTrochanter: '大転子', patellaUpper: '膝蓋骨上端', lateralMalleolus: '外果'
+    };
+    const GROUPS = ['standing', 'upper', 'lower'];
+    const KEYS_OF = {
+      standing: ['mastoid', 'scapulaInferior', 'iliacCrest'],
+      upper: ['acromion', 'mastoidDetail', 'radialStyloid'],
+      lower: ['greaterTrochanter', 'patellaUpper', 'lateralMalleolus']
+    };
+
+    let currentData = JSON.parse(JSON.stringify(SAMPLES.sample1));
+
+    function buildDataEditor() {
+      const editor = document.getElementById('data-editor');
+      editor.innerHTML = '';
+      for (const group of GROUPS) {
+        for (const key of KEYS_OF[group]) {
+          const row = document.createElement('div');
+          row.className = 'data-row';
+          const label = document.createElement('label');
+          label.textContent = LANDMARK_LABELS[key];
+          const sel = document.createElement('select');
+          sel.dataset.group = group;
+          sel.dataset.key = key;
+          [['-1', '左高(-1)'], ['0', '均等(0)'], ['1', '右高(+1)']].forEach(([v, t]) => {
+            const o = document.createElement('option');
+            o.value = v; o.textContent = t;
+            if (Number(v) === currentData[group][key]) o.selected = true;
+            sel.appendChild(o);
+          });
+          sel.addEventListener('change', e => {
+            currentData[e.target.dataset.group][e.target.dataset.key] = Number(e.target.value);
+            document.getElementById('pattern-select').value = 'custom';
+            render();
+          });
+          row.appendChild(label);
+          row.appendChild(sel);
+          editor.appendChild(row);
+        }
+      }
+    }
+
+    function render() {
+      const gender = document.getElementById('gender-select').value;
+      // 患者様用（リアル画像）
+      const realisticMount = document.getElementById('realistic-mount');
+      RealisticBodyDiagram.render(realisticMount, {
+        standing: currentData.standing,
+        upper: currentData.upper,
+        lower: currentData.lower,
+        gravitySide: null
+      }, gender);
+
+      // 治療家用（SVG イラスト）
+      BodyDiagram.init('svg-mount');
+      BodyDiagram.updateUnified('svg-mount', currentData.upper, currentData.lower, currentData.standing);
+    }
+
+    function applyPattern(name) {
+      if (name === 'custom') { buildDataEditor(); return; }
+      currentData = JSON.parse(JSON.stringify(SAMPLES[name] || SAMPLES.sample1));
+      buildDataEditor();
+      render();
+    }
+
+    document.getElementById('pattern-select').addEventListener('change', e => applyPattern(e.target.value));
+    document.getElementById('gender-select').addEventListener('change', render);
+    document.getElementById('reload-btn').addEventListener('click', () => location.reload());
+
+    // 初期表示
+    buildDataEditor();
+    render();
+  </script>
+</body>
+</html>

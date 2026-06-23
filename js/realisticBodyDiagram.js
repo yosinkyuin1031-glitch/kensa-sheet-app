@@ -251,7 +251,8 @@ const RealisticBodyDiagram = {
       const t = Math.max(0, Math.min(1, (yPct - 55.5) / (93 - 55.5)));
       return 57 + (62 - 57) * t;
     };
-    for (const { groupA, a, groupB, b, shape } of zonePairs) {
+    // ===== 収束点に赤いモヤモヤ（X-pattern: 隣り合う矢印が向かい合う場所）=====
+    for (const { groupA, a, groupB, b } of zonePairs) {
       const dataA = groupData[groupA];
       const dataB = groupData[groupB];
       if (!dataA || !dataB) continue;
@@ -259,7 +260,9 @@ const RealisticBodyDiagram = {
       const valB = dataB[b];
       const safeA = valA || 0;
       const safeB = valB || 0;
-      if (safeA === 0 && safeB === 0) continue;
+      if (safeA === 0 || safeB === 0) continue;
+      // X-patternのみ（互い違いに矢印が向かい合っているケース）
+      if (safeA === safeB) continue;
       const posA = this.positions[groupA][a];
       const posB = this.positions[groupB][b];
       if (!posA || !posB) continue;
@@ -267,58 +270,23 @@ const RealisticBodyDiagram = {
       const bLY = posB.left.y  + this._leftYShift(safeB);
       const aRY = posA.right.y + this._rightYShift(safeA);
       const bRY = posB.right.y + this._rightYShift(safeB);
-      // 隣接2点ともに非ゼロの場合のみゾーン描画
-      if (safeA === 0 || safeB === 0) continue;
-      // パターン判定
-      //  - samePair (safeA === safeB): 区間全体が同じ方向に傾く → 低い側=短縮
-      //  - xPattern (safeA !== safeB): S字カーブ → 寄っていく側が短縮(赤)、開く側が伸長(青)
-      let leftIsShort, rightIsShort;
-      if (safeA === safeB) {
-        leftIsShort  = (safeA === 1);
-        rightIsShort = (safeA === -1);
-      } else {
-        // safeA=-1, safeB=1 → 右側で上が下/下が上 → 右が圧縮、左が伸長
-        // safeA=1, safeB=-1 → 左が圧縮、右が伸長
-        rightIsShort = (safeA === -1 && safeB === 1);
-        leftIsShort  = (safeA === 1  && safeB === -1);
+      // どちら側で収束するか
+      const rightConverge = (safeA === -1 && safeB === 1);
+      const leftConverge  = (safeA === 1  && safeB === -1);
+      if (leftConverge) {
+        const aura = document.createElement('div');
+        aura.className = 'rbd-aura';
+        aura.style.left = ((posA.left.x + posB.left.x) / 2) + '%';
+        aura.style.top  = ((aLY + bLY) / 2) + '%';
+        stage.appendChild(aura);
       }
-
-      // shape ごとに内側端を決定
-      let innerLeftA, innerLeftB, innerRightA, innerRightB;
-      if (shape === 'arm') {
-        // 腕ゾーンは「体側ライン」と「腕」の間の細い帯
-        innerLeftA  = trunkLeftAtY(posA.left.y) - 0.3;
-        innerLeftB  = trunkLeftAtY(posB.left.y) - 0.3;
-        innerRightA = trunkRightAtY(posA.right.y) + 0.3;
-        innerRightB = trunkRightAtY(posB.right.y) + 0.3;
-      } else if (shape === 'leg') {
-        // 脚ゾーンは「脚の内側ライン」までに留め、左右脚をはっきり分離する
-        innerLeftA  = legLeftInnerAtY(posA.left.y);
-        innerLeftB  = legLeftInnerAtY(posB.left.y);
-        innerRightA = legRightInnerAtY(posA.right.y);
-        innerRightB = legRightInnerAtY(posB.right.y);
-      } else {
-        // trunk は中心線まで
-        innerLeftA  = CENTER_LINE;
-        innerLeftB  = CENTER_LINE;
-        innerRightA = CENTER_LINE;
-        innerRightB = CENTER_LINE;
+      if (rightConverge) {
+        const aura = document.createElement('div');
+        aura.className = 'rbd-aura';
+        aura.style.left = ((posA.right.x + posB.right.x) / 2) + '%';
+        aura.style.top  = ((aRY + bRY) / 2) + '%';
+        stage.appendChild(aura);
       }
-
-      const drawZone = (sideX1, y1, sideX2, y2, innerX1, innerX2, isShort) => {
-        const fill   = isShort ? 'rgba(239,68,68,0.50)' : 'rgba(14,165,233,0.50)';
-        const stroke = isShort ? 'rgba(239,68,68,0.8)'  : 'rgba(14,165,233,0.8)';
-        const poly = document.createElementNS(NS, 'polygon');
-        poly.setAttribute('points', `${sideX1},${y1} ${innerX1},${y1} ${innerX2},${y2} ${sideX2},${y2}`);
-        poly.setAttribute('fill', fill);
-        poly.setAttribute('stroke', stroke);
-        poly.setAttribute('stroke-width', '0.3');
-        poly.setAttribute('stroke-dasharray', '1.2,0.8');
-        zoneSvg.appendChild(poly);
-      };
-      // 左右ペアで短縮側だけ赤、伸長側だけ青を描く
-      drawZone(posA.left.x,  aLY, posB.left.x,  bLY, innerLeftA,  innerLeftB,  leftIsShort);
-      drawZone(posA.right.x, aRY, posB.right.x, bRY, innerRightA, innerRightB, rightIsShort);
     }
 
     // 各ランドマークを描画
@@ -356,17 +324,8 @@ const RealisticBodyDiagram = {
         rDot.title = pos.label + '（右）';
         stage.appendChild(rDot);
 
-        // ===== 短縮側に赤いオーラを追加（イラスト版のゾーンに相当） =====
-        if (val !== 0) {
-          const auraSide = shortSide; // 'left' or 'right'
-          const auraX = auraSide === 'left' ? pos.left.x : pos.right.x;
-          const auraY = auraSide === 'left' ? lY : rY;
-          const aura = document.createElement('div');
-          aura.className = 'rbd-aura';
-          aura.style.left = auraX + '%';
-          aura.style.top  = auraY + '%';
-          stage.appendChild(aura);
-        }
+        // ※ 短縮側オーラはランドマーク単位ではなく「収束点（X-pattern）」単位で
+        //    まとめて配置する（上部のzonePairsループ参照）。ここでは何もしない。
 
         // ===== 矢印（短縮=下向き赤、伸長=上向き青） =====
         if (val !== 0) {
