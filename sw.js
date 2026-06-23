@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bodycheck-v75-right-arm-fix-left-labels';
+const CACHE_NAME = 'bodycheck-v76-labels-horizontal-positions';
 const urlsToCache = [
   '/',
   '/index.html',

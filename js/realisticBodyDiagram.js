@@ -33,23 +33,22 @@ const RealisticBodyDiagram = {
     standing: {
       // 乳様突起：耳の付け根（背面図で頭の側面下端）
       mastoid:         { left: { x: 51.8, y: 11.5 }, right: { x: 59.0, y: 11.5 }, label: '乳様突起' },
-      // 肩甲下角：肩甲骨の下端＝T7-T8レベル（肩のすぐ下、もっと上の位置）
-      scapulaInferior: { left: { x: 47.0, y: 32.0 }, right: { x: 63.0, y: 32.0 }, label: '肩甲下角' },
-      // 腸骨稜：骨盤上端（ウエストやや下）
-      iliacCrest:      { left: { x: 43.0, y: 46.0 }, right: { x: 67.5, y: 46.0 }, label: '腸骨稜' }
+      // 肩甲下角：肩のすぐ下（肩峰の少し下）
+      scapulaInferior: { left: { x: 47.0, y: 28.0 }, right: { x: 63.0, y: 28.0 }, label: '肩甲下角' },
+      // 腸骨稜：骨盤上端（お尻側へ寄せて）
+      iliacCrest:      { left: { x: 47.0, y: 47.0 }, right: { x: 63.0, y: 47.0 }, label: '腸骨稜' }
     },
     upper: {
       // 肩峰：肩の最頂部（肩線の外側端）
       acromion:      { left: { x: 38.5, y: 20.5 }, right: { x: 71.5, y: 20.5 }, label: '肩峰' },
-      // 肘頭：腕が体側にある自然姿勢で、肩のほぼ真下・腰のやや上の高さ
-      // 左右対称に肩峰と同じ程度のx位置（腕は肩から真下に垂れる）
-      mastoidDetail: { left: { x: 37.0, y: 43.0 }, right: { x: 73.0, y: 43.0 }, label: '肘頭' },
-      // 橈骨茎状突起：手首（腕が自然に垂れた状態）
-      radialStyloid: { left: { x: 37.5, y: 60.5 }, right: { x: 72.5, y: 60.5 }, label: '茎状突起' }
+      // 肘頭：肩峰のほぼ真下、自然に垂れた腕の肘
+      mastoidDetail: { left: { x: 34.0, y: 43.0 }, right: { x: 72.0, y: 43.0 }, label: '肘頭' },
+      // 橈骨茎状突起：手首（腕が自然に垂れた状態。肘よりやや内側）
+      radialStyloid: { left: { x: 33.5, y: 60.5 }, right: { x: 72.0, y: 60.5 }, label: '茎状突起' }
     },
     lower: {
-      // 大転子：骨盤外側、腸骨稜の少し下
-      greaterTrochanter: { left: { x: 41.0, y: 51.5 }, right: { x: 69.0, y: 51.5 }, label: '大転子' },
+      // 大転子：骨盤外側、お尻側へ寄せる
+      greaterTrochanter: { left: { x: 45.0, y: 53.0 }, right: { x: 65.0, y: 53.0 }, label: '大転子' },
       // 膝蓋骨上端：膝の頂上
       patellaUpper:      { left: { x: 47.5, y: 72.5 }, right: { x: 62.5, y: 72.5 }, label: '膝蓋骨上端' },
       // 外果：外側くるぶし
@@ -285,6 +284,9 @@ const RealisticBodyDiagram = {
       }
     }
 
+    // ラベル収集用（後で高さ順にソートして横並び配置する）
+    const labelQueue = [];
+
     // 各ランドマークを描画
     for (const { map, data } of allMaps) {
       for (const [key, pos] of Object.entries(map)) {
@@ -359,24 +361,42 @@ const RealisticBodyDiagram = {
         // ===== 状態バッジは廃止（左右ラベルに状態を併記する方式に変更） =====
         // 体図上は色付きドット＋矢印のみ。状態（縮/伸）はサイド外側のラベルで読み取る。
 
-        // ===== 解剖ラベル（左側のみ表示）=====
-        const lLabelY = reserveLabelY('left',  lY);
-
-        const lLabel = document.createElement('div');
-        lLabel.className = 'rbd-label rbd-label-left';
-        lLabel.style.top = lLabelY + '%';
-        lLabel.textContent = pos.label;
-        stageWrap.appendChild(lLabel);
-
-        // ===== リーダー線（左側のみ・点線・SVG） =====
-        const lLine = document.createElementNS(NS, 'line');
-        lLine.setAttribute('x1', '0');
-        lLine.setAttribute('y1', String(lLabelY));
-        lLine.setAttribute('x2', String(pos.left.x));
-        lLine.setAttribute('y2', String(lY));
-        lLine.setAttribute('class', 'rbd-leader');
-        lineSvg.appendChild(lLine);
+        // ラベル収集（実描画は後でまとめて）
+        labelQueue.push({ label: pos.label, landmarkX: pos.left.x, landmarkY: lY });
       }
+    }
+
+    // ===== 解剖ラベルを高さ順にソート＋同じ高さは横並びで配置 =====
+    labelQueue.sort((a, b) => a.landmarkY - b.landmarkY);
+    const COL_GAP_Y = 4.0;    // 縦方向の衝突判定しきい値（%）
+    const COL_OFFSET = 11.5;  // 横方向に1段ずらす量（%）
+    const colYRecords = []; // [{ y, column }]
+    for (const item of labelQueue) {
+      // 同じ高さ（縦方向で接近）に既存ラベルがあれば、空いている列を探す
+      let column = 0;
+      while (colYRecords.some(r => r.column === column && Math.abs(r.y - item.landmarkY) < COL_GAP_Y)) {
+        column++;
+      }
+      item.column = column;
+      colYRecords.push({ y: item.landmarkY, column });
+    }
+    for (const item of labelQueue) {
+      const xOffsetPct = item.column * COL_OFFSET;
+      const lLabel = document.createElement('div');
+      lLabel.className = 'rbd-label rbd-label-left';
+      lLabel.style.top = item.landmarkY + '%';
+      if (xOffsetPct > 0) lLabel.style.left = xOffsetPct + '%';
+      lLabel.textContent = item.label;
+      stageWrap.appendChild(lLabel);
+
+      // リーダー線（ラベル右端からランドマークドットへ）
+      const lLine = document.createElementNS(NS, 'line');
+      lLine.setAttribute('x1', String(xOffsetPct));
+      lLine.setAttribute('y1', String(item.landmarkY));
+      lLine.setAttribute('x2', String(item.landmarkX));
+      lLine.setAttribute('y2', String(item.landmarkY));
+      lLine.setAttribute('class', 'rbd-leader');
+      lineSvg.appendChild(lLine);
     }
 
     stageWrap.appendChild(stage);
