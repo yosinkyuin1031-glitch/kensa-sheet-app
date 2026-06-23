@@ -36,20 +36,20 @@ const RealisticBodyDiagram = {
       // 肩甲棘：T3レベル、肩甲骨の上端の隆起。背面で肩線のすぐ下・脊柱から外側に位置
       // ※ データキーは互換性のため scapulaInferior のまま。表示は「肩甲棘」。
       scapulaInferior: { left: { x: 45.0, y: 27.5 }, right: { x: 61.0, y: 27.5 }, label: '肩甲棘' },
-      // 腸骨稜：骨盤上端、腰くびれと大転子の中間
-      iliacCrest:      { left: { x: 43.0, y: 49.5 }, right: { x: 67.5, y: 49.5 }, label: '腸骨稜' }
+      // 腸骨稜：骨盤上端、お尻側から少し外へ
+      iliacCrest:      { left: { x: 41.0, y: 49.5 }, right: { x: 69.0, y: 49.5 }, label: '腸骨稜' }
     },
     upper: {
       // 肩峰：肩甲骨の上外側端＝肩線の少し外側、肩甲棘より少し外＋少し上
       acromion:      { left: { x: 40.5, y: 25.5 }, right: { x: 65.5, y: 25.5 }, label: '肩峰' },
-      // 肘頭：自然な姿勢で腕は体側にあるので、腰高さ・腕の後外側
-      mastoidDetail: { left: { x: 32.0, y: 48.3 }, right: { x: 69.0, y: 48.3 }, label: '肘頭' },
-      // 橈骨茎状突起：手首、大転子付近のレベル・腕は体側に密着
-      radialStyloid: { left: { x: 32.5, y: 56.0 }, right: { x: 68.5, y: 56.0 }, label: '茎状突起' }
+      // 肘頭：腰よりやや上、腕が体側にある自然姿勢
+      mastoidDetail: { left: { x: 33.5, y: 44.5 }, right: { x: 67.5, y: 44.5 }, label: '肘頭' },
+      // 橈骨茎状突起：手首、大転子よりさらに下のレベルで手首側
+      radialStyloid: { left: { x: 34.0, y: 60.5 }, right: { x: 66.5, y: 60.5 }, label: '茎状突起' }
     },
     lower: {
-      // 大転子：骨盤外側、腸骨稜とほぼ同等の幅で少し下
-      greaterTrochanter: { left: { x: 42.5, y: 54.5 }, right: { x: 67.5, y: 54.5 }, label: '大転子' },
+      // 大転子：骨盤外側、腸骨稜から少し下＋わずか外側
+      greaterTrochanter: { left: { x: 40.5, y: 55.5 }, right: { x: 69.5, y: 55.5 }, label: '大転子' },
       // 膝蓋骨上端：脚の中央
       patellaUpper:      { left: { x: 46.6, y: 75.3 }, right: { x: 63.3, y: 75.3 }, label: '膝蓋骨上端' },
       // 外果：足首の外側
