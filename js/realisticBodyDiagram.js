@@ -198,8 +198,8 @@ const RealisticBodyDiagram = {
     };
 
     // バッジの想定サイズ（%基準・概算）
-    // フォント10px / 4文字「左縮」相当 → 横 約 8% / 縦 約 3.5%
-    const BADGE_W = 8.0;
+    // 1文字「縮」のみ表示 → 横 約 4.5% / 縦 約 3.5%
+    const BADGE_W = 4.5;
     const BADGE_H = 3.8;
     // ドット/矢印のサイズ
     const DOT_W = 2.0, DOT_H = 2.0;
@@ -262,40 +262,37 @@ const RealisticBodyDiagram = {
           stage.appendChild(rArrow);
         }
 
-        // ===== 状態バッジ（外側に配置・衝突回避強化） =====
+        // ===== 状態バッジ（短縮側のみ「縮」を表示・伸長側は矢印のみ） =====
         if (val !== 0) {
-          const lIsShort = (shortSide === 'left');
-          const rIsShort = (shortSide === 'right');
-
-          // 左バッジ：ドット位置から外側（左方向）に約 9% 離した位置を起点に
-          // 衝突があれば縦上下→横方向と逃がす
-          const lStartX = Math.max(BADGE_W / 2 + 1, pos.left.x - 9);
-          const lStartY = lY + 3.2;
-          // 中央線（CENTER_LINE）を跨がない & 画像外に出ない
-          const lPos = placeNoOverlap('left', lStartX, lStartY, BADGE_W, BADGE_H, {
-            minX: BADGE_W / 2 + 1,
-            maxX: Math.min(CENTER_LINE - BADGE_W / 2 - 1, pos.left.x - 2)
-          });
-          const lBadge = document.createElement('div');
-          lBadge.className = 'rbd-marker rbd-badge ' + (lIsShort ? 'red' : 'purple');
-          lBadge.textContent = '左' + (lIsShort ? '縮' : '伸');
-          lBadge.style.left = lPos.x + '%';
-          lBadge.style.top  = lPos.y + '%';
-          stage.appendChild(lBadge);
-
-          // 右バッジ：ドット位置から外側（右方向）に約 9% 離した位置を起点に
-          const rStartX = Math.min(99 - BADGE_W / 2, pos.right.x + 9);
-          const rStartY = rY + 3.2;
-          const rPos = placeNoOverlap('right', rStartX, rStartY, BADGE_W, BADGE_H, {
-            minX: Math.max(CENTER_LINE + BADGE_W / 2 + 1, pos.right.x + 2),
-            maxX: 99 - BADGE_W / 2
-          });
-          const rBadge = document.createElement('div');
-          rBadge.className = 'rbd-marker rbd-badge ' + (rIsShort ? 'red' : 'purple');
-          rBadge.textContent = '右' + (rIsShort ? '縮' : '伸');
-          rBadge.style.left = rPos.x + '%';
-          rBadge.style.top  = rPos.y + '%';
-          stage.appendChild(rBadge);
+          if (shortSide === 'left') {
+            // 左側が短縮 → 左外側に「縮」バッジ
+            const lStartX = Math.max(BADGE_W / 2 + 1, pos.left.x - 7);
+            const lStartY = lY + 3.2;
+            const lPos = placeNoOverlap('left', lStartX, lStartY, BADGE_W, BADGE_H, {
+              minX: BADGE_W / 2 + 1,
+              maxX: Math.min(CENTER_LINE - BADGE_W / 2 - 1, pos.left.x - 2)
+            });
+            const lBadge = document.createElement('div');
+            lBadge.className = 'rbd-marker rbd-badge red';
+            lBadge.textContent = '縮';
+            lBadge.style.left = lPos.x + '%';
+            lBadge.style.top  = lPos.y + '%';
+            stage.appendChild(lBadge);
+          } else if (shortSide === 'right') {
+            // 右側が短縮 → 右外側に「縮」バッジ
+            const rStartX = Math.min(99 - BADGE_W / 2, pos.right.x + 7);
+            const rStartY = rY + 3.2;
+            const rPos = placeNoOverlap('right', rStartX, rStartY, BADGE_W, BADGE_H, {
+              minX: Math.max(CENTER_LINE + BADGE_W / 2 + 1, pos.right.x + 2),
+              maxX: 99 - BADGE_W / 2
+            });
+            const rBadge = document.createElement('div');
+            rBadge.className = 'rbd-marker rbd-badge red';
+            rBadge.textContent = '縮';
+            rBadge.style.left = rPos.x + '%';
+            rBadge.style.top  = rPos.y + '%';
+            stage.appendChild(rBadge);
+          }
         }
 
         // ===== 解剖ラベル（左外側 / 右外側、stageWrap直下に配置） =====
