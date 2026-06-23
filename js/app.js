@@ -4728,13 +4728,13 @@
   function getLandmarkDisplayMode() {
     try {
       const v = localStorage.getItem(LANDMARK_DISPLAY_KEY);
-      return v === 'low' ? 'low' : 'high';
+      return v === 'high' ? 'high' : 'low';
     } catch (e) {
-      return 'high';
+      return 'low';
     }
   }
   function setLandmarkDisplayMode(mode) {
-    const safe = mode === 'low' ? 'low' : 'high';
+    const safe = mode === 'high' ? 'high' : 'low';
     try { localStorage.setItem(LANDMARK_DISPLAY_KEY, safe); } catch (e) {}
   }
   function applyLandmarkDisplayMode() {
