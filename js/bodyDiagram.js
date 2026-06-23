@@ -1040,18 +1040,13 @@ const BodyDiagram = {
       const valB = data[keyB];
 
       if (valA === null || valA === undefined || valB === null || valB === undefined) continue;
-      if (valA === 0 && valB === 0) continue;
       if (valA === 0 || valB === 0) continue;
+      // X-pattern（互い違いに矢印が向かい合う＝収束）のみ表示する。
+      // samePair（同方向の傾き）は筋の縮み伸びが実際には発生しないので無視。
+      if (valA === valB) continue;
 
-      // samePair → 低い側=縮 / xPattern → 寄る側=縮
-      let leftCompressed, rightCompressed;
-      if (valA === valB) {
-        leftCompressed  = (valA === 1);
-        rightCompressed = (valA === -1);
-      } else {
-        leftCompressed  = (valA === 1  && valB === -1);
-        rightCompressed = (valA === -1 && valB === 1);
-      }
+      const leftCompressed  = (valA === 1  && valB === -1);
+      const rightCompressed = (valA === -1 && valB === 1);
       if (!leftCompressed && !rightCompressed) continue;
 
       const posA = posMap[keyA];
@@ -1190,18 +1185,12 @@ const BodyDiagram = {
 
     for (const seg of segments) {
       if (seg.valA == null || seg.valB == null) continue;
-      if (seg.valA === 0 && seg.valB === 0) continue;
       if (seg.valA === 0 || seg.valB === 0) continue;
+      // X-patternのみ表示（同方向傾きは収束ではないので無視）
+      if (seg.valA === seg.valB) continue;
 
-      // samePair (両方同じ向き) → 低い側=縮 / xPattern (互い違い) → 寄る側=縮
-      let leftCompressed, rightCompressed;
-      if (seg.valA === seg.valB) {
-        leftCompressed  = (seg.valA === 1);
-        rightCompressed = (seg.valA === -1);
-      } else {
-        leftCompressed  = (seg.valA === 1  && seg.valB === -1);
-        rightCompressed = (seg.valA === -1 && seg.valB === 1);
-      }
+      const leftCompressed  = (seg.valA === 1  && seg.valB === -1);
+      const rightCompressed = (seg.valA === -1 && seg.valB === 1);
       if (!leftCompressed && !rightCompressed) continue;
 
       const rawMidY = (posY[seg.upper] + posY[seg.lower]) / 2 + (seg.midYAdjust || 0);

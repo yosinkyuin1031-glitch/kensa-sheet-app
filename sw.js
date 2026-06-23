@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bodycheck-v69-convergence-aura';
+const CACHE_NAME = 'bodycheck-v70-svg-xpattern-only';
 const urlsToCache = [
   '/',
   '/index.html',
