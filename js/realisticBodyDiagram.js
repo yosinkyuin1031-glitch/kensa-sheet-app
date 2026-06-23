@@ -198,9 +198,9 @@ const RealisticBodyDiagram = {
     };
 
     // バッジの想定サイズ（%基準・概算）
-    // 1文字「縮」のみ表示 → 横 約 4.5% / 縦 約 3.5%
-    const BADGE_W = 4.5;
-    const BADGE_H = 3.8;
+    // 1文字「縮」のみ表示。ただし衝突回避を強くするため見かけより大きめの判定領域を取る
+    const BADGE_W = 5.5;
+    const BADGE_H = 5.5;
     // ドット/矢印のサイズ
     const DOT_W = 2.0, DOT_H = 2.0;
     const ARROW_W = 2.5, ARROW_H = 3.0;
@@ -263,10 +263,14 @@ const RealisticBodyDiagram = {
         }
 
         // ===== 状態バッジ（短縮側のみ「縮」を表示・伸長側は矢印のみ） =====
+        // 腕系（肘頭・茎状突起）はランドマークが密集するため、バッジを更に外側へ
+        const armLandmarks = ['elbow', 'styloidProcess', 'olecranon', 'wrist'];
+        const isArm = armLandmarks.includes(key);
+        const outsideOffset = isArm ? 10 : 7;
         if (val !== 0) {
           if (shortSide === 'left') {
             // 左側が短縮 → 左外側に「縮」バッジ
-            const lStartX = Math.max(BADGE_W / 2 + 1, pos.left.x - 7);
+            const lStartX = Math.max(BADGE_W / 2 + 1, pos.left.x - outsideOffset);
             const lStartY = lY + 3.2;
             const lPos = placeNoOverlap('left', lStartX, lStartY, BADGE_W, BADGE_H, {
               minX: BADGE_W / 2 + 1,
@@ -280,7 +284,7 @@ const RealisticBodyDiagram = {
             stage.appendChild(lBadge);
           } else if (shortSide === 'right') {
             // 右側が短縮 → 右外側に「縮」バッジ
-            const rStartX = Math.min(99 - BADGE_W / 2, pos.right.x + 7);
+            const rStartX = Math.min(99 - BADGE_W / 2, pos.right.x + outsideOffset);
             const rStartY = rY + 3.2;
             const rPos = placeNoOverlap('right', rStartX, rStartY, BADGE_W, BADGE_H, {
               minX: Math.max(CENTER_LINE + BADGE_W / 2 + 1, pos.right.x + 2),
