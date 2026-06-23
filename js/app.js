@@ -1177,11 +1177,11 @@
   function renderStructuralSummaryHtml(wb) {
     let html = '';
     if (wb.side === 'left') {
-      html += `<div class="structural-wb-badge wb-left">⚖️ 左に体重がのっています（左:${wb.leftScore} / 右:${wb.rightScore}）</div>`;
-      html += `<p class="structural-wb-desc">左側に体重がのっている状態です。<br><strong>左の前面</strong>（首・胸・お腹・太もも前など）と <strong>右の後面</strong>（後頭・背中・お尻・もも裏など）に症状が出やすい傾向があります。</p>`;
+      html += `<div class="structural-wb-badge wb-left">⚖️ 左に体重が乗っている可能性が高いです（左:${wb.leftScore} / 右:${wb.rightScore}）</div>`;
+      html += `<p class="structural-wb-desc">左側に体重が乗っている可能性が高い状態です。<br><strong>左の前面</strong>（首・胸・お腹・太もも前など）と <strong>右の後面</strong>（後頭・背中・お尻・もも裏など）に症状が出やすい傾向があります。</p>`;
     } else if (wb.side === 'right') {
-      html += `<div class="structural-wb-badge wb-right">⚖️ 右に体重がのっています（左:${wb.leftScore} / 右:${wb.rightScore}）</div>`;
-      html += `<p class="structural-wb-desc">右側に体重がのっている状態です。<br><strong>右の前面</strong>（首・胸・お腹・太もも前など）と <strong>左の後面</strong>（後頭・背中・お尻・もも裏など）に症状が出やすい傾向があります。</p>`;
+      html += `<div class="structural-wb-badge wb-right">⚖️ 右に体重が乗っている可能性が高いです（左:${wb.leftScore} / 右:${wb.rightScore}）</div>`;
+      html += `<p class="structural-wb-desc">右側に体重が乗っている可能性が高い状態です。<br><strong>右の前面</strong>（首・胸・お腹・太もも前など）と <strong>左の後面</strong>（後頭・背中・お尻・もも裏など）に症状が出やすい傾向があります。</p>`;
     } else if (wb.side === 'even') {
       html += `<div class="structural-wb-badge wb-even">⚖️ 左右の荷重はほぼ均等です（左:${wb.leftScore} / 右:${wb.rightScore}）</div>`;
       html += `<p class="structural-wb-desc">左右の荷重差は小さい状態です。明確な前後・左右差は確認できません。</p>`;
