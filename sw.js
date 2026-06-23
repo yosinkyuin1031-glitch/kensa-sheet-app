@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bodycheck-v48-aura';
+const CACHE_NAME = 'bodycheck-v49-landmark-positions';
 const urlsToCache = [
   '/',
   '/index.html',

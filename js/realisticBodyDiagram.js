@@ -31,28 +31,28 @@ const RealisticBodyDiagram = {
   // 解析手順: 各 y の非背景セグメントから 首/肩/腕/腰/脚 を領域分離→ピクセル特定
   positions: {
     standing: {
-      // 乳様突起：耳の付け根、首(y=137)の少し上 (y=125, 頭側面)
-      mastoid:         { left: { x: 51.7, y: 12.0 }, right: { x: 59.2, y: 12.0 }, label: '乳様突起' },
-      // 肩甲棘：T3レベル、肩(y=421)より上、肩線(y=301)＋30 (y=331)、脊柱から外側
+      // 乳様突起：耳の付け根（背面図で頭の側面下端）
+      mastoid:         { left: { x: 51.8, y: 11.5 }, right: { x: 59.0, y: 11.5 }, label: '乳様突起' },
+      // 肩甲棘：T3レベル、肩甲骨の上端の隆起。背面で肩線のすぐ下・脊柱から外側に位置
       // ※ データキーは互換性のため scapulaInferior のまま。表示は「肩甲棘」。
-      scapulaInferior: { left: { x: 47.6, y: 31.8 }, right: { x: 63.2, y: 31.8 }, label: '肩甲棘' },
-      // 腸骨稜：骨盤上端、腰くびれ(y=452)と大転子(y=558)の中間 (y=510)
-      iliacCrest:      { left: { x: 42.3, y: 49.0 }, right: { x: 68.6, y: 49.0 }, label: '腸骨稜' }
+      scapulaInferior: { left: { x: 45.0, y: 27.5 }, right: { x: 61.0, y: 27.5 }, label: '肩甲棘' },
+      // 腸骨稜：骨盤上端、腰くびれと大転子の中間
+      iliacCrest:      { left: { x: 43.0, y: 49.5 }, right: { x: 67.5, y: 49.5 }, label: '腸骨稜' }
     },
     upper: {
-      // 肩峰：肩の最外側、体幅最大の y=421
-      acromion:      { left: { x: 35.1, y: 40.4 }, right: { x: 75.8, y: 40.4 }, label: '肩峰' },
-      // 肘頭：腕分離区間で腕の最外側 (y=503)
-      mastoidDetail: { left: { x: 33.9, y: 48.3 }, right: { x: 76.8, y: 48.3 }, label: '肘頭' },
-      // 橈骨茎状突起：手首、手が腰に触れる手前 (y=540)
-      radialStyloid: { left: { x: 36.3, y: 51.9 }, right: { x: 74.3, y: 51.9 }, label: '茎状突起' }
+      // 肩峰：肩甲骨の上外側端＝肩線の少し外側、肩甲棘より少し外＋少し上
+      acromion:      { left: { x: 40.5, y: 25.5 }, right: { x: 65.5, y: 25.5 }, label: '肩峰' },
+      // 肘頭：自然な姿勢で腕は体側にあるので、腰高さ・腕の後外側
+      mastoidDetail: { left: { x: 32.0, y: 48.3 }, right: { x: 69.0, y: 48.3 }, label: '肘頭' },
+      // 橈骨茎状突起：手首、大転子付近のレベル・腕は体側に密着
+      radialStyloid: { left: { x: 32.5, y: 56.0 }, right: { x: 68.5, y: 56.0 }, label: '茎状突起' }
     },
     lower: {
-      // 大転子：骨盤最大幅 (y=558)、胴体シルエット左右端
-      greaterTrochanter: { left: { x: 37.6, y: 53.6 }, right: { x: 73.1, y: 53.6 }, label: '大転子' },
-      // 膝蓋骨上端：脚の上から 45% (y=784)、各脚中央
+      // 大転子：骨盤外側、腸骨稜とほぼ同等の幅で少し下
+      greaterTrochanter: { left: { x: 42.5, y: 54.5 }, right: { x: 67.5, y: 54.5 }, label: '大転子' },
+      // 膝蓋骨上端：脚の中央
       patellaUpper:      { left: { x: 46.6, y: 75.3 }, right: { x: 63.3, y: 75.3 }, label: '膝蓋骨上端' },
-      // 外果：足首が最も細い y=921、各脚最外側
+      // 外果：足首の外側
       lateralMalleolus:  { left: { x: 44.9, y: 88.5 }, right: { x: 64.6, y: 88.5 }, label: '外果' }
     }
   },
