@@ -211,7 +211,11 @@ const RealisticBodyDiagram = {
     const DOT_W = 2.0, DOT_H = 2.0;
     const ARROW_W = 2.5, ARROW_H = 3.0;
 
-    // ===== 隣接ランドマーク間のゾーン描画（短縮=赤・伸長=紫）=====
+    // ===== 隣接ランドマーク間のゾーン描画（短縮=赤・伸長=青）=====
+    // グループごとにゾーンの内側端を切り替えて、体幹と腕が被らないように分離する。
+    // 体幹(standing) : 中心線 ←→ 体側
+    // 上肢(upper)    : 体側ライン ←→ 腕（細い帯）
+    // 下肢(lower)    : 中心線 ←→ 脚
     const zonePairs = [
       { group: 'standing', a: 'mastoid',         b: 'scapulaInferior' },
       { group: 'standing', a: 'scapulaInferior', b: 'iliacCrest' },
@@ -221,6 +225,19 @@ const RealisticBodyDiagram = {
       { group: 'lower',    a: 'patellaUpper',     b: 'lateralMalleolus' }
     ];
     const groupData = { standing, upper, lower };
+    // 体側ライン（肩甲下角・腸骨稜のx座標を区間ごとに線形補間する用）
+    const trunkLeftAtY = (yPct) => {
+      const s = this.positions.standing.scapulaInferior;
+      const i = this.positions.standing.iliacCrest;
+      const t = Math.max(0, Math.min(1, (yPct - s.left.y) / (i.left.y - s.left.y)));
+      return s.left.x + (i.left.x - s.left.x) * t;
+    };
+    const trunkRightAtY = (yPct) => {
+      const s = this.positions.standing.scapulaInferior;
+      const i = this.positions.standing.iliacCrest;
+      const t = Math.max(0, Math.min(1, (yPct - s.right.y) / (i.right.y - s.right.y)));
+      return s.right.x + (i.right.x - s.right.x) * t;
+    };
     for (const { group, a, b } of zonePairs) {
       const data = groupData[group];
       if (!data) continue;
@@ -236,23 +253,38 @@ const RealisticBodyDiagram = {
       const bLY = posB.left.y  + this._leftYShift(safeB);
       const aRY = posA.right.y + this._rightYShift(safeA);
       const bRY = posB.right.y + this._rightYShift(safeB);
-      // 左ゾーン判定: val=-1→左下/右上, val=1→左上/右下
-      // 左側でYが大きく（下に）なる側＝短縮
+      // 短縮側判定（左ゾーン）
       const leftSum  = (safeA === -1 ? 1 : safeA === 1 ? -1 : 0) + (safeB === -1 ? 1 : safeB === 1 ? -1 : 0);
       const rightSum = -leftSum;
-      const drawZone = (sideX1, y1, sideX2, y2, isShort) => {
-        const fill   = isShort ? 'rgba(239,68,68,0.32)' : 'rgba(37,99,235,0.22)';
-        const stroke = isShort ? 'rgba(239,68,68,0.6)'  : 'rgba(37,99,235,0.55)';
+
+      // グループごとに内側端を決定
+      let innerLeftA, innerLeftB, innerRightA, innerRightB;
+      if (group === 'upper') {
+        // 腕ゾーンは「体側ライン」と「腕」の間の細い帯
+        innerLeftA  = trunkLeftAtY(posA.left.y) - 0.3;
+        innerLeftB  = trunkLeftAtY(posB.left.y) - 0.3;
+        innerRightA = trunkRightAtY(posA.right.y) + 0.3;
+        innerRightB = trunkRightAtY(posB.right.y) + 0.3;
+      } else {
+        innerLeftA  = CENTER_LINE;
+        innerLeftB  = CENTER_LINE;
+        innerRightA = CENTER_LINE;
+        innerRightB = CENTER_LINE;
+      }
+
+      const drawZone = (sideX1, y1, sideX2, y2, innerX1, innerX2, isShort) => {
+        const fill   = isShort ? 'rgba(239,68,68,0.34)' : 'rgba(14,165,233,0.42)';
+        const stroke = isShort ? 'rgba(239,68,68,0.65)' : 'rgba(14,165,233,0.78)';
         const poly = document.createElementNS(NS, 'polygon');
-        poly.setAttribute('points', `${sideX1},${y1} ${CENTER_LINE},${y1} ${CENTER_LINE},${y2} ${sideX2},${y2}`);
+        poly.setAttribute('points', `${sideX1},${y1} ${innerX1},${y1} ${innerX2},${y2} ${sideX2},${y2}`);
         poly.setAttribute('fill', fill);
         poly.setAttribute('stroke', stroke);
         poly.setAttribute('stroke-width', '0.3');
         poly.setAttribute('stroke-dasharray', '1.2,0.8');
         zoneSvg.appendChild(poly);
       };
-      if (leftSum !== 0)  drawZone(posA.left.x,  aLY, posB.left.x,  bLY, leftSum  > 0);
-      if (rightSum !== 0) drawZone(posA.right.x, aRY, posB.right.x, bRY, rightSum > 0);
+      if (leftSum !== 0)  drawZone(posA.left.x,  aLY, posB.left.x,  bLY, innerLeftA,  innerLeftB,  leftSum  > 0);
+      if (rightSum !== 0) drawZone(posA.right.x, aRY, posB.right.x, bRY, innerRightA, innerRightB, rightSum > 0);
     }
 
     // 各ランドマークを描画
