@@ -868,7 +868,13 @@
     const seatedDiagnoseBtn = document.getElementById('seatedDiagnoseBtn');
     if (seatedDiagnoseBtn) {
       seatedDiagnoseBtn.addEventListener('click', () => {
-        if (validateCurrentStep()) runDiagnosis();
+        if (!validateCurrentStep()) return;
+        // 構造検査ONの場合は結果を出さずに構造検査ステップへ遷移
+        if (seatedDiagnoseBtn.dataset.action === 'goto-structural') {
+          goToStep(6);
+          return;
+        }
+        runDiagnosis();
       });
     }
 
@@ -1791,24 +1797,58 @@
     const seatedDiagBtn = document.getElementById('seatedDiagnoseBtn');
 
     if (comparison.hasFootInfluence) {
-      html += `<div class="comparison-verdict foot-influence">
-        <strong>🦶 足の影響あり</strong>
-        <p>座位で左右差に変化が見られます。足の接地による影響が考えられます。</p>
-        <p>「検査結果を出す」を押して結果を確認できます。さらに詳しく調べたい場合は上半身検査に進むこともできます。</p>
-      </div>`;
+      const useStructural = !!examTypes.structural;
+      if (useStructural) {
+        html += `<div class="comparison-verdict foot-influence">
+          <strong>🦶 足の影響あり</strong>
+          <p>座位で左右差に変化が見られます。足の接地による影響が考えられます。</p>
+          <p>続けて<strong>構造検査</strong>に進んで荷重バランスを確認してください。さらに詳しく調べたい場合は上半身検査にも進めます（任意）。</p>
+        </div>`;
+      } else {
+        html += `<div class="comparison-verdict foot-influence">
+          <strong>🦶 足の影響あり</strong>
+          <p>座位で左右差に変化が見られます。足の接地による影響が考えられます。</p>
+          <p>「検査結果を出す」を押して結果を確認できます。さらに詳しく調べたい場合は上半身検査に進むこともできます。</p>
+        </div>`;
+      }
 
       const nextBtn = document.getElementById('seatedNextBtn');
       if (nextBtn) nextBtn.textContent = '上半身検査へ →（任意）';
-      if (seatedDiagBtn) seatedDiagBtn.style.display = '';
+      if (seatedDiagBtn) {
+        if (useStructural) {
+          seatedDiagBtn.textContent = '構造検査へ進む →';
+          seatedDiagBtn.dataset.action = 'goto-structural';
+        } else {
+          seatedDiagBtn.textContent = '検査結果を出す';
+          seatedDiagBtn.dataset.action = 'run-diagnosis';
+        }
+        seatedDiagBtn.style.display = '';
+      }
     } else {
-      html += `<div class="comparison-verdict no-foot-influence">
-        <strong>→ 足の影響ではない</strong>
-        <p>立位と座位で左右差が一致しています。足以外の要因を確認するため、上半身検査に進んでください。</p>
-      </div>`;
+      const useStructural = !!examTypes.structural;
+      if (useStructural) {
+        html += `<div class="comparison-verdict no-foot-influence">
+          <strong>→ 足の影響ではない</strong>
+          <p>立位と座位で左右差が一致しています。足以外の要因を確認するため、<strong>構造検査</strong>に進んでください（上半身検査は任意）。</p>
+        </div>`;
 
-      const nextBtn = document.getElementById('seatedNextBtn');
-      if (nextBtn) nextBtn.textContent = '上半身検査へ →';
-      if (seatedDiagBtn) seatedDiagBtn.style.display = 'none';
+        const nextBtn = document.getElementById('seatedNextBtn');
+        if (nextBtn) nextBtn.textContent = '上半身検査へ →（任意）';
+        if (seatedDiagBtn) {
+          seatedDiagBtn.textContent = '構造検査へ進む →';
+          seatedDiagBtn.dataset.action = 'goto-structural';
+          seatedDiagBtn.style.display = '';
+        }
+      } else {
+        html += `<div class="comparison-verdict no-foot-influence">
+          <strong>→ 足の影響ではない</strong>
+          <p>立位と座位で左右差が一致しています。足以外の要因を確認するため、上半身検査に進んでください。</p>
+        </div>`;
+
+        const nextBtn = document.getElementById('seatedNextBtn');
+        if (nextBtn) nextBtn.textContent = '上半身検査へ →';
+        if (seatedDiagBtn) seatedDiagBtn.style.display = 'none';
+      }
     }
 
     compBox.innerHTML = html;

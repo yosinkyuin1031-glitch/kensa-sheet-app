@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bodycheck-v41-figure-toggle-label';
+const CACHE_NAME = 'bodycheck-v42-seated-to-structural';
 const urlsToCache = [
   '/',
   '/index.html',
