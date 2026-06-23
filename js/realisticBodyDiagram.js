@@ -41,10 +41,10 @@ const RealisticBodyDiagram = {
     upper: {
       // 肩峰：肩の最頂部（肩線の外側端）
       acromion:      { left: { x: 38.5, y: 20.5 }, right: { x: 71.5, y: 20.5 }, label: '肩峰' },
-      // 肘頭：肩峰のほぼ真下、自然に垂れた腕の肘
-      mastoidDetail: { left: { x: 34.0, y: 43.0 }, right: { x: 72.0, y: 43.0 }, label: '肘頭' },
-      // 橈骨茎状突起：手首（腕が自然に垂れた状態。肘よりやや内側）
-      radialStyloid: { left: { x: 33.5, y: 60.5 }, right: { x: 72.0, y: 60.5 }, label: '茎状突起' }
+      // 肘頭：自然に垂れた腕の肘（実際の腕の上）
+      mastoidDetail: { left: { x: 36.0, y: 43.0 }, right: { x: 68.0, y: 43.0 }, label: '肘頭' },
+      // 橈骨茎状突起：手首（腕が自然に垂れた状態）
+      radialStyloid: { left: { x: 35.5, y: 60.5 }, right: { x: 68.0, y: 60.5 }, label: '茎状突起' }
     },
     lower: {
       // 大転子：骨盤外側、お尻側へ寄せる
@@ -362,42 +362,58 @@ const RealisticBodyDiagram = {
         // 体図上は色付きドット＋矢印のみ。状態（縮/伸）はサイド外側のラベルで読み取る。
 
         // ラベル収集（実描画は後でまとめて）
-        labelQueue.push({ label: pos.label, landmarkX: pos.left.x, landmarkY: lY });
+        // 肘頭と茎状突起はラベルを右側に配置（他のラベルと重なりやすいため）
+        const labelSide = (key === 'mastoidDetail' || key === 'radialStyloid') ? 'right' : 'left';
+        const landmarkX = labelSide === 'right' ? pos.right.x : pos.left.x;
+        const landmarkY = labelSide === 'right' ? rY : lY;
+        labelQueue.push({ label: pos.label, landmarkX, landmarkY, side: labelSide });
       }
     }
 
     // ===== 解剖ラベルを高さ順にソート＋同じ高さは横並びで配置 =====
-    labelQueue.sort((a, b) => a.landmarkY - b.landmarkY);
+    // 左ラベルと右ラベルで別々に列管理する
+    const leftLabels  = labelQueue.filter(x => x.side === 'left').sort((a, b) => a.landmarkY - b.landmarkY);
+    const rightLabels = labelQueue.filter(x => x.side === 'right').sort((a, b) => a.landmarkY - b.landmarkY);
     const COL_GAP_Y = 4.0;    // 縦方向の衝突判定しきい値（%）
     const COL_OFFSET = 11.5;  // 横方向に1段ずらす量（%）
-    const colYRecords = []; // [{ y, column }]
-    for (const item of labelQueue) {
-      // 同じ高さ（縦方向で接近）に既存ラベルがあれば、空いている列を探す
-      let column = 0;
-      while (colYRecords.some(r => r.column === column && Math.abs(r.y - item.landmarkY) < COL_GAP_Y)) {
-        column++;
+    const assignColumns = (items) => {
+      const records = [];
+      for (const item of items) {
+        let column = 0;
+        while (records.some(r => r.column === column && Math.abs(r.y - item.landmarkY) < COL_GAP_Y)) {
+          column++;
+        }
+        item.column = column;
+        records.push({ y: item.landmarkY, column });
       }
-      item.column = column;
-      colYRecords.push({ y: item.landmarkY, column });
-    }
-    for (const item of labelQueue) {
+    };
+    assignColumns(leftLabels);
+    assignColumns(rightLabels);
+
+    const renderLabel = (item) => {
       const xOffsetPct = item.column * COL_OFFSET;
       const lLabel = document.createElement('div');
-      lLabel.className = 'rbd-label rbd-label-left';
+      lLabel.className = 'rbd-label ' + (item.side === 'right' ? 'rbd-label-right' : 'rbd-label-left');
       lLabel.style.top = item.landmarkY + '%';
-      if (xOffsetPct > 0) lLabel.style.left = xOffsetPct + '%';
+      if (xOffsetPct > 0) {
+        if (item.side === 'right') lLabel.style.right = xOffsetPct + '%';
+        else                       lLabel.style.left  = xOffsetPct + '%';
+      }
       lLabel.textContent = item.label;
       stageWrap.appendChild(lLabel);
 
-      // リーダー線（ラベル右端からランドマークドットへ）
+      // リーダー線（ラベル端からランドマークドットへ）
       const lLine = document.createElementNS(NS, 'line');
-      lLine.setAttribute('x1', String(xOffsetPct));
+      const lineStartX = item.side === 'right' ? (100 - xOffsetPct) : xOffsetPct;
+      lLine.setAttribute('x1', String(lineStartX));
       lLine.setAttribute('y1', String(item.landmarkY));
       lLine.setAttribute('x2', String(item.landmarkX));
       lLine.setAttribute('y2', String(item.landmarkY));
       lLine.setAttribute('class', 'rbd-leader');
       lineSvg.appendChild(lLine);
-    }
+    };
+    for (const item of leftLabels)  renderLabel(item);
+    for (const item of rightLabels) renderLabel(item);
 
     stageWrap.appendChild(stage);
     containerEl.appendChild(stageWrap);
