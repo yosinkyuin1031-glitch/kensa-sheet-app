@@ -253,9 +253,13 @@ const RealisticBodyDiagram = {
       const bLY = posB.left.y  + this._leftYShift(safeB);
       const aRY = posA.right.y + this._rightYShift(safeA);
       const bRY = posB.right.y + this._rightYShift(safeB);
-      // 短縮側判定（左ゾーン）
-      const leftSum  = (safeA === -1 ? 1 : safeA === 1 ? -1 : 0) + (safeB === -1 ? 1 : safeB === 1 ? -1 : 0);
-      const rightSum = -leftSum;
+      // 両方の値が「同じ向きの非ゼロ」のときだけゾーンを描画する
+      // safeA / safeB が両方 -1 → 左側で短縮 / 両方 1 → 右側で短縮
+      const samePair = (safeA !== 0 && safeB !== 0 && safeA === safeB);
+      if (!samePair) continue;
+      // -1 → 左が高い=左短縮 / 1 → 右が高い=右短縮
+      const leftIsShort  = (safeA === -1);
+      const rightIsShort = (safeA === 1);
 
       // グループごとに内側端を決定
       let innerLeftA, innerLeftB, innerRightA, innerRightB;
@@ -273,8 +277,8 @@ const RealisticBodyDiagram = {
       }
 
       const drawZone = (sideX1, y1, sideX2, y2, innerX1, innerX2, isShort) => {
-        const fill   = isShort ? 'rgba(239,68,68,0.34)' : 'rgba(14,165,233,0.42)';
-        const stroke = isShort ? 'rgba(239,68,68,0.65)' : 'rgba(14,165,233,0.78)';
+        const fill   = isShort ? 'rgba(239,68,68,0.36)' : 'rgba(14,165,233,0.44)';
+        const stroke = isShort ? 'rgba(239,68,68,0.7)'  : 'rgba(14,165,233,0.8)';
         const poly = document.createElementNS(NS, 'polygon');
         poly.setAttribute('points', `${sideX1},${y1} ${innerX1},${y1} ${innerX2},${y2} ${sideX2},${y2}`);
         poly.setAttribute('fill', fill);
@@ -283,8 +287,9 @@ const RealisticBodyDiagram = {
         poly.setAttribute('stroke-dasharray', '1.2,0.8');
         zoneSvg.appendChild(poly);
       };
-      if (leftSum !== 0)  drawZone(posA.left.x,  aLY, posB.left.x,  bLY, innerLeftA,  innerLeftB,  leftSum  > 0);
-      if (rightSum !== 0) drawZone(posA.right.x, aRY, posB.right.x, bRY, innerRightA, innerRightB, rightSum > 0);
+      // 左右ペアで短縮側だけ赤、伸長側だけ青を描く
+      drawZone(posA.left.x,  aLY, posB.left.x,  bLY, innerLeftA,  innerLeftB,  leftIsShort);
+      drawZone(posA.right.x, aRY, posB.right.x, bRY, innerRightA, innerRightB, rightIsShort);
     }
 
     // 各ランドマークを描画
