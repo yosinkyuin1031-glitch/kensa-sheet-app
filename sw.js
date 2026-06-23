@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bodycheck-v52-illustration-zones';
+const CACHE_NAME = 'bodycheck-v53-zone-colors';
 const urlsToCache = [
   '/',
   '/index.html',

@@ -241,8 +241,8 @@ const RealisticBodyDiagram = {
       const leftSum  = (safeA === -1 ? 1 : safeA === 1 ? -1 : 0) + (safeB === -1 ? 1 : safeB === 1 ? -1 : 0);
       const rightSum = -leftSum;
       const drawZone = (sideX1, y1, sideX2, y2, isShort) => {
-        const fill   = isShort ? 'rgba(239,68,68,0.32)'  : 'rgba(168,85,247,0.18)';
-        const stroke = isShort ? 'rgba(239,68,68,0.6)'   : 'rgba(168,85,247,0.45)';
+        const fill   = isShort ? 'rgba(239,68,68,0.32)' : 'rgba(37,99,235,0.22)';
+        const stroke = isShort ? 'rgba(239,68,68,0.6)'  : 'rgba(37,99,235,0.55)';
         const poly = document.createElementNS(NS, 'polygon');
         poly.setAttribute('points', `${sideX1},${y1} ${CENTER_LINE},${y1} ${CENTER_LINE},${y2} ${sideX2},${y2}`);
         poly.setAttribute('fill', fill);
