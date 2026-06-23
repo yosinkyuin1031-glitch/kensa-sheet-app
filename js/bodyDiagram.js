@@ -680,7 +680,7 @@ const BodyDiagram = {
           mapping[contractedSide].forEach(p => this._highlightPart(svg, p, 'rgba(239,68,68,0.50)'));
         }
         if (mapping[tensionedSide]) {
-          mapping[tensionedSide].forEach(p => this._highlightPart(svg, p, 'rgba(14,165,233,0.65)'));
+          mapping[tensionedSide].forEach(p => this._highlightPart(svg, p, 'rgba(14,165,233,0.50)'));
         }
       }
 
@@ -927,7 +927,7 @@ const BodyDiagram = {
       const mapping = partMapping[i];
       if (mapping) {
         (mapping[compSide] || []).forEach(p => this._highlightPart(svg, p, 'rgba(239,68,68,0.50)'));
-        (mapping[stretchSide] || []).forEach(p => this._highlightPart(svg, p, 'rgba(14,165,233,0.65)'));
+        (mapping[stretchSide] || []).forEach(p => this._highlightPart(svg, p, 'rgba(14,165,233,0.50)'));
       }
     }
 
@@ -1069,7 +1069,7 @@ const BodyDiagram = {
       const contractedParts = cfg.parts[compSide] || [];
       const tensionedParts = cfg.parts[stretchSideKey] || [];
       contractedParts.forEach(p => this._highlightPart(svg, p, 'rgba(239,68,68,0.50)'));
-      tensionedParts.forEach(p => this._highlightPart(svg, p, 'rgba(14,165,233,0.65)'));
+      tensionedParts.forEach(p => this._highlightPart(svg, p, 'rgba(14,165,233,0.50)'));
 
       // バッジを衝突回避で配置（小型化＋xy方向に逃げる・padding強化）
       const badgeW = 36, badgeH = 17;
@@ -1231,37 +1231,6 @@ const BodyDiagram = {
         x: stretchBox.x + bW / 2, y: stretchBox.y + bH - 4, 'text-anchor': 'middle',
         'font-size': 9, fill: 'white', 'font-weight': 800
       }, `${stretchSide}伸`));
-
-      // === 体側ゾーンポリゴン（縮=赤・伸=青で体の側面を塗る） ===
-      const zoneLayer = svg.querySelector('.zone-layer');
-      if (zoneLayer) {
-        const cx = 150;
-        // 区間ごとに体側のおおよその左右端＋Y範囲を設定（頭部と被らないよう調整）
-        let yA, yB, leftEdgeA, leftEdgeB, rightEdgeA, rightEdgeB;
-        if (seg.upper === 'mastoid') {
-          // 乳様突起→肩峰：首〜肩。頭部回避のためY=55から
-          yA = 55;  yB = 80;
-          leftEdgeA = 138; leftEdgeB = 80;
-          rightEdgeA = 162; rightEdgeB = 220;
-        } else {
-          // 肩甲下角→腸骨稜：胴の体側
-          yA = 158; yB = 240;
-          leftEdgeA = 95;  leftEdgeB = 110;
-          rightEdgeA = 205; rightEdgeB = 190;
-        }
-        const leftSolid  = leftCompressed ? '#ef4444' : '#0ea5e9';
-        const rightSolid = rightCompressed ? '#ef4444' : '#0ea5e9';
-        zoneLayer.appendChild(this._createSVGEl('polygon', {
-          points: `${leftEdgeA},${yA} ${cx},${yA} ${cx},${yB} ${leftEdgeB},${yB}`,
-          fill: leftSolid, 'fill-opacity': 0.55,
-          stroke: leftSolid, 'stroke-width': 1.5, 'stroke-opacity': 0.85
-        }));
-        zoneLayer.appendChild(this._createSVGEl('polygon', {
-          points: `${cx},${yA} ${rightEdgeA},${yA} ${rightEdgeB},${yB} ${cx},${yB}`,
-          fill: rightSolid, 'fill-opacity': 0.55,
-          stroke: rightSolid, 'stroke-width': 1.5, 'stroke-opacity': 0.85
-        }));
-      }
     }
 
     // ===== 茎状突起・外果のマーカー（手先・足先に○×） =====

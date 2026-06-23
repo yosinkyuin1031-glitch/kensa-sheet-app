@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bodycheck-v67-torso-zone-fix';
+const CACHE_NAME = 'bodycheck-v68-revert-torso-polygon';
 const urlsToCache = [
   '/',
   '/index.html',
