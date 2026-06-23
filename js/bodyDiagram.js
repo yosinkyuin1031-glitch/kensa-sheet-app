@@ -1293,6 +1293,11 @@ const BodyDiagram = {
       el.setAttribute(k, v);
     }
     if (text !== undefined) el.textContent = text;
+    // 背面図合わせのため、SVG全体は左右反転表示する。テキストだけは逆変換で正しく見せる。
+    if (tag === 'text') {
+      const x = parseFloat(attrs.x || '0');
+      el.setAttribute('transform', `translate(${x * 2} 0) scale(-1 1)`);
+    }
     return el;
   }
 };

@@ -676,6 +676,8 @@ body[data-view="patient"] .patient-treatment-hint p {
   width: 100%;
   height: auto;
   display: block;
+  /* 背面図表示のためSVG全体を左右反転（テキストはJS側で逆変換済み） */
+  transform: scaleX(-1);
 }
 
 /* ミニ体図（前回比較用） */
