@@ -126,6 +126,13 @@ const RealisticBodyDiagram = {
     lineSvg.setAttribute('preserveAspectRatio', 'none');
     stage.appendChild(lineSvg);
 
+    // SVG（ゾーン用、画像の上・マーカーの下に配置）
+    const zoneSvg = document.createElementNS(NS, 'svg');
+    zoneSvg.setAttribute('class', 'rbd-zone-svg');
+    zoneSvg.setAttribute('viewBox', '0 0 100 100');
+    zoneSvg.setAttribute('preserveAspectRatio', 'none');
+    stage.appendChild(zoneSvg);
+
     // ===== 衝突回避用：配置済みアイテムのbboxを保持 =====
     // bbox = { x, y, w, h }  (画像サイズに対する%基準・中心点x,yに対する幅高)
     const placed = { left: [], right: [], center: [] };
@@ -203,6 +210,50 @@ const RealisticBodyDiagram = {
     // ドット/矢印のサイズ
     const DOT_W = 2.0, DOT_H = 2.0;
     const ARROW_W = 2.5, ARROW_H = 3.0;
+
+    // ===== 隣接ランドマーク間のゾーン描画（短縮=赤・伸長=紫）=====
+    const zonePairs = [
+      { group: 'standing', a: 'mastoid',         b: 'scapulaInferior' },
+      { group: 'standing', a: 'scapulaInferior', b: 'iliacCrest' },
+      { group: 'upper',    a: 'acromion',        b: 'mastoidDetail' },
+      { group: 'upper',    a: 'mastoidDetail',   b: 'radialStyloid' },
+      { group: 'lower',    a: 'greaterTrochanter', b: 'patellaUpper' },
+      { group: 'lower',    a: 'patellaUpper',     b: 'lateralMalleolus' }
+    ];
+    const groupData = { standing, upper, lower };
+    for (const { group, a, b } of zonePairs) {
+      const data = groupData[group];
+      if (!data) continue;
+      const valA = data[a];
+      const valB = data[b];
+      const safeA = valA || 0;
+      const safeB = valB || 0;
+      if (safeA === 0 && safeB === 0) continue;
+      const posA = this.positions[group][a];
+      const posB = this.positions[group][b];
+      if (!posA || !posB) continue;
+      const aLY = posA.left.y  + this._leftYShift(safeA);
+      const bLY = posB.left.y  + this._leftYShift(safeB);
+      const aRY = posA.right.y + this._rightYShift(safeA);
+      const bRY = posB.right.y + this._rightYShift(safeB);
+      // 左ゾーン判定: val=-1→左下/右上, val=1→左上/右下
+      // 左側でYが大きく（下に）なる側＝短縮
+      const leftSum  = (safeA === -1 ? 1 : safeA === 1 ? -1 : 0) + (safeB === -1 ? 1 : safeB === 1 ? -1 : 0);
+      const rightSum = -leftSum;
+      const drawZone = (sideX1, y1, sideX2, y2, isShort) => {
+        const fill   = isShort ? 'rgba(239,68,68,0.32)'  : 'rgba(168,85,247,0.18)';
+        const stroke = isShort ? 'rgba(239,68,68,0.6)'   : 'rgba(168,85,247,0.45)';
+        const poly = document.createElementNS(NS, 'polygon');
+        poly.setAttribute('points', `${sideX1},${y1} ${CENTER_LINE},${y1} ${CENTER_LINE},${y2} ${sideX2},${y2}`);
+        poly.setAttribute('fill', fill);
+        poly.setAttribute('stroke', stroke);
+        poly.setAttribute('stroke-width', '0.3');
+        poly.setAttribute('stroke-dasharray', '1.2,0.8');
+        zoneSvg.appendChild(poly);
+      };
+      if (leftSum !== 0)  drawZone(posA.left.x,  aLY, posB.left.x,  bLY, leftSum  > 0);
+      if (rightSum !== 0) drawZone(posA.right.x, aRY, posB.right.x, bRY, rightSum > 0);
+    }
 
     // 各ランドマークを描画
     for (const { map, data } of allMaps) {

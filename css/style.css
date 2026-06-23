@@ -770,6 +770,16 @@ body[data-view="patient"] .patient-treatment-hint p {
   pointer-events: none;
 }
 
+/* ゾーン用SVG（短縮/伸長の半透明領域）。画像の上・ドット/矢印の下に重ねる */
+.rbd-zone-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
 /* リーダー線（点線） */
 .rbd-leader {
   stroke: #94a3b8;
