@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bodycheck-v62-xpattern-zones';
+const CACHE_NAME = 'bodycheck-v63-pair-recombination';
 const urlsToCache = [
   '/',
   '/index.html',

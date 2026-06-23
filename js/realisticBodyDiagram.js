@@ -212,17 +212,21 @@ const RealisticBodyDiagram = {
     const ARROW_W = 2.5, ARROW_H = 3.0;
 
     // ===== 隣接ランドマーク間のゾーン描画（短縮=赤・伸長=青）=====
-    // グループごとにゾーンの内側端を切り替えて、体幹と腕が被らないように分離する。
-    // 体幹(standing) : 中心線 ←→ 体側
-    // 上肢(upper)    : 体側ライン ←→ 腕（細い帯）
-    // 下肢(lower)    : 中心線 ←→ 脚
+    // shape: 'trunk' = 中心線まで／'arm' = 体側ライン〜腕の細帯／'leg' = 中心線まで
+    // ペア組み合わせ（解剖学的な引っ張り合い・縮こまりの観点で組み直し）
+    //  1. 乳様突起×肩峰（首肩の僧帽筋上部ライン）
+    //  2. 肩甲下角×腸骨稜（体側 体幹）
+    //  3. 肩峰×肘頭（上腕）
+    //  4. 肘頭×茎状突起（前腕）
+    //  5. 大転子×膝蓋骨上端（大腿）
+    //  6. 膝蓋骨上端×外果（下腿）
     const zonePairs = [
-      { group: 'standing', a: 'mastoid',         b: 'scapulaInferior' },
-      { group: 'standing', a: 'scapulaInferior', b: 'iliacCrest' },
-      { group: 'upper',    a: 'acromion',        b: 'mastoidDetail' },
-      { group: 'upper',    a: 'mastoidDetail',   b: 'radialStyloid' },
-      { group: 'lower',    a: 'greaterTrochanter', b: 'patellaUpper' },
-      { group: 'lower',    a: 'patellaUpper',     b: 'lateralMalleolus' }
+      { groupA: 'standing', a: 'mastoid',           groupB: 'upper',    b: 'acromion',         shape: 'trunk' },
+      { groupA: 'standing', a: 'scapulaInferior',   groupB: 'standing', b: 'iliacCrest',       shape: 'trunk' },
+      { groupA: 'upper',    a: 'acromion',          groupB: 'upper',    b: 'mastoidDetail',    shape: 'arm' },
+      { groupA: 'upper',    a: 'mastoidDetail',     groupB: 'upper',    b: 'radialStyloid',    shape: 'arm' },
+      { groupA: 'lower',    a: 'greaterTrochanter', groupB: 'lower',    b: 'patellaUpper',     shape: 'leg' },
+      { groupA: 'lower',    a: 'patellaUpper',      groupB: 'lower',    b: 'lateralMalleolus', shape: 'leg' }
     ];
     const groupData = { standing, upper, lower };
     // 体側ライン（肩甲下角・腸骨稜のx座標を区間ごとに線形補間する用）
@@ -238,16 +242,17 @@ const RealisticBodyDiagram = {
       const t = Math.max(0, Math.min(1, (yPct - s.right.y) / (i.right.y - s.right.y)));
       return s.right.x + (i.right.x - s.right.x) * t;
     };
-    for (const { group, a, b } of zonePairs) {
-      const data = groupData[group];
-      if (!data) continue;
-      const valA = data[a];
-      const valB = data[b];
+    for (const { groupA, a, groupB, b, shape } of zonePairs) {
+      const dataA = groupData[groupA];
+      const dataB = groupData[groupB];
+      if (!dataA || !dataB) continue;
+      const valA = dataA[a];
+      const valB = dataB[b];
       const safeA = valA || 0;
       const safeB = valB || 0;
       if (safeA === 0 && safeB === 0) continue;
-      const posA = this.positions[group][a];
-      const posB = this.positions[group][b];
+      const posA = this.positions[groupA][a];
+      const posB = this.positions[groupB][b];
       if (!posA || !posB) continue;
       const aLY = posA.left.y  + this._leftYShift(safeA);
       const bLY = posB.left.y  + this._leftYShift(safeB);
@@ -269,15 +274,16 @@ const RealisticBodyDiagram = {
         leftIsShort  = (safeA === 1  && safeB === -1);
       }
 
-      // グループごとに内側端を決定
+      // shape ごとに内側端を決定
       let innerLeftA, innerLeftB, innerRightA, innerRightB;
-      if (group === 'upper') {
+      if (shape === 'arm') {
         // 腕ゾーンは「体側ライン」と「腕」の間の細い帯
         innerLeftA  = trunkLeftAtY(posA.left.y) - 0.3;
         innerLeftB  = trunkLeftAtY(posB.left.y) - 0.3;
         innerRightA = trunkRightAtY(posA.right.y) + 0.3;
         innerRightB = trunkRightAtY(posB.right.y) + 0.3;
       } else {
+        // trunk / leg は中心線まで
         innerLeftA  = CENTER_LINE;
         innerLeftB  = CENTER_LINE;
         innerRightA = CENTER_LINE;
