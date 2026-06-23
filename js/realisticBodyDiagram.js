@@ -41,10 +41,10 @@ const RealisticBodyDiagram = {
     upper: {
       // 肩峰：肩の最頂部（肩線の外側端）
       acromion:      { left: { x: 38.5, y: 20.5 }, right: { x: 71.5, y: 20.5 }, label: '肩峰' },
-      // 肘頭：自然に垂れた腕の肘（実際の腕の上）
-      mastoidDetail: { left: { x: 33.0, y: 44.0 }, right: { x: 72.0, y: 44.0 }, label: '肘頭' },
-      // 橈骨茎状突起：手首（腕の手首位置）
-      radialStyloid: { left: { x: 32.0, y: 61.0 }, right: { x: 73.0, y: 61.0 }, label: '茎状突起' }
+      // 肘頭：自然に垂れた腕の肘（実際の肘の高さ）
+      mastoidDetail: { left: { x: 33.0, y: 36.0 }, right: { x: 72.0, y: 36.0 }, label: '肘頭' },
+      // 橈骨茎状突起：手首（腰のあたり）
+      radialStyloid: { left: { x: 33.0, y: 50.0 }, right: { x: 72.0, y: 50.0 }, label: '茎状突起' }
     },
     lower: {
       // 大転子：骨盤外側、お尻側へ寄せる
