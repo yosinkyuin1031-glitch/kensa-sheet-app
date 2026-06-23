@@ -254,12 +254,12 @@ const RealisticBodyDiagram = {
       const aRY = posA.right.y + this._rightYShift(safeA);
       const bRY = posB.right.y + this._rightYShift(safeB);
       // 両方の値が「同じ向きの非ゼロ」のときだけゾーンを描画する
-      // safeA / safeB が両方 -1 → 左側で短縮 / 両方 1 → 右側で短縮
       const samePair = (safeA !== 0 && safeB !== 0 && safeA === safeB);
       if (!samePair) continue;
-      // -1 → 左が高い=左短縮 / 1 → 右が高い=右短縮
-      const leftIsShort  = (safeA === -1);
-      const rightIsShort = (safeA === 1);
+      // ラベル併記との整合: val=-1→shortSide='right'（右短縮）, val=1→shortSide='left'（左短縮）
+      // つまり「低い側＝短縮」の解釈に統一
+      const leftIsShort  = (safeA === 1);
+      const rightIsShort = (safeA === -1);
 
       // グループごとに内側端を決定
       let innerLeftA, innerLeftB, innerRightA, innerRightB;

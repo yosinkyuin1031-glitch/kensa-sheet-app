@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bodycheck-v56-svg-real-unify';
+const CACHE_NAME = 'bodycheck-v57-zone-direction-fix';
 const urlsToCache = [
   '/',
   '/index.html',
