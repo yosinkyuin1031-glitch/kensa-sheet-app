@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bodycheck-v84-female-shift-more';
+const CACHE_NAME = 'bodycheck-v85-prod-sync-with-preview';
 const urlsToCache = [
   '/',
   '/index.html',
