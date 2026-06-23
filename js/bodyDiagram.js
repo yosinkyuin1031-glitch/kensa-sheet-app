@@ -653,7 +653,7 @@ const BodyDiagram = {
 
       // ゾーン（左側）
       const svgLeftIsContraction = pattern2;
-      const svgLeftColor = svgLeftIsContraction ? 'rgba(239,68,68,0.22)' : 'rgba(14,165,233,0.18)';
+      const svgLeftColor = svgLeftIsContraction ? 'rgba(239,68,68,0.45)' : 'rgba(14,165,233,0.45)';
       const svgLeftStroke = svgLeftIsContraction ? '#ef4444' : '#0ea5e9';
       zoneLayer.appendChild(this._createSVGEl('polygon', {
         points: `${cx},${svgLeftYA} ${posA.leftX},${svgLeftYA} ${posB.leftX},${svgLeftYB} ${cx},${svgLeftYB}`,
@@ -663,7 +663,7 @@ const BodyDiagram = {
 
       // ゾーン（右側）
       const svgRightIsContraction = pattern1;
-      const svgRightColor = svgRightIsContraction ? 'rgba(239,68,68,0.22)' : 'rgba(14,165,233,0.18)';
+      const svgRightColor = svgRightIsContraction ? 'rgba(239,68,68,0.45)' : 'rgba(14,165,233,0.45)';
       const svgRightStroke = svgRightIsContraction ? '#ef4444' : '#0ea5e9';
       zoneLayer.appendChild(this._createSVGEl('polygon', {
         points: `${cx},${svgRightYA} ${posA.rightX},${svgRightYA} ${posB.rightX},${svgRightYB} ${cx},${svgRightYB}`,
@@ -677,10 +677,10 @@ const BodyDiagram = {
         const contractedSide = pattern1 ? 'right' : 'left';
         const tensionedSide = pattern1 ? 'left' : 'right';
         if (mapping[contractedSide]) {
-          mapping[contractedSide].forEach(p => this._highlightPart(svg, p, 'rgba(239,68,68,0.28)'));
+          mapping[contractedSide].forEach(p => this._highlightPart(svg, p, 'rgba(239,68,68,0.50)'));
         }
         if (mapping[tensionedSide]) {
-          mapping[tensionedSide].forEach(p => this._highlightPart(svg, p, 'rgba(14,165,233,0.2)'));
+          mapping[tensionedSide].forEach(p => this._highlightPart(svg, p, 'rgba(14,165,233,0.50)'));
         }
       }
 
@@ -926,8 +926,8 @@ const BodyDiagram = {
       const stretchSide = leftCompressed ? 'right' : 'left';
       const mapping = partMapping[i];
       if (mapping) {
-        (mapping[compSide] || []).forEach(p => this._highlightPart(svg, p, 'rgba(239,68,68,0.35)'));
-        (mapping[stretchSide] || []).forEach(p => this._highlightPart(svg, p, 'rgba(14,165,233,0.28)'));
+        (mapping[compSide] || []).forEach(p => this._highlightPart(svg, p, 'rgba(239,68,68,0.50)'));
+        (mapping[stretchSide] || []).forEach(p => this._highlightPart(svg, p, 'rgba(14,165,233,0.50)'));
       }
     }
 
@@ -1068,8 +1068,8 @@ const BodyDiagram = {
       // パーツハイライト（腕・脚を赤/紫で色付け）
       const contractedParts = cfg.parts[compSide] || [];
       const tensionedParts = cfg.parts[stretchSideKey] || [];
-      contractedParts.forEach(p => this._highlightPart(svg, p, 'rgba(239,68,68,0.30)'));
-      tensionedParts.forEach(p => this._highlightPart(svg, p, 'rgba(14,165,233,0.22)'));
+      contractedParts.forEach(p => this._highlightPart(svg, p, 'rgba(239,68,68,0.50)'));
+      tensionedParts.forEach(p => this._highlightPart(svg, p, 'rgba(14,165,233,0.50)'));
 
       // バッジを衝突回避で配置（小型化＋xy方向に逃げる・padding強化）
       const badgeW = 36, badgeH = 17;

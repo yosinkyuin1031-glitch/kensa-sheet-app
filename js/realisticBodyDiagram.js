@@ -306,8 +306,8 @@ const RealisticBodyDiagram = {
       }
 
       const drawZone = (sideX1, y1, sideX2, y2, innerX1, innerX2, isShort) => {
-        const fill   = isShort ? 'rgba(239,68,68,0.36)' : 'rgba(14,165,233,0.44)';
-        const stroke = isShort ? 'rgba(239,68,68,0.7)'  : 'rgba(14,165,233,0.8)';
+        const fill   = isShort ? 'rgba(239,68,68,0.50)' : 'rgba(14,165,233,0.50)';
+        const stroke = isShort ? 'rgba(239,68,68,0.8)'  : 'rgba(14,165,233,0.8)';
         const poly = document.createElementNS(NS, 'polygon');
         poly.setAttribute('points', `${sideX1},${y1} ${innerX1},${y1} ${innerX2},${y2} ${sideX2},${y2}`);
         poly.setAttribute('fill', fill);
