@@ -840,8 +840,28 @@ body[data-view="patient"] .patient-treatment-hint p {
   pointer-events: none;
   z-index: 3;
 }
-.rbd-label-left  { left: 0; max-width: 19%; }
-.rbd-label-right { right: 0; max-width: 19%; }
+.rbd-label-left  { left: 0; max-width: 22%; }
+.rbd-label-right { right: 0; max-width: 22%; }
+
+/* 状態併記タイプのラベル */
+.rbd-label-with-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.rbd-label-name { white-space: nowrap; }
+.rbd-label-status {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+  color: #fff;
+  line-height: 1.3;
+}
+.rbd-label-status.short { background: #dc2626; }
+.rbd-label-status.long  { background: #2563eb; }
+.rbd-label-status.even  { background: #94a3b8; }
 
 .rbd-footer {
   text-align: center;

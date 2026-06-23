@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bodycheck-v44-arm-badges-spacing';
+const CACHE_NAME = 'bodycheck-v45-labels-status-and-print-fix';
 const urlsToCache = [
   '/',
   '/index.html',

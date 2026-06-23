@@ -262,57 +262,29 @@ const RealisticBodyDiagram = {
           stage.appendChild(rArrow);
         }
 
-        // ===== 状態バッジ（短縮側のみ「縮」を表示・伸長側は矢印のみ） =====
-        // 腕系（肘頭・茎状突起）はランドマークが密集するため、バッジを更に外側へ
-        const armLandmarks = ['elbow', 'styloidProcess', 'olecranon', 'wrist'];
-        const isArm = armLandmarks.includes(key);
-        const outsideOffset = isArm ? 10 : 7;
-        if (val !== 0) {
-          if (shortSide === 'left') {
-            // 左側が短縮 → 左外側に「縮」バッジ
-            const lStartX = Math.max(BADGE_W / 2 + 1, pos.left.x - outsideOffset);
-            const lStartY = lY + 3.2;
-            const lPos = placeNoOverlap('left', lStartX, lStartY, BADGE_W, BADGE_H, {
-              minX: BADGE_W / 2 + 1,
-              maxX: Math.min(CENTER_LINE - BADGE_W / 2 - 1, pos.left.x - 2)
-            });
-            const lBadge = document.createElement('div');
-            lBadge.className = 'rbd-marker rbd-badge red';
-            lBadge.textContent = '縮';
-            lBadge.style.left = lPos.x + '%';
-            lBadge.style.top  = lPos.y + '%';
-            stage.appendChild(lBadge);
-          } else if (shortSide === 'right') {
-            // 右側が短縮 → 右外側に「縮」バッジ
-            const rStartX = Math.min(99 - BADGE_W / 2, pos.right.x + outsideOffset);
-            const rStartY = rY + 3.2;
-            const rPos = placeNoOverlap('right', rStartX, rStartY, BADGE_W, BADGE_H, {
-              minX: Math.max(CENTER_LINE + BADGE_W / 2 + 1, pos.right.x + 2),
-              maxX: 99 - BADGE_W / 2
-            });
-            const rBadge = document.createElement('div');
-            rBadge.className = 'rbd-marker rbd-badge red';
-            rBadge.textContent = '縮';
-            rBadge.style.left = rPos.x + '%';
-            rBadge.style.top  = rPos.y + '%';
-            stage.appendChild(rBadge);
-          }
-        }
+        // ===== 状態バッジは廃止（左右ラベルに状態を併記する方式に変更） =====
+        // 体図上は色付きドット＋矢印のみ。状態（縮/伸）はサイド外側のラベルで読み取る。
 
-        // ===== 解剖ラベル（左外側 / 右外側、stageWrap直下に配置） =====
+        // ===== 解剖ラベル（状態を併記） =====
         const lLabelY = reserveLabelY('left',  lY);
         const rLabelY = reserveLabelY('right', rY);
 
+        // 状態テキスト: val=-1→左が高い=右が短縮 / val=1→右が高い=左が短縮 / val=0→均等
+        const leftStatusText  = val === 0 ? '均等' : (shortSide === 'left'  ? '縮' : '伸');
+        const rightStatusText = val === 0 ? '均等' : (shortSide === 'right' ? '縮' : '伸');
+        const leftStatusCls   = val === 0 ? 'even' : (shortSide === 'left'  ? 'short' : 'long');
+        const rightStatusCls  = val === 0 ? 'even' : (shortSide === 'right' ? 'short' : 'long');
+
         const lLabel = document.createElement('div');
-        lLabel.className = 'rbd-label rbd-label-left';
+        lLabel.className = 'rbd-label rbd-label-left rbd-label-with-status';
         lLabel.style.top = lLabelY + '%';
-        lLabel.textContent = pos.label;
+        lLabel.innerHTML = `<span class="rbd-label-name">${pos.label}</span><span class="rbd-label-status ${leftStatusCls}">${leftStatusText}</span>`;
         stageWrap.appendChild(lLabel);
 
         const rLabel = document.createElement('div');
-        rLabel.className = 'rbd-label rbd-label-right';
+        rLabel.className = 'rbd-label rbd-label-right rbd-label-with-status';
         rLabel.style.top = rLabelY + '%';
-        rLabel.textContent = pos.label;
+        rLabel.innerHTML = `<span class="rbd-label-status ${rightStatusCls}">${rightStatusText}</span><span class="rbd-label-name">${pos.label}</span>`;
         stageWrap.appendChild(rLabel);
 
         // ===== リーダー線（点線・SVG） =====

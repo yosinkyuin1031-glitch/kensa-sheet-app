@@ -1963,7 +1963,10 @@
     // 構造検査データもdiagnosisResultに含める
     if (examTypes.structural) {
       diagnosisResult.structuralData = { ...structuralData };
-      diagnosisResult.weightBearing = calcWeightBearing();
+      const _wb = calcWeightBearing();
+      diagnosisResult.weightBearing = _wb;
+      // 印刷・結果ページが参照するグローバル weightBalance を構造検査結果で更新
+      if (_wb && _wb.side) weightBalance = _wb.side;
     }
     if (examTypes.landmark) {
       await renderDiagnosis(diagnosisResult);
@@ -4781,7 +4784,10 @@
     diagnosisResult.gravityData = { ...gravityData };
     if (examTypes.structural) {
       diagnosisResult.structuralData = { ...structuralData };
-      diagnosisResult.weightBearing = calcWeightBearing();
+      const _wb = calcWeightBearing();
+      diagnosisResult.weightBearing = _wb;
+      // 印刷・結果ページが参照するグローバル weightBalance を構造検査結果で更新
+      if (_wb && _wb.side) weightBalance = _wb.side;
     }
     if (examTypes.landmark) {
       await renderDiagnosis(diagnosisResult);
