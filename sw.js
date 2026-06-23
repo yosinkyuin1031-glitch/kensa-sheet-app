@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bodycheck-v70-svg-xpattern-only';
+const CACHE_NAME = 'bodycheck-v71-deep-blue-shorter-hand';
 const urlsToCache = [
   '/',
   '/index.html',

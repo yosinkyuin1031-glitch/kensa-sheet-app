@@ -187,12 +187,12 @@ const BodyDiagram = {
             fill="url(#${p}skinGrad)" stroke="#c4956e" stroke-width="1.1"/>
           <ellipse class="joint" cx="42" cy="226" rx="6" ry="4" fill="url(#${p}jointGrad)" stroke="#d97706" stroke-width="1.3"/>
           <path class="body-part" data-part="hand-l"
-            d="M38,230 L36,260 C35,268 34,280 33,290 C32,296 30,304 32,308 C34,314 42,314 44,308 C46,302 46,290 46,280 L48,260 L48,230 Z"
+            d="M38,230 L36,250 C35,258 34,268 33,275 C32,280 30,285 32,288 C34,292 42,292 44,288 C46,285 46,275 46,268 L48,250 L48,230 Z"
             fill="url(#${p}skinGradDark)" stroke="#c4956e" stroke-width="1"/>
-          <line x1="34" y1="296" x2="32" y2="308" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
-          <line x1="37" y1="296" x2="36" y2="310" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
-          <line x1="40" y1="296" x2="40" y2="312" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
-          <line x1="43" y1="296" x2="43" y2="310" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
+          <line x1="34" y1="280" x2="32" y2="288" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
+          <line x1="37" y1="280" x2="36" y2="290" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
+          <line x1="40" y1="280" x2="40" y2="291" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
+          <line x1="43" y1="280" x2="43" y2="290" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
         </g>
 
         <!-- ===== 右腕 ===== -->
@@ -208,12 +208,12 @@ const BodyDiagram = {
             fill="url(#${p}skinGrad)" stroke="#c4956e" stroke-width="1.1"/>
           <ellipse class="joint" cx="258" cy="226" rx="6" ry="4" fill="url(#${p}jointGrad)" stroke="#d97706" stroke-width="1.3"/>
           <path class="body-part" data-part="hand-r"
-            d="M262,230 L264,260 C265,268 266,280 267,290 C268,296 270,304 268,308 C266,314 258,314 256,308 C254,302 254,290 254,280 L252,260 L252,230 Z"
+            d="M262,230 L264,250 C265,258 266,268 267,275 C268,280 270,285 268,288 C266,292 258,292 256,288 C254,285 254,275 254,268 L252,250 L252,230 Z"
             fill="url(#${p}skinGradDark)" stroke="#c4956e" stroke-width="1"/>
-          <line x1="266" y1="296" x2="268" y2="308" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
-          <line x1="263" y1="296" x2="264" y2="310" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
-          <line x1="260" y1="296" x2="260" y2="312" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
-          <line x1="257" y1="296" x2="257" y2="310" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
+          <line x1="266" y1="280" x2="268" y2="288" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
+          <line x1="263" y1="280" x2="264" y2="290" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
+          <line x1="260" y1="280" x2="260" y2="291" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
+          <line x1="257" y1="280" x2="257" y2="290" stroke="#c4956e" stroke-width="0.5" opacity="0.4"/>
         </g>
 
         <!-- ===== 左脚（iliacCrestで上下）===== -->
@@ -584,7 +584,7 @@ const BodyDiagram = {
       const stretchBox = this._reserveBox(stretchXBase - badgeW / 2, midY - badgeH / 2, badgeW, badgeH, { axis: 'xy', padding: 4 });
       indicatorLayer.appendChild(this._createSVGEl('rect', {
         x: stretchBox.x, y: stretchBox.y, width: badgeW, height: badgeH,
-        rx: 6, fill: '#0ea5e9', opacity: 0.88
+        rx: 6, fill: '#2563eb', opacity: 0.88
       }));
       indicatorLayer.appendChild(this._createSVGEl('text', {
         x: stretchBox.x + badgeW / 2, y: stretchBox.y + badgeH - 5, 'text-anchor': 'middle',
@@ -653,8 +653,8 @@ const BodyDiagram = {
 
       // ゾーン（左側）
       const svgLeftIsContraction = pattern2;
-      const svgLeftColor = svgLeftIsContraction ? 'rgba(239,68,68,0.45)' : 'rgba(14,165,233,0.45)';
-      const svgLeftStroke = svgLeftIsContraction ? '#ef4444' : '#0ea5e9';
+      const svgLeftColor = svgLeftIsContraction ? 'rgba(239,68,68,0.45)' : 'rgba(37,99,235,0.45)';
+      const svgLeftStroke = svgLeftIsContraction ? '#ef4444' : '#2563eb';
       zoneLayer.appendChild(this._createSVGEl('polygon', {
         points: `${cx},${svgLeftYA} ${posA.leftX},${svgLeftYA} ${posB.leftX},${svgLeftYB} ${cx},${svgLeftYB}`,
         fill: svgLeftColor, stroke: svgLeftStroke,
@@ -663,8 +663,8 @@ const BodyDiagram = {
 
       // ゾーン（右側）
       const svgRightIsContraction = pattern1;
-      const svgRightColor = svgRightIsContraction ? 'rgba(239,68,68,0.45)' : 'rgba(14,165,233,0.45)';
-      const svgRightStroke = svgRightIsContraction ? '#ef4444' : '#0ea5e9';
+      const svgRightColor = svgRightIsContraction ? 'rgba(239,68,68,0.45)' : 'rgba(37,99,235,0.45)';
+      const svgRightStroke = svgRightIsContraction ? '#ef4444' : '#2563eb';
       zoneLayer.appendChild(this._createSVGEl('polygon', {
         points: `${cx},${svgRightYA} ${posA.rightX},${svgRightYA} ${posB.rightX},${svgRightYB} ${cx},${svgRightYB}`,
         fill: svgRightColor, stroke: svgRightStroke,
@@ -680,7 +680,7 @@ const BodyDiagram = {
           mapping[contractedSide].forEach(p => this._highlightPart(svg, p, 'rgba(239,68,68,0.50)'));
         }
         if (mapping[tensionedSide]) {
-          mapping[tensionedSide].forEach(p => this._highlightPart(svg, p, 'rgba(14,165,233,0.50)'));
+          mapping[tensionedSide].forEach(p => this._highlightPart(svg, p, 'rgba(37,99,235,0.50)'));
         }
       }
 
@@ -700,11 +700,11 @@ const BodyDiagram = {
         const mx2 = (cx + Math.min(posA.leftX, posB.leftX)) / 2;
         zoneLayer.appendChild(this._createSVGEl('text', {
           x: mx2, y: midY + 3, 'text-anchor': 'middle',
-          'font-size': 12, fill: '#0ea5e9', 'font-weight': 700
+          'font-size': 12, fill: '#2563eb', 'font-weight': 700
         }, '↕'));
         zoneLayer.appendChild(this._createSVGEl('text', {
           x: mx2, y: midY + 16, 'text-anchor': 'middle',
-          'font-size': 8, fill: '#0ea5e9', 'font-weight': 700
+          'font-size': 8, fill: '#2563eb', 'font-weight': 700
         }, '伸'));
       } else {
         const mx1 = (cx + Math.min(posA.leftX, posB.leftX)) / 2;
@@ -719,11 +719,11 @@ const BodyDiagram = {
         const mx2 = (cx + Math.max(posA.rightX, posB.rightX)) / 2;
         zoneLayer.appendChild(this._createSVGEl('text', {
           x: mx2, y: midY + 3, 'text-anchor': 'middle',
-          'font-size': 12, fill: '#0ea5e9', 'font-weight': 700
+          'font-size': 12, fill: '#2563eb', 'font-weight': 700
         }, '↕'));
         zoneLayer.appendChild(this._createSVGEl('text', {
           x: mx2, y: midY + 16, 'text-anchor': 'middle',
-          'font-size': 8, fill: '#0ea5e9', 'font-weight': 700
+          'font-size': 8, fill: '#2563eb', 'font-weight': 700
         }, '伸'));
       }
     }
@@ -927,7 +927,7 @@ const BodyDiagram = {
       const mapping = partMapping[i];
       if (mapping) {
         (mapping[compSide] || []).forEach(p => this._highlightPart(svg, p, 'rgba(239,68,68,0.50)'));
-        (mapping[stretchSide] || []).forEach(p => this._highlightPart(svg, p, 'rgba(14,165,233,0.50)'));
+        (mapping[stretchSide] || []).forEach(p => this._highlightPart(svg, p, 'rgba(37,99,235,0.50)'));
       }
     }
 
@@ -1064,7 +1064,7 @@ const BodyDiagram = {
       const contractedParts = cfg.parts[compSide] || [];
       const tensionedParts = cfg.parts[stretchSideKey] || [];
       contractedParts.forEach(p => this._highlightPart(svg, p, 'rgba(239,68,68,0.50)'));
-      tensionedParts.forEach(p => this._highlightPart(svg, p, 'rgba(14,165,233,0.50)'));
+      tensionedParts.forEach(p => this._highlightPart(svg, p, 'rgba(37,99,235,0.50)'));
 
       // バッジを衝突回避で配置（小型化＋xy方向に逃げる・padding強化）
       const badgeW = 36, badgeH = 17;
@@ -1081,7 +1081,7 @@ const BodyDiagram = {
       const stretchBox = this._reserveBox(stretchX - badgeW / 2, rawMidY - badgeH / 2, badgeW, badgeH, { axis: 'xy', padding: 4 });
       indicatorLayer.appendChild(this._createSVGEl('rect', {
         x: stretchBox.x, y: stretchBox.y, width: badgeW, height: badgeH,
-        rx: 5, fill: '#0ea5e9', opacity: 0.88
+        rx: 5, fill: '#2563eb', opacity: 0.88
       }));
       indicatorLayer.appendChild(this._createSVGEl('text', {
         x: stretchBox.x + badgeW / 2, y: stretchBox.y + badgeH - 5, 'text-anchor': 'middle',
@@ -1214,7 +1214,7 @@ const BodyDiagram = {
       const stretchBox = this._reserveBox(stretchX - bW / 2, rawMidY - bH / 2, bW, bH, { axis: 'xy', padding: 4 });
       indicatorLayer.appendChild(this._createSVGEl('rect', {
         x: stretchBox.x, y: stretchBox.y, width: bW, height: bH,
-        rx: 5, fill: '#0ea5e9', opacity: 0.88
+        rx: 5, fill: '#2563eb', opacity: 0.88
       }));
       indicatorLayer.appendChild(this._createSVGEl('text', {
         x: stretchBox.x + bW / 2, y: stretchBox.y + bH - 4, 'text-anchor': 'middle',
