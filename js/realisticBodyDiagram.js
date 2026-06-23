@@ -33,22 +33,23 @@ const RealisticBodyDiagram = {
     standing: {
       // 乳様突起：耳の付け根（背面図で頭の側面下端）
       mastoid:         { left: { x: 51.8, y: 11.5 }, right: { x: 59.0, y: 11.5 }, label: '乳様突起' },
-      // 肩甲下角：肩甲骨の下端・T7-T8レベル
-      scapulaInferior: { left: { x: 46.0, y: 36.5 }, right: { x: 64.0, y: 36.5 }, label: '肩甲下角' },
-      // 腸骨稜：骨盤上端
-      iliacCrest:      { left: { x: 43.5, y: 47.5 }, right: { x: 67.0, y: 47.5 }, label: '腸骨稜' }
+      // 肩甲下角：肩甲骨の下端＝T7-T8レベル（肩のすぐ下、もっと上の位置）
+      scapulaInferior: { left: { x: 47.0, y: 32.0 }, right: { x: 63.0, y: 32.0 }, label: '肩甲下角' },
+      // 腸骨稜：骨盤上端（ウエストやや下）
+      iliacCrest:      { left: { x: 43.0, y: 46.0 }, right: { x: 67.5, y: 46.0 }, label: '腸骨稜' }
     },
     upper: {
       // 肩峰：肩の最頂部（肩線の外側端）
       acromion:      { left: { x: 38.5, y: 20.5 }, right: { x: 71.5, y: 20.5 }, label: '肩峰' },
-      // 肘頭：腕が体側にある自然姿勢で、肘は腰やや上の高さ
-      mastoidDetail: { left: { x: 35.0, y: 42.0 }, right: { x: 65.0, y: 42.0 }, label: '肘頭' },
+      // 肘頭：腕が体側にある自然姿勢で、肩のほぼ真下・腰のやや上の高さ
+      // 左右対称に肩峰と同じ程度のx位置（腕は肩から真下に垂れる）
+      mastoidDetail: { left: { x: 37.0, y: 43.0 }, right: { x: 73.0, y: 43.0 }, label: '肘頭' },
       // 橈骨茎状突起：手首（腕が自然に垂れた状態）
-      radialStyloid: { left: { x: 37.5, y: 60.0 }, right: { x: 62.5, y: 60.0 }, label: '茎状突起' }
+      radialStyloid: { left: { x: 37.5, y: 60.5 }, right: { x: 72.5, y: 60.5 }, label: '茎状突起' }
     },
     lower: {
       // 大転子：骨盤外側、腸骨稜の少し下
-      greaterTrochanter: { left: { x: 41.0, y: 53.0 }, right: { x: 69.0, y: 53.0 }, label: '大転子' },
+      greaterTrochanter: { left: { x: 41.0, y: 51.5 }, right: { x: 69.0, y: 51.5 }, label: '大転子' },
       // 膝蓋骨上端：膝の頂上
       patellaUpper:      { left: { x: 47.5, y: 72.5 }, right: { x: 62.5, y: 72.5 }, label: '膝蓋骨上端' },
       // 外果：外側くるぶし
@@ -92,12 +93,7 @@ const RealisticBodyDiagram = {
     containerEl.classList.add('realistic-body-diagram');
     containerEl.setAttribute('data-view', 'back');
 
-    // ヘッダー（左右ラベル）
-    const header = document.createElement('div');
-    header.className = 'rbd-header';
-    header.innerHTML = '<span class="rbd-side-label rbd-left">左</span>' +
-                       '<span class="rbd-side-label rbd-right">右</span>';
-    containerEl.appendChild(header);
+    // ヘッダー（左/右ラベルは削除）
 
     // ステージ外側ラッパ（左右の解剖ラベル領域を含む）
     const stageWrap = document.createElement('div');
@@ -363,9 +359,8 @@ const RealisticBodyDiagram = {
         // ===== 状態バッジは廃止（左右ラベルに状態を併記する方式に変更） =====
         // 体図上は色付きドット＋矢印のみ。状態（縮/伸）はサイド外側のラベルで読み取る。
 
-        // ===== 解剖ラベル（ランドマーク名のみ。縮/伸はランドマーク単体には付与しない） =====
+        // ===== 解剖ラベル（左側のみ表示）=====
         const lLabelY = reserveLabelY('left',  lY);
-        const rLabelY = reserveLabelY('right', rY);
 
         const lLabel = document.createElement('div');
         lLabel.className = 'rbd-label rbd-label-left';
@@ -373,13 +368,7 @@ const RealisticBodyDiagram = {
         lLabel.textContent = pos.label;
         stageWrap.appendChild(lLabel);
 
-        const rLabel = document.createElement('div');
-        rLabel.className = 'rbd-label rbd-label-right';
-        rLabel.style.top = rLabelY + '%';
-        rLabel.textContent = pos.label;
-        stageWrap.appendChild(rLabel);
-
-        // ===== リーダー線（点線・SVG） =====
+        // ===== リーダー線（左側のみ・点線・SVG） =====
         const lLine = document.createElementNS(NS, 'line');
         lLine.setAttribute('x1', '0');
         lLine.setAttribute('y1', String(lLabelY));
@@ -387,14 +376,6 @@ const RealisticBodyDiagram = {
         lLine.setAttribute('y2', String(lY));
         lLine.setAttribute('class', 'rbd-leader');
         lineSvg.appendChild(lLine);
-
-        const rLine = document.createElementNS(NS, 'line');
-        rLine.setAttribute('x1', '100');
-        rLine.setAttribute('y1', String(rLabelY));
-        rLine.setAttribute('x2', String(pos.right.x));
-        rLine.setAttribute('y2', String(rY));
-        rLine.setAttribute('class', 'rbd-leader');
-        lineSvg.appendChild(rLine);
       }
     }
 
