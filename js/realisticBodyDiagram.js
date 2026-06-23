@@ -5,7 +5,7 @@
 //
 // 入力データ:
 //   standing: { mastoid, scapulaInferior, iliacCrest } (-1/0/1)
-//     ※ scapulaInferior キーは既存仕様維持。表示ラベルは「肩甲棘」へ更新。
+//     ※ scapulaInferior キーは既存仕様維持。表示ラベルは「肩甲下角」。
 //   upper:   { acromion, mastoidDetail(肘頭), radialStyloid }
 //   lower:   { greaterTrochanter, patellaUpper, lateralMalleolus }
 //
@@ -33,17 +33,16 @@ const RealisticBodyDiagram = {
     standing: {
       // 乳様突起：耳の付け根（背面図で頭の側面下端）
       mastoid:         { left: { x: 51.8, y: 11.5 }, right: { x: 59.0, y: 11.5 }, label: '乳様突起' },
-      // 肩甲棘：T3レベル、肩甲骨の上端の隆起。背面で肩線のすぐ下・脊柱から外側に位置
-      // ※ データキーは互換性のため scapulaInferior のまま。表示は「肩甲棘」。
-      scapulaInferior: { left: { x: 45.0, y: 27.5 }, right: { x: 61.0, y: 27.5 }, label: '肩甲棘' },
+      // 肩甲下角：肩甲骨の下端・T7-T8レベル。胸郭の中ほどから下、脊柱から外側
+      scapulaInferior: { left: { x: 45.0, y: 37.0 }, right: { x: 61.0, y: 37.0 }, label: '肩甲下角' },
       // 腸骨稜：骨盤上端、お尻側から少し外へ
       iliacCrest:      { left: { x: 41.0, y: 49.5 }, right: { x: 69.0, y: 49.5 }, label: '腸骨稜' }
     },
     upper: {
-      // 肩峰：肩甲骨の上外側端＝肩線の少し外側、肩甲棘より少し外＋少し上
+      // 肩峰：肩甲骨の上外側端＝肩線の少し外側
       acromion:      { left: { x: 40.5, y: 25.5 }, right: { x: 65.5, y: 25.5 }, label: '肩峰' },
-      // 肘頭：腰よりやや上、腕が体側にある自然姿勢
-      mastoidDetail: { left: { x: 33.5, y: 44.5 }, right: { x: 67.5, y: 44.5 }, label: '肘頭' },
+      // 肘頭：腕が体側にある自然姿勢で、肘の位置はおおむね腰やや上
+      mastoidDetail: { left: { x: 33.5, y: 41.0 }, right: { x: 67.5, y: 41.0 }, label: '肘頭' },
       // 橈骨茎状突起：手首、大転子よりさらに下のレベルで手首側
       radialStyloid: { left: { x: 34.0, y: 60.5 }, right: { x: 66.5, y: 60.5 }, label: '茎状突起' }
     },
@@ -52,8 +51,8 @@ const RealisticBodyDiagram = {
       greaterTrochanter: { left: { x: 40.5, y: 55.5 }, right: { x: 69.5, y: 55.5 }, label: '大転子' },
       // 膝蓋骨上端：脚の中央
       patellaUpper:      { left: { x: 46.6, y: 75.3 }, right: { x: 63.3, y: 75.3 }, label: '膝蓋骨上端' },
-      // 外果：足首の外側
-      lateralMalleolus:  { left: { x: 44.9, y: 88.5 }, right: { x: 64.6, y: 88.5 }, label: '外果' }
+      // 外果：足首の外側、足の最下端付近
+      lateralMalleolus:  { left: { x: 44.9, y: 93.0 }, right: { x: 64.6, y: 93.0 }, label: '外果' }
     }
   },
 

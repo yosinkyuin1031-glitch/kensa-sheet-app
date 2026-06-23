@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bodycheck-v50-landmark-refine';
+const CACHE_NAME = 'bodycheck-v51-scapula-elbow-malleolus';
 const urlsToCache = [
   '/',
   '/index.html',
