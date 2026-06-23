@@ -3716,6 +3716,22 @@
             </div>
           </div>
 
+          ${weightBalance ? `
+          <!-- 重心バランス（構造検査） -->
+          <div class="print-section">
+            <h2 class="print-section-title">重心バランス</h2>
+            <div class="print-diagnosis-box" style="border-color:${weightBalance === 'even' ? '#22c55e' : '#f59e0b'}">
+              <div class="print-diagnosis-label" style="color:${weightBalance === 'even' ? '#22c55e' : '#f59e0b'}">
+                ${weightBalance === 'left' ? '左に体重が乗っている可能性が高いです'
+                  : weightBalance === 'right' ? '右に体重が乗っている可能性が高いです'
+                  : '左右の荷重はほぼ均等です'}
+              </div>
+              ${weightBalance !== 'even' ? `<p class="print-diagnosis-summary" style="font-size:11px;line-height:1.5;">
+                重心が乗っている側の<strong>前面</strong>（首・胸・お腹・太もも前など）と、反対側の<strong>後面</strong>（後頭・背中・お尻・もも裏など）に症状が出やすい傾向があります。
+              </p>` : ''}
+            </div>
+          </div>` : ''}
+
           <!-- 左右差一覧 -->
           <div class="print-section">
             <h2 class="print-section-title">左右差チェック${hasDetail ? '（基本）' : ''}</h2>
