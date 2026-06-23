@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bodycheck-v61-unify-left-right';
+const CACHE_NAME = 'bodycheck-v62-xpattern-zones';
 const urlsToCache = [
   '/',
   '/index.html',

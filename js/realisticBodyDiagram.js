@@ -253,13 +253,21 @@ const RealisticBodyDiagram = {
       const bLY = posB.left.y  + this._leftYShift(safeB);
       const aRY = posA.right.y + this._rightYShift(safeA);
       const bRY = posB.right.y + this._rightYShift(safeB);
-      // 両方の値が「同じ向きの非ゼロ」のときだけゾーンを描画する
-      const samePair = (safeA !== 0 && safeB !== 0 && safeA === safeB);
-      if (!samePair) continue;
-      // ラベル併記との整合: val=-1→shortSide='right'（右短縮）, val=1→shortSide='left'（左短縮）
-      // つまり「低い側＝短縮」の解釈に統一
-      const leftIsShort  = (safeA === 1);
-      const rightIsShort = (safeA === -1);
+      // 隣接2点ともに非ゼロの場合のみゾーン描画
+      if (safeA === 0 || safeB === 0) continue;
+      // パターン判定
+      //  - samePair (safeA === safeB): 区間全体が同じ方向に傾く → 低い側=短縮
+      //  - xPattern (safeA !== safeB): S字カーブ → 寄っていく側が短縮(赤)、開く側が伸長(青)
+      let leftIsShort, rightIsShort;
+      if (safeA === safeB) {
+        leftIsShort  = (safeA === 1);
+        rightIsShort = (safeA === -1);
+      } else {
+        // safeA=-1, safeB=1 → 右側で上が下/下が上 → 右が圧縮、左が伸長
+        // safeA=1, safeB=-1 → 左が圧縮、右が伸長
+        rightIsShort = (safeA === -1 && safeB === 1);
+        leftIsShort  = (safeA === 1  && safeB === -1);
+      }
 
       // グループごとに内側端を決定
       let innerLeftA, innerLeftB, innerRightA, innerRightB;
