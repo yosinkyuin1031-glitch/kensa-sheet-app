@@ -782,9 +782,10 @@ body[data-view="patient"] .patient-treatment-hint p {
 
 /* リーダー線（点線） */
 .rbd-leader {
-  stroke: #94a3b8;
-  stroke-width: 0.25;
-  stroke-dasharray: 0.6 0.6;
+  stroke: #475569;
+  stroke-width: 0.5;
+  stroke-dasharray: 1.2 0.8;
+  stroke-opacity: 0.85;
   fill: none;
   vector-effect: non-scaling-stroke;
 }

@@ -352,26 +352,20 @@ const RealisticBodyDiagram = {
         // ===== 状態バッジは廃止（左右ラベルに状態を併記する方式に変更） =====
         // 体図上は色付きドット＋矢印のみ。状態（縮/伸）はサイド外側のラベルで読み取る。
 
-        // ===== 解剖ラベル（状態を併記） =====
+        // ===== 解剖ラベル（ランドマーク名のみ。縮/伸はランドマーク単体には付与しない） =====
         const lLabelY = reserveLabelY('left',  lY);
         const rLabelY = reserveLabelY('right', rY);
 
-        // 状態テキスト: val=-1→左が高い=右が短縮 / val=1→右が高い=左が短縮 / val=0→均等
-        const leftStatusText  = val === 0 ? '均等' : (shortSide === 'left'  ? '縮' : '伸');
-        const rightStatusText = val === 0 ? '均等' : (shortSide === 'right' ? '縮' : '伸');
-        const leftStatusCls   = val === 0 ? 'even' : (shortSide === 'left'  ? 'short' : 'long');
-        const rightStatusCls  = val === 0 ? 'even' : (shortSide === 'right' ? 'short' : 'long');
-
         const lLabel = document.createElement('div');
-        lLabel.className = 'rbd-label rbd-label-left rbd-label-with-status';
+        lLabel.className = 'rbd-label rbd-label-left';
         lLabel.style.top = lLabelY + '%';
-        lLabel.innerHTML = `<span class="rbd-label-name">${pos.label}</span><span class="rbd-label-status ${leftStatusCls}">${leftStatusText}</span>`;
+        lLabel.textContent = pos.label;
         stageWrap.appendChild(lLabel);
 
         const rLabel = document.createElement('div');
-        rLabel.className = 'rbd-label rbd-label-right rbd-label-with-status';
+        rLabel.className = 'rbd-label rbd-label-right';
         rLabel.style.top = rLabelY + '%';
-        rLabel.innerHTML = `<span class="rbd-label-status ${rightStatusCls}">${rightStatusText}</span><span class="rbd-label-name">${pos.label}</span>`;
+        rLabel.textContent = pos.label;
         stageWrap.appendChild(rLabel);
 
         // ===== リーダー線（点線・SVG） =====

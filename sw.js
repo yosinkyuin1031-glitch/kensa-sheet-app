@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bodycheck-v71-deep-blue-shorter-hand';
+const CACHE_NAME = 'bodycheck-v72-cleaner-labels';
 const urlsToCache = [
   '/',
   '/index.html',
