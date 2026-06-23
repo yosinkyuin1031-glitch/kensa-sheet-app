@@ -795,6 +795,21 @@ body[data-view="patient"] .patient-treatment-hint p {
   border: 1.5px solid #fff;
   box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 1px 2px rgba(0,0,0,0.2);
 }
+
+/* 縮こまり部位を示す赤い半透明オーラ */
+.rbd-aura {
+  position: absolute;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(239,68,68,0.55) 0%, rgba(239,68,68,0.25) 45%, rgba(239,68,68,0) 75%);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 1;
+}
+@media (max-width: 480px) {
+  .rbd-aura { width: 28px; height: 28px; }
+}
 .rbd-dot.orange { background: #f97316; }
 .rbd-dot.blue   { background: #3b82f6; }
 .rbd-dot.green  { background: #22c55e; }

@@ -240,26 +240,38 @@ const RealisticBodyDiagram = {
         rDot.title = pos.label + '（右）';
         stage.appendChild(rDot);
 
-        // ===== 矢印（短縮側のみ・下向き赤） =====
-        // 「縮こまっているところだけ」を強調するため、伸長側の矢印は描画しない
+        // ===== 短縮側に赤いオーラを追加（イラスト版のゾーンに相当） =====
         if (val !== 0) {
-          if (shortSide === 'left') {
-            placed.left.push({ x: pos.left.x, y: lY - 2.4, w: ARROW_W, h: ARROW_H });
-            const lArrow = document.createElement('div');
-            lArrow.className = 'rbd-marker rbd-arrow down red';
-            lArrow.style.left = pos.left.x + '%';
-            lArrow.style.top  = (lY - 2.4) + '%';
-            lArrow.textContent = '↓';
-            stage.appendChild(lArrow);
-          } else if (shortSide === 'right') {
-            placed.right.push({ x: pos.right.x, y: rY - 2.4, w: ARROW_W, h: ARROW_H });
-            const rArrow = document.createElement('div');
-            rArrow.className = 'rbd-marker rbd-arrow down red';
-            rArrow.style.left = pos.right.x + '%';
-            rArrow.style.top  = (rY - 2.4) + '%';
-            rArrow.textContent = '↓';
-            stage.appendChild(rArrow);
-          }
+          const auraSide = shortSide; // 'left' or 'right'
+          const auraX = auraSide === 'left' ? pos.left.x : pos.right.x;
+          const auraY = auraSide === 'left' ? lY : rY;
+          const aura = document.createElement('div');
+          aura.className = 'rbd-aura';
+          aura.style.left = auraX + '%';
+          aura.style.top  = auraY + '%';
+          stage.appendChild(aura);
+        }
+
+        // ===== 矢印（短縮=下向き赤、伸長=上向き青） =====
+        if (val !== 0) {
+          placed.left.push({ x: pos.left.x, y: lY - 2.4, w: ARROW_W, h: ARROW_H });
+          placed.right.push({ x: pos.right.x, y: rY - 2.4, w: ARROW_W, h: ARROW_H });
+
+          const lArrow = document.createElement('div');
+          const lShort = (shortSide === 'left');
+          lArrow.className = 'rbd-marker rbd-arrow ' + (lShort ? 'down red' : 'up blue');
+          lArrow.style.left = pos.left.x + '%';
+          lArrow.style.top  = (lY - 2.4) + '%';
+          lArrow.textContent = lShort ? '↓' : '↑';
+          stage.appendChild(lArrow);
+
+          const rArrow = document.createElement('div');
+          const rShort = (shortSide === 'right');
+          rArrow.className = 'rbd-marker rbd-arrow ' + (rShort ? 'down red' : 'up blue');
+          rArrow.style.left = pos.right.x + '%';
+          rArrow.style.top  = (rY - 2.4) + '%';
+          rArrow.textContent = rShort ? '↓' : '↑';
+          stage.appendChild(rArrow);
         }
 
         // ===== 状態バッジは廃止（左右ラベルに状態を併記する方式に変更） =====
@@ -269,24 +281,22 @@ const RealisticBodyDiagram = {
         const lLabelY = reserveLabelY('left',  lY);
         const rLabelY = reserveLabelY('right', rY);
 
-        // 短縮側のみ「縮」チップを併記。伸長側・均等はラベル名のみ表示
-        const lIsShort = (val !== 0 && shortSide === 'left');
-        const rIsShort = (val !== 0 && shortSide === 'right');
+        // 状態テキスト: val=-1→左が高い=右が短縮 / val=1→右が高い=左が短縮 / val=0→均等
+        const leftStatusText  = val === 0 ? '均等' : (shortSide === 'left'  ? '縮' : '伸');
+        const rightStatusText = val === 0 ? '均等' : (shortSide === 'right' ? '縮' : '伸');
+        const leftStatusCls   = val === 0 ? 'even' : (shortSide === 'left'  ? 'short' : 'long');
+        const rightStatusCls  = val === 0 ? 'even' : (shortSide === 'right' ? 'short' : 'long');
 
         const lLabel = document.createElement('div');
         lLabel.className = 'rbd-label rbd-label-left rbd-label-with-status';
         lLabel.style.top = lLabelY + '%';
-        lLabel.innerHTML = lIsShort
-          ? `<span class="rbd-label-name">${pos.label}</span><span class="rbd-label-status short">縮</span>`
-          : `<span class="rbd-label-name">${pos.label}</span>`;
+        lLabel.innerHTML = `<span class="rbd-label-name">${pos.label}</span><span class="rbd-label-status ${leftStatusCls}">${leftStatusText}</span>`;
         stageWrap.appendChild(lLabel);
 
         const rLabel = document.createElement('div');
         rLabel.className = 'rbd-label rbd-label-right rbd-label-with-status';
         rLabel.style.top = rLabelY + '%';
-        rLabel.innerHTML = rIsShort
-          ? `<span class="rbd-label-status short">縮</span><span class="rbd-label-name">${pos.label}</span>`
-          : `<span class="rbd-label-name">${pos.label}</span>`;
+        rLabel.innerHTML = `<span class="rbd-label-status ${rightStatusCls}">${rightStatusText}</span><span class="rbd-label-name">${pos.label}</span>`;
         stageWrap.appendChild(rLabel);
 
         // ===== リーダー線（点線・SVG） =====

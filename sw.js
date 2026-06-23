@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bodycheck-v47-short-only';
+const CACHE_NAME = 'bodycheck-v48-aura';
 const urlsToCache = [
   '/',
   '/index.html',
