@@ -78,8 +78,8 @@ module.exports = async function handler(req, res) {
         email: email,
         plan: plan
       },
-      success_url: `${req.headers.origin || 'https://kensa-sheet-app.vercel.app'}/lp/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.origin || 'https://kensa-sheet-app.vercel.app'}/lp/`
+      success_url: `https://clinic-saas-lp.vercel.app/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `https://clinic-saas-lp.vercel.app/systems/kensa`
     });
 
     return res.status(200).json({
